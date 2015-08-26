@@ -67,12 +67,6 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
   updatePIDLoops();
   multicopter_.mixOutput(&rotor_velocities_, &desired_forces_);
   mav_msgs::Actuators command;
-  ROS_WARN_STREAM("pre-sat:  " << rotor_velocities_[0] << " " <<
-                                  rotor_velocities_[1] << " " <<
-                                  rotor_velocities_[2] << " " <<
-                                  rotor_velocities_[3] << " " <<
-                                  rotor_velocities_[4] << " " <<
-                                  rotor_velocities_[5]);
   for(int i=0; i<multicopter_.num_rotors; i++){
     // saturate command
     rotor_velocities_[i] = sqrt((rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i]);
@@ -81,12 +75,6 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
   }
   command.header.stamp = msg->header.stamp;
   command.header.frame_id = msg->header.frame_id;
-  ROS_WARN_STREAM("post-sat: " << command.angular_velocities[0] << " " <<
-                                  command.angular_velocities[1] << " " <<
-                                  command.angular_velocities[2] << " " <<
-                                  command.angular_velocities[3] << " " <<
-                                  command.angular_velocities[4] << " " <<
-                                  command.angular_velocities[5]);
   actuators_publisher_.publish(command);
 }
 
