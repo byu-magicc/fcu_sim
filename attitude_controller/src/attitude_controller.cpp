@@ -51,32 +51,45 @@ attitudeController::attitudeController() :
   desired_forces_.resize(4);
 }
 
+void attitudeController::commandCallback(const mav_msgs::RollPitchYawrateThrustConstPtr& msg){
+  roll_c_ = msg->roll;
+  pitch_c_ = msg->pitch;
+  yaw_rate_c_ = msg->yaw_rate;
+  thrust_c_ = msg->thrust.z;
+}
+
 void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg){
   tf::Quaternion current_orientation;
   tf::quaternionMsgToTF(msg->pose.pose.orientation,current_orientation);
   double yaw;
   tf::Matrix3x3(current_orientation).getRPY(phi_, theta_,yaw);
-  r_ = -msg->twist.twist.angular.z;
+  r_ = -1.0*msg->twist.twist.angular.z; // NWU to NED
   updatePIDLoops();
   multicopter_.mixOutput(&rotor_velocities_, &desired_forces_);
   mav_msgs::Actuators command;
+  ROS_WARN_STREAM("pre-sat:  " << rotor_velocities_[0] << " " <<
+                                  rotor_velocities_[1] << " " <<
+                                  rotor_velocities_[2] << " " <<
+                                  rotor_velocities_[3] << " " <<
+                                  rotor_velocities_[4] << " " <<
+                                  rotor_velocities_[5]);
   for(int i=0; i<multicopter_.num_rotors; i++){
     // saturate command
-    rotor_velocities_[i] = (rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i];
+    rotor_velocities_[i] = sqrt((rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i]);
     rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.rotors[i].max_rotor_speed)?multicopter_.rotors[i].max_rotor_speed:rotor_velocities_[i];
     command.angular_velocities.push_back(rotor_velocities_[i]);
   }
   command.header.stamp = msg->header.stamp;
   command.header.frame_id = msg->header.frame_id;
+  ROS_WARN_STREAM("post-sat: " << command.angular_velocities[0] << " " <<
+                                  command.angular_velocities[1] << " " <<
+                                  command.angular_velocities[2] << " " <<
+                                  command.angular_velocities[3] << " " <<
+                                  command.angular_velocities[4] << " " <<
+                                  command.angular_velocities[5]);
   actuators_publisher_.publish(command);
 }
 
-void attitudeController::commandCallback(const mav_msgs::RollPitchYawrateThrustConstPtr& msg){
-  roll_c_ = msg->roll;
-  pitch_c_ = msg->pitch;
-  yaw_rate_c_ = -msg->yaw_rate;
-  thrust_c_ = msg->thrust.z;
-}
 
 void attitudeController::updatePIDLoops(){
   double current_time = ros::Time::now().toSec();
@@ -85,9 +98,11 @@ void attitudeController::updatePIDLoops(){
   }
   desired_forces_(0) = pid_roll_.computePID(roll_c_, phi_, dt_); // l
   desired_forces_(1) = pid_pitch_.computePID(pitch_c_, theta_, dt_);// m
-  desired_forces_(2) = -pid_yaw_rate_.computePID(yaw_rate_c_, r_, dt_); // n
+  desired_forces_(2) = pid_yaw_rate_.computePID(yaw_rate_c_, r_, dt_); // n
   desired_forces_(3) = thrust_c_; // fz
   time_of_last_control_ = current_time;
+
+  //ROS_WARN_STREAM("yaw_c = " << yaw_rate_c_ << " r = " << r_ << " n = " << desired_forces_(2));
 
 }
 
