@@ -34,12 +34,12 @@ attitudeController::attitudeController() :
   nh_private_.param<std::string>("odometry_topic", odometry_topic_, "odometry");
   nh_private_.param<std::string>("command_topic", command_topic_, "command/roll_pitch_yawrate_thrust");
   nh_private_.param<std::string>("motor_speed_command_topic", motor_speed_command_topic_, "command/motor_speed");
-  ROS_WARN("2");
+
   // Setup publishers and subscribers
   odometry_subscriber_ = nh_.subscribe(odometry_topic_, 1, &attitudeController::odometryCallback, this);
   command_subscriber_ = nh_.subscribe(command_topic_, 1, &attitudeController::commandCallback, this);
   actuators_publisher_ = nh_.advertise<mav_msgs::Actuators>(motor_speed_command_topic_, 1);
-  ROS_WARN("3");
+
   // set PID gains
   pid_roll_.setGains(kp_roll, ki_roll, kd_roll);
   pid_pitch_.setGains(kp_pitch, ki_pitch, kd_pitch);
