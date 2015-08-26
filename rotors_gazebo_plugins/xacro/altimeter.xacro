@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+  <!-- LV-MaxSonar-EZ3 MB1030 -->
+  <xacro:macro 
+    name="Sonar_MB1030" 
+    params="namespace parent_link altimeter_topic">
+    <xacro:altimeter_plugin_macro
+      namespace="${namespace}"
+      altimeter_suffix=""
+      parent_link="${parent_link}"
+      altimeter_topic="${altimeter_topic}"
+      mass_altimeter_sensor="0.0043"
+      altimeter_min_range="0.381"
+      altimeter_max_range="6.45"
+      altimeter_error_stdev="0.10"
+      altimeter_field_of_view="1.107"
+      altimeter_publish_rate="20"
+      altimeter_noise_on="true" >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:altimeter_plugin_macro>
+  </xacro:macro>
+
+
+
+  <!-- Macro to add an altimeter. -->
+  <xacro:macro name="altimeter_plugin_macro"
+    params="
+    namespace altimeter_suffix parent_link altimeter_topic 
+    mass_altimeter_sensor altimeter_min_range altimeter_max_range 
+    altimeter_error_stdev altimeter_field_of_view 
+    altimeter_publish_rate altimeter_noise_on *inertia *origin">
+    <!-- altimeter link -->
+    <link name="${namespace}/altimeter${altimeter_suffix}_link">
+      <inertial>
+        <xacro:insert_block name="inertia" />
+        <mass value="${mass_altimeter_sensor}" />  <!-- [kg] -->
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </inertial>
+    </link>
+    <!-- altimeter joint -->
+    <joint name="${namespace}/altimeter${altimeter_suffix}_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/altimeter${altimeter_suffix}_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0" />
+    </joint>
+    <gazebo>
+      <plugin filename="librotors_gazebo_altimeter_plugin.so" name="rotors_gazebo_altimeter${altimeter_suffix}_plugin">
+      <!-- A good description of the altimeter parameters can be found in the kalibr documentation:
+           https://github.com/ethz-asl/kalibr/wiki/altimeter-Noise-Model-and-Intrinsics -->
+        <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
+        <linkName>${namespace}/altimeter${altimeter_suffix}_link</linkName> <!-- (string, required): name of the body which holds the altimeter sensor -->
+        <altimeterTopic>${altimeter_topic}</altimeterTopic> <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
+        <altimeterMinRange>${altimeter_min_range}</altimeterMinRange>
+        <altimeterMaxRange>${altimeter_max_range}</altimeterMaxRange>
+        <altimeterErrorStdev>${altimeter_error_stdev}</altimeterErrorStdev>
+        <altimeterFOV>${altimeter_field_of_view}</altimeterFOV>
+        <altimeterPublishRate>${altimeter_publish_rate}</altimeterPublishRate>
+        <altimeterNoiseOn>${altimeter_noise_on}</altimeterNoiseOn>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+</robot>
