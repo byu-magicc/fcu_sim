@@ -9,17 +9,6 @@ attitudeController::attitudeController() :
   multicopter_()
 {
   // retrieve frame params
-  //  int frame_type;
-  //  double frame_radius, force_constant, moment_constant, mass, Jxx, Jyy, Jzz,max_rotor_speed;
-  //  nh_private_.param<double>("mass", mass, 3.81);
-  //  nh_private_.param<double>("Jxx", Jxx, 0.060224);
-  //  nh_private_.param<double>("Jyy", Jyy, 0.122198);
-  //  nh_private_.param<double>("Jzz", Jzz, 0.0132166);
-  //  nh_private_.param<double>("max_rotor_speed", max_rotor_speed, 903.2);
-  //  nh_private_.param<int>("frame_type", frame_type, I6);
-  //  nh_private_.param<double>("frame_radius", frame_radius, .3429);
-  //  nh_private_.param<double>("force_constant", force_constant, 1.3e-6);
-  //  nh_private_.param<double>("moment_constant", moment_constant, 0.25);
   multicopter_.loadfromParam(nh_private_);
 
   // retrieve gain params
@@ -63,7 +52,6 @@ attitudeController::attitudeController() :
 }
 
 void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg){
-  ROS_INFO("Odometry CB");
   tf::Quaternion current_orientation;
   tf::quaternionMsgToTF(msg->pose.pose.orientation,current_orientation);
   double yaw;
@@ -74,10 +62,8 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
   mav_msgs::Actuators command;
   for(int i=0; i<multicopter_.num_rotors; i++){
     // saturate command
-    //ROS_INFO_STREAM("rotor " << i << " unsaturated velocity = " << rotor_velocities_[i]);
     rotor_velocities_[i] = (rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i];
     rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.rotors[i].max_rotor_speed)?multicopter_.rotors[i].max_rotor_speed:rotor_velocities_[i];
-    //ROS_INFO_STREAM("rotor " << i << " saturated velocity = " << rotor_velocities_[i]);
     command.angular_velocities.push_back(rotor_velocities_[i]);
   }
   command.header.stamp = msg->header.stamp;
@@ -100,12 +86,8 @@ void attitudeController::updatePIDLoops(){
   desired_forces_(0) = pid_roll_.computePID(roll_c_, phi_, dt_); // l
   desired_forces_(1) = pid_pitch_.computePID(pitch_c_, theta_, dt_);// m
   desired_forces_(2) = -pid_yaw_rate_.computePID(yaw_rate_c_, r_, dt_); // n
-
   desired_forces_(3) = thrust_c_; // fz
   time_of_last_control_ = current_time;
-
-  ROS_WARN_STREAM(" yr_c " << yaw_rate_c_ << " r_ " << r_);
-  ROS_INFO_STREAM("l_c = " << desired_forces_(0) << " m_c = " << desired_forces_(1) << " n_c " << desired_forces_(2) << " thrust_c " << desired_forces_(3));
 
 }
 

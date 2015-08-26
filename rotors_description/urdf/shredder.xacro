@@ -107,7 +107,7 @@
     motor_number="1"
     rotor_drag_coefficient="${rotor_drag_coefficient}"
     rolling_moment_coefficient="${rolling_moment_coefficient}"
-    color="Blue"
+    color="Black"
     use_own_mesh="false"
     mesh="">
     <origin xyz="${sin30*arm_length} ${cos30*arm_length} ${rotor_offset_top}" rpy="0 0 0" />
@@ -128,7 +128,7 @@
     motor_number="2"
     rotor_drag_coefficient="${rotor_drag_coefficient}"
     rolling_moment_coefficient="${rolling_moment_coefficient}"
-    color="Blue"
+    color="Black"
     use_own_mesh="false"
     mesh="">
     <origin xyz="-${sin30*arm_length} ${cos30*arm_length} ${rotor_offset_top}" rpy="0 0 0" />
@@ -149,7 +149,7 @@
     motor_number="3"
     rotor_drag_coefficient="${rotor_drag_coefficient}"
     rolling_moment_coefficient="${rolling_moment_coefficient}"
-    color="Blue"
+    color="Black"
     use_own_mesh="false"
     mesh="">
     <origin xyz="-${arm_length} 0 ${rotor_offset_top}" rpy="0 0 0" />
@@ -171,7 +171,7 @@
     motor_number="4"
     rotor_drag_coefficient="${rotor_drag_coefficient}"
     rolling_moment_coefficient="${rolling_moment_coefficient}"
-    color="Blue"
+    color="Black"
     use_own_mesh="false"
     mesh="">
     <origin xyz="-${sin30*arm_length} -${cos30*arm_length} ${rotor_offset_top}" rpy="0 0 0" />
@@ -193,7 +193,7 @@
     motor_number="5"
     rotor_drag_coefficient="${rotor_drag_coefficient}"
     rolling_moment_coefficient="${rolling_moment_coefficient}"
-    color="Blue"
+    color="Black"
     use_own_mesh="false"
     mesh="">
     <origin xyz="${sin30*arm_length} -${cos30*arm_length} ${rotor_offset_top}" rpy="0 0 0" />
