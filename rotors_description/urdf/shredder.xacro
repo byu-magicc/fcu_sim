@@ -24,7 +24,7 @@
 <robot name="shredder" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Properties -->
   <xacro:property name="namespace" value="$(arg mav_name)" />
-  <xacro:property name="rotor_velocity_slowdown_sim" value="15" />
+  <xacro:property name="rotor_velocity_slowdown_sim" value="20" />
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://rotors_description/meshes/firefly.dae" />
   <xacro:property name="mass" value="3.81" /> <!-- [kg] -->
@@ -35,7 +35,7 @@
   <xacro:property name="rotor_offset_top" value="0.06985" /> <!-- [m] -->
   <xacro:property name="radius_rotor" value="0.1524" /> <!-- [m] -->
   <xacro:property name="motor_constant" value="1.426e-5" /> <!-- [N-s/rad] -->
-  <xacro:property name="moment_constant" value="0.25" /> <!-- [m] -->
+  <xacro:property name="moment_constant" value="0.5" /> <!-- [m] -->
   <xacro:property name="time_constant_up" value="0.0215" /> <!-- [s] -->
   <xacro:property name="time_constant_down" value="0.0375" /> <!-- [s] -->
   <xacro:property name="max_rot_velocity" value="1177.89" /> <!-- [rad/s] -->
