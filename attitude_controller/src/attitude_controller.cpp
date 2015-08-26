@@ -8,29 +8,33 @@ attitudeController::attitudeController() :
   nh_private_(ros::NodeHandle("~")),
   multicopter_()
 {
-  ROS_WARN("1");
-  // retrieve params
+  // retrieve frame params
+  //  int frame_type;
+  //  double frame_radius, force_constant, moment_constant, mass, Jxx, Jyy, Jzz,max_rotor_speed;
+  //  nh_private_.param<double>("mass", mass, 3.81);
+  //  nh_private_.param<double>("Jxx", Jxx, 0.060224);
+  //  nh_private_.param<double>("Jyy", Jyy, 0.122198);
+  //  nh_private_.param<double>("Jzz", Jzz, 0.0132166);
+  //  nh_private_.param<double>("max_rotor_speed", max_rotor_speed, 903.2);
+  //  nh_private_.param<int>("frame_type", frame_type, I6);
+  //  nh_private_.param<double>("frame_radius", frame_radius, .3429);
+  //  nh_private_.param<double>("force_constant", force_constant, 1.3e-6);
+  //  nh_private_.param<double>("moment_constant", moment_constant, 0.25);
+  multicopter_.loadfromParam(nh_private_);
+
+  // retrieve gain params
   double kp_roll, ki_roll, kd_roll, kp_pitch, ki_pitch, kd_pitch, kp_yaw, ki_yaw, kd_yaw;
-  int frame_type;
-  double frame_radius, force_constant, moment_constant, mass, Jxx, Jyy, Jzz,max_rotor_speed;
-  nh_private_.param<double>("kp_roll", kp_roll, 7.6394);
-  nh_private_.param<double>("ki_roll", ki_roll, 0);
-  nh_private_.param<double>("kd_roll", kd_roll, 0.9592);
-  nh_private_.param<double>("kp_pitch", kp_pitch, 7.6394);
-  nh_private_.param<double>("ki_pitch", ki_pitch, 0);
-  nh_private_.param<double>("kd_pitch", kd_pitch, 1.5596);
-  nh_private_.param<double>("kp_yaw", kp_yaw, 2.8648);
-  nh_private_.param<double>("ki_yaw", ki_yaw, 0);
-  nh_private_.param<double>("kd_yaw", kd_yaw, 0);
-  nh_private_.param<double>("mass", mass, 3.81);
-  nh_private_.param<double>("Jxx", Jxx, 0.060224);
-  nh_private_.param<double>("Jyy", Jyy, 0.122198);
-  nh_private_.param<double>("Jzz", Jzz, 0.0132166);
-  nh_private_.param<double>("max_rotor_speed", max_rotor_speed, 903.2);
-  nh_private_.param<int>("frame_type", frame_type, I6);
-  nh_private_.param<double>("frame_radius", frame_radius, .3429);
-  nh_private_.param<double>("force_constant", force_constant, 1.3e-6);
-  nh_private_.param<double>("moment_constant", moment_constant, 0.25);
+  nh_private_.param<double>("control_gains/kp_roll", kp_roll, 0.55);
+  nh_private_.param<double>("control_gains/ki_roll", ki_roll, 0);
+  nh_private_.param<double>("control_gains/kd_roll", kd_roll, 0.35);
+  nh_private_.param<double>("control_gains/kp_pitch", kp_pitch, 0.55);
+  nh_private_.param<double>("control_gains/ki_pitch", ki_pitch, 0);
+  nh_private_.param<double>("control_gains/kd_pitch", kd_pitch, 0.35);
+  nh_private_.param<double>("control_gains/kp_yaw", kp_yaw, 5.0);
+  nh_private_.param<double>("control_gains/ki_yaw", ki_yaw, 0);
+  nh_private_.param<double>("control_gains/kd_yaw", kd_yaw, 0);
+
+  // retrieve topic names
   nh_private_.param<std::string>("odometry_topic", odometry_topic_, "odometry");
   nh_private_.param<std::string>("command_topic", command_topic_, "command/roll_pitch_yawrate_thrust");
   nh_private_.param<std::string>("motor_speed_command_topic", motor_speed_command_topic_, "command/motor_speed");
@@ -53,9 +57,6 @@ attitudeController::attitudeController() :
   pitch_c_ = 0.0;
   yaw_rate_c_ = 0.0;
 
-  // initialize frame parameters
-  multicopter_.initialize(frame_type, frame_radius, force_constant, moment_constant, Jxx, Jyy, Jzz, mass,max_rotor_speed);
-
   // initialize command vectors
   rotor_velocities_.resize(multicopter_.num_rotors);
   desired_forces_.resize(4);
@@ -75,7 +76,7 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
     // saturate command
     //ROS_INFO_STREAM("rotor " << i << " unsaturated velocity = " << rotor_velocities_[i]);
     rotor_velocities_[i] = (rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i];
-    rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.max_rotor_speed)?multicopter_.max_rotor_speed:rotor_velocities_[i];
+    rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.rotors[i].max_rotor_speed)?multicopter_.rotors[i].max_rotor_speed:rotor_velocities_[i];
     //ROS_INFO_STREAM("rotor " << i << " saturated velocity = " << rotor_velocities_[i]);
     command.angular_velocities.push_back(rotor_velocities_[i]);
   }
@@ -98,7 +99,7 @@ void attitudeController::updatePIDLoops(){
   }
   desired_forces_(0) = pid_roll_.computePID(roll_c_, phi_, dt_); // l
   desired_forces_(1) = pid_pitch_.computePID(pitch_c_, theta_, dt_);// m
-  desired_forces_(2) = pid_yaw_rate_.computePID(yaw_rate_c_, r_, dt_); // n
+  desired_forces_(2) = -pid_yaw_rate_.computePID(yaw_rate_c_, r_, dt_); // n
 
   desired_forces_(3) = thrust_c_; // fz
   time_of_last_control_ = current_time;

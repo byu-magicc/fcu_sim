@@ -26,7 +26,7 @@
       <rosparam command="load" file="$(find rotors_gazebo)/resource/$(arg mav_name).yaml" />
       <remap from="odometry" to="odometry_sensor1/odometry" /> -->
     <node name="attitude_controller" pkg="attitude_controller" type="attitude_controller_node" output="screen" >
-      <rosparam command="load" file="$(find attitude_controller)/param/$(arg mav_name).yaml"/>
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/$(arg mav_name).yaml"/>
       <remap from="odometry" to="odometry_sensor1/odometry"/>
     </node>
   </group>
