@@ -19,7 +19,10 @@
       <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
       <arg name="log_file"          value="$(arg log_file)"/>
     </include>
-    <node name="joy_node" pkg="joy" type="joy_node" />
+    <node name="joy_node" pkg="joy" type="joy_node" >
+      <param name="deadzone" value="0.12"/>
+      <param name="autorepeat_rate" value="20"/>
+    </node>
     <node name="rotors_joy_interface" pkg="rotors_joy_interface" type="rotors_joy_interface" />
     <node name="joy_commander" pkg="joy_commander" type="joy_commander_node"/>
     <node name="attitude_controller" pkg="attitude_controller" type="attitude_controller_node" output="screen" >
