@@ -64,7 +64,7 @@ Basic Usage
 Launch the simulator with a hex-rotor helicopter model, in our case, the AscTec Firefly.
 
 ```
-$ roslaunch rotors_gazebo mav_empty_world.launch mav_name:=firefly
+$ roslaunch rotor_gazebo mav_empty_world.launch mav_name:=firefly
 ```
 
 > **Note** The first run of gazebo might take considerably long, as it will download some models from an online database.
@@ -77,7 +77,7 @@ The simulator starts by default in paused mode. To start it you can either
    $ rosservice call gazebo/unpause_physics
    ```
 
-There are some basic launch files where you can load the different multicopters with additional sensors. They can all be found in `~/catkin_ws/src/rotors_simulator/rotors_gazebo/launch`.
+There are some basic launch files where you can load the different multicopters with additional sensors. They can all be found in `~/catkin_ws/src/rotors_simulator/rotor_gazebo/launch`.
 
 ### Getting the multicopter to fly
 
@@ -105,7 +105,7 @@ You should see (if you unpaused the simulator and you have a multicopter in it),
 You can let the helicopter hover with ground truth odometry (perfect state estimation), by launching:
 
 ```
-$ roslaunch rotors_gazebo mav_hovering_example.launch mav_name:=firefly
+$ roslaunch rotor_gazebo mav_hovering_example.launch mav_name:=firefly
 ```
 
 #### Create an attitude controller
