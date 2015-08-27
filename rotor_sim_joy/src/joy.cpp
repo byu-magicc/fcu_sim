@@ -23,19 +23,12 @@
 
 #include <rotor_gazebo/default_topics.h>
 
+
 Joy::Joy() {
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
-  ctrl_pub_ = nh_.advertise<rotor_gazebo::RollPitchYawrateThrust> (
-    rotor_gazebo::default_topics::COMMAND_ROLL_PITCH_YAWRATE_THRUST, 10);
 
-  control_msg_.roll = 0;
-  control_msg_.pitch = 0;
-  control_msg_.yaw_rate = 0;
-  control_msg_.thrust.x = 0;
-  control_msg_.thrust.y = 0;
-  control_msg_.thrust.z = 0;
-  current_yaw_vel_ = 0;
+  pnh.param<std::string>("command_topic", command_topic_, "command");
 
   pnh.param("axis_roll_", axes_.roll, 2);
   pnh.param("axis_pitch_", axes_.pitch, 3);
@@ -53,13 +46,27 @@ Joy::Joy() {
   pnh.param("max_yaw_rate", max_.rate_yaw, 180.0 * M_PI / 180.0);  // [rad/s]
   pnh.param("max_thrust", max_.thrust, 74.676);  // [N]
 
-  pnh.param("button_ctrl_enable_", buttons_.ctrl_enable, 5);
-  pnh.param("button_ctrl_mode_", buttons_.ctrl_mode, 10);
-  pnh.param("button_takeoff_", buttons_.takeoff, 0);
-  pnh.param("button_land_", buttons_.land, 1);
+  pnh.param("button_takeoff_", buttons_.fly.index, 0);
+
+  command_pub_ = nh_.advertise<relative_nav_msgs::Command>(command_topic_,10);
+  ctrl_pub_ = nh_.advertise<rotor_gazebo::RollPitchYawrateThrust> ("command/roll_pitch_yawrate_thrust", 10);
+
+  command_msg_.roll = 0;
+  command_msg_.pitch = 0;
+  command_msg_.yaw_rate = 0;
+  command_msg_.thrust = 0;
+
+  control_msg_.roll = 0;
+  control_msg_.pitch = 0;
+  control_msg_.yaw_rate = 0;
+  control_msg_.thrust.x = 0;
+  control_msg_.thrust.y = 0;
+  control_msg_.thrust.z = 0;
+  current_yaw_vel_ = 0;
 
   namespace_ = nh_.getNamespace();
   joy_sub_ = nh_.subscribe("joy", 10, &Joy::JoyCallback, this);
+  fly_mav_ = false;
 }
 
 void Joy::StopMav() {
@@ -69,14 +76,33 @@ void Joy::StopMav() {
   control_msg_.thrust.x = 0;
   control_msg_.thrust.y = 0;
   control_msg_.thrust.z = 0;
+
+  command_msg_.roll = 0;
+  command_msg_.pitch = 0;
+  command_msg_.yaw_rate = 0;
+  command_msg_.thrust = 0;
 }
 
 void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
-  current_joy_ = *msg;
-  control_msg_.roll = msg->axes[axes_.roll] * max_.roll * axes_.roll_direction;
-  control_msg_.pitch = msg->axes[axes_.pitch] * max_.pitch * axes_.pitch_direction;
-  control_msg_.yaw_rate = msg->axes[axes_.yaw] * max_.rate_yaw * axes_.yaw_direction;
-  control_msg_.thrust.z = (msg->axes[axes_.thrust] + 1) * max_.thrust / 2.0 * axes_.thrust_direction;
+  if(fly_mav_){
+    current_joy_ = *msg;
+    control_msg_.roll = msg->axes[axes_.roll] * max_.roll * axes_.roll_direction;
+    control_msg_.pitch = msg->axes[axes_.pitch] * max_.pitch * axes_.pitch_direction;
+    control_msg_.yaw_rate = msg->axes[axes_.yaw] * max_.rate_yaw * axes_.yaw_direction;
+    control_msg_.thrust.z = (msg->axes[axes_.thrust] + 1) * max_.thrust / 2.0 * axes_.thrust_direction;
+
+    command_msg_.roll = control_msg_.roll;
+    command_msg_.pitch = control_msg_.pitch;
+    command_msg_.yaw_rate = control_msg_.yaw_rate;
+    command_msg_.thrust = control_msg_.thrust.z;
+
+  } else{
+    StopMav();
+  }
+  if(msg->buttons[buttons_.fly.index]==0 && buttons_.fly.prev_value==1){ // button release
+    fly_mav_ = !fly_mav_;
+  }
+  buttons_.fly.prev_value = msg->buttons[buttons_.fly.index];
 
   ros::Time update_time = ros::Time::now();
   control_msg_.header.stamp = update_time;
@@ -86,6 +112,7 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
 
 void Joy::Publish() {
   ctrl_pub_.publish(control_msg_);
+  command_pub_.publish(command_msg_);
 }
 
 int main(int argc, char** argv) {

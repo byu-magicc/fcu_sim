@@ -24,6 +24,7 @@
   <build_depend>rotor_gazebo</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>trajectory_msgs</build_depend>
+  <build_depend>relative_nav_msgs</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>sensor_msgs</run_depend>
@@ -31,5 +32,6 @@
   <run_depend>rotor_gazebo</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>trajectory_msgs</run_depend>
+  <run_depend>relative_nav_msgs</run_depend>
 
 </package>

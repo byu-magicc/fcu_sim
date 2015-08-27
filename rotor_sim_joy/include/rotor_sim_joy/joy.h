@@ -26,6 +26,7 @@
 #include <rotor_gazebo/RollPitchYawrateThrust.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
+#include <relative_nav_msgs/Command.h>
 
 struct Axes {
   int roll;
@@ -38,13 +39,6 @@ struct Axes {
   int yaw_direction;
 };
 
-struct Buttons {
-  int takeoff;
-  int land;
-  int ctrl_enable;
-  int ctrl_mode;
-};
-
 struct Max {
   double v_xy;
   double roll;
@@ -53,24 +47,38 @@ struct Max {
   double thrust;
 };
 
+struct Button{
+  int index;
+  bool prev_value;
+};
+
+struct Buttons {
+  Button fly;
+};
+
 class Joy {
   typedef sensor_msgs::Joy::_buttons_type ButtonType;
 
  private:
   ros::NodeHandle nh_;
   ros::Publisher ctrl_pub_;
+  ros::Publisher command_pub_;
   ros::Subscriber joy_sub_;
 
   std::string namespace_;
+  std::string command_topic_;
 
   Axes axes_;
-  Buttons buttons_;
+
+  bool fly_mav_;
 
   rotor_gazebo::RollPitchYawrateThrust control_msg_;
+  relative_nav_msgs::Command command_msg_;
   geometry_msgs::PoseStamped pose_;
   sensor_msgs::Joy current_joy_;
 
   Max max_;
+  Buttons buttons_;
 
   double current_yaw_vel_;
   double v_yaw_step_;

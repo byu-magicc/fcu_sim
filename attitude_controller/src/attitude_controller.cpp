@@ -25,7 +25,7 @@ attitudeController::attitudeController() :
 
   // retrieve topic names
   nh_private_.param<std::string>("odometry_topic", odometry_topic_, "odometry");
-  nh_private_.param<std::string>("command_topic", command_topic_, "command/roll_pitch_yawrate_thrust");
+  nh_private_.param<std::string>("command_topic", command_topic_, "command");
   nh_private_.param<std::string>("motor_speed_command_topic", motor_speed_command_topic_, "command/motor_speed");
 
   // Setup publishers and subscribers
@@ -51,11 +51,11 @@ attitudeController::attitudeController() :
   desired_forces_.resize(4);
 }
 
-void attitudeController::commandCallback(const rotor_gazebo::RollPitchYawrateThrustConstPtr& msg){
+void attitudeController::commandCallback(const relative_nav_msgs::CommandConstPtr& msg){
   roll_c_ = msg->roll;
   pitch_c_ = msg->pitch;
   yaw_rate_c_ = msg->yaw_rate;
-  thrust_c_ = msg->thrust.z;
+  thrust_c_ = msg->thrust;
 }
 
 void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg){

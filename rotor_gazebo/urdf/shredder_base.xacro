@@ -26,8 +26,23 @@
   <!-- Instantiate shredder mechanics -->
   <xacro:include filename="$(find rotor_gazebo)/urdf/shredder_mechanics.xacro" />
 
-  <!-- Instantiate a controller. -->
+  <!-- Instantiate a controller for the motors. -->
   <xacro:controller_plugin_macro namespace="${namespace}" imu_sub_topic="imu" />
+
+  <!-- Enable Ground Truth - Used by attitude_controller -->
+  <xacro:if value="$(arg enable_ground_truth)">
+    <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/odometry_sensor.xacro"/>
+    <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
+  </xacro:if>
+
+  <!-- Publish Global State and Mocap for Relative Nav -->
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/global_state_plugin.xacro"/>
+  <xacro:global_state_publisher 
+    namespace="${namespace}" 
+    parent_link="${namespace}/base_link" 
+    mocap_topic="mocap"
+    global_state_topic="global_state"
+    global_state_suffix=""/>
 
   <!-- Mount an IMU. -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/imu.xacro"/>
@@ -43,21 +58,6 @@
     parent_link="${namespace}/base_link"
     altimeter_topic="altimeter"/>
 
-  <!-- Publish Global State and Mocap for Relative Nav -->
-  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/global_state_plugin.xacro"/>
-  <xacro:global_state_publisher 
-    namespace="${namespace}" 
-    parent_link="${namespace}/base_link" 
-    mocap_topic="mocap"
-    global_state_topic="global_state"
-    global_state_suffix=""/>
-
-  <!-- Enable Ground Truth -->
-  <xacro:if value="$(arg enable_ground_truth)">
-    <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/odometry_sensor.xacro"/>
-    <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
-  </xacro:if>
-
   <!-- Mount an RGBD Camera -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/rgbd.xacro"/>
   <xacro:xtion 
@@ -71,9 +71,8 @@
     parent_link="${namespace}/base_link"
     visualize="true"/>
 
-
+  <!-- Instantiate a logger - haven't yet tried this, but left functionality just in case -->
   <xacro:if value="$(arg enable_logging)">
-    <!-- Instantiate a logger -->
     <xacro:bag_plugin_macro
       namespace="${namespace}"
       bag_file="$(arg log_file)"
