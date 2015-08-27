@@ -47,6 +47,7 @@ class GazeboGlobalStatePlugin : public ModelPlugin {
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo&);
   tf::Transform mathtoTF(math::Pose mathTF);
+  tf::Vector3 mathtoVec3(math::Vector3 mathVec);
 
  private:
   // Ros Stuff

@@ -88,21 +88,27 @@ void GazeboGlobalStatePlugin::OnUpdate(const common::UpdateInfo& _info)
   // get global state from gazebo
   math::Pose math_NWU = link_->GetWorldPose();
   tf::Transform tf_NWU = mathtoTF(math_NWU);
+  math::Vector3 vel_NWU_math = link_->GetWorldCoGLinearVel();
+  tf::Vector3 vel_NWU_tf = mathtoVec3(vel_NWU_math);
 
   // convert NWU from Gazebo output to NED
   tf::Transform NWU_to_NED(tf::Quaternion(1,0,0,0),tf::Vector3(0,0,0));
   tf::Transform tf_NED = NWU_to_NED*tf_NWU;
+  tf::Vector3 vel_NED_tf = NWU_to_NED*vel_NWU_tf;
 
   // create geometry_msgs to send
   // mocap is in NWU while global_state is in NED
   geometry_msgs::Transform msg_NED,msg_NWU;
+  geometry_msgs::Vector3 msg_NED_vel;
   tf::transformTFToMsg(tf_NED,msg_NED);
   tf::transformTFToMsg(tf_NWU,msg_NWU);
+  tf::vector3TFToMsg(vel_NED_tf, msg_NED_vel);
 
   // pack up and send
   mocap_message_.transform = msg_NWU;
   mocap_message_.header.stamp = ros::Time::now();
   global_state_message_.transform = msg_NED;
+  global_state_message_.velocity = msg_NED_vel;
   global_state_pub_.publish(global_state_message_);
   mocap_pub_.publish(mocap_message_);
 }
@@ -114,6 +120,12 @@ tf::Transform GazeboGlobalStatePlugin::mathtoTF(math::Pose mathTF)
   tf_TF.setOrigin(tf::Vector3(mathTF.pos.x, mathTF.pos.y, mathTF.pos.z));
   tf_TF.setRotation(tf::Quaternion(mathTF.rot.x, mathTF.rot.y,mathTF.rot.z, mathTF.rot.w));
   return tf_TF;
+}
+
+tf::Vector3 GazeboGlobalStatePlugin::mathtoVec3(math::Vector3 mathVec)
+{
+  tf::Vector3 tfVec(mathVec.x, mathVec.y, mathVec.z);
+  return tfVec;
 }
 
 
