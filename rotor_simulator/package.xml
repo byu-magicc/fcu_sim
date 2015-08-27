@@ -22,7 +22,7 @@
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>rotor_gazebo</run_depend>
   <run_depend>rotor_gazebo_plugins</run_depend>
-  <run_depend>rotor_joy_interface</run_depend>
+  <run_depend>rotor_sim_joy</run_depend>
   <run_depend>attitude_controller</run_depend>
 
   <export>
