@@ -3,8 +3,8 @@
 
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
-#include <mav_msgs/Actuators.h>
-#include <mav_msgs/RollPitchYawrateThrust.h>
+#include <rotor_gazebo/Actuators.h>
+#include <rotor_gazebo/RollPitchYawrateThrust.h>
 #include <relative_nav_common/simple_pid.h>
 #include <tf/tf.h>
 #include <attitude_controller/multicopter.h>
@@ -64,7 +64,7 @@ private:
   void calculateRotorMapping();
 
   void odometryCallback(const nav_msgs::OdometryConstPtr &msg);
-  void commandCallback(const mav_msgs::RollPitchYawrateThrustConstPtr& msg);
+  void commandCallback(const rotor_gazebo::RollPitchYawrateThrustConstPtr& msg);
 };
 
 } // namespace attitude_controller

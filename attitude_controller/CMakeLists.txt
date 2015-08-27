@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(attitude_controller)
 
 find_package(catkin REQUIRED COMPONENTS
-  mav_msgs
+  rotor_gazebo
   nav_msgs
   roscpp
   relative_nav_common
@@ -15,7 +15,7 @@ find_package(Eigen REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
-  CATKIN_DEPENDS geometry_msgs mav_msgs nav_msgs roscpp
+  CATKIN_DEPENDS geometry_msgs rotor_gazebo nav_msgs roscpp
   DEPENDS Eigen
 )
 

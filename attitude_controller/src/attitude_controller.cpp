@@ -31,7 +31,7 @@ attitudeController::attitudeController() :
   // Setup publishers and subscribers
   odometry_subscriber_ = nh_.subscribe(odometry_topic_, 1, &attitudeController::odometryCallback, this);
   command_subscriber_ = nh_.subscribe(command_topic_, 1, &attitudeController::commandCallback, this);
-  actuators_publisher_ = nh_.advertise<mav_msgs::Actuators>(motor_speed_command_topic_, 1);
+  actuators_publisher_ = nh_.advertise<rotor_gazebo::Actuators>(motor_speed_command_topic_, 1);
 
   // set PID gains
   pid_roll_.setGains(kp_roll, ki_roll, kd_roll);
@@ -51,7 +51,7 @@ attitudeController::attitudeController() :
   desired_forces_.resize(4);
 }
 
-void attitudeController::commandCallback(const mav_msgs::RollPitchYawrateThrustConstPtr& msg){
+void attitudeController::commandCallback(const rotor_gazebo::RollPitchYawrateThrustConstPtr& msg){
   roll_c_ = msg->roll;
   pitch_c_ = msg->pitch;
   yaw_rate_c_ = msg->yaw_rate;
@@ -66,7 +66,7 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
   r_ = -1.0*msg->twist.twist.angular.z; // NWU to NED
   updatePIDLoops();
   multicopter_.mixOutput(&rotor_velocities_, &desired_forces_);
-  mav_msgs::Actuators command;
+  rotor_gazebo::Actuators command;
   for(int i=0; i<multicopter_.num_rotors; i++){
     // saturate command
     rotor_velocities_[i] = sqrt((rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i]);
