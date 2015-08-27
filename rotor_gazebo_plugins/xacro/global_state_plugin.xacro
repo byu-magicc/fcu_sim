@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+
+  <!-- Macro to add the global state and mocap publisher -->
+  <xacro:macro 
+    name="global_state_publisher"
+    params="namespace parent_link mocap_topic global_state_topic global_state_suffix">
+    <link name="${namespace}/global_state_link">
+      <inertial>
+        <mass value="0.001" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      </inertial>
+    </link>
+    <joint name="${namespace}/global_state_joint" type="revolute">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/global_state_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0" />
+    </joint>
+    <gazebo>
+      <plugin filename="librotor_gazebo_global_state_plugin.so" name="rotor_gazebo_global_state_${namespace}/global_stateplugin">
+        <robotNamespace>${namespace}</robotNamespace>
+        <linkName>${namespace}/global_state_link</linkName> 
+        <globalStateTopic>${global_state_topic}</globalStateTopic>
+        <mocapTopic>${mocap_topic}</mocapTopic>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+
+
+</robot>
