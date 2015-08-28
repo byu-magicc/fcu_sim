@@ -38,7 +38,7 @@
   <!-- Publish Global State and Mocap for Relative Nav -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/global_state_plugin.xacro"/>
   <xacro:global_state_publisher 
-    namespace="${namespace}" 
+    namespace="" 
     parent_link="${namespace}/base_link" 
     mocap_topic="mocap"
     global_state_topic="global_state"
@@ -47,34 +47,34 @@
   <!-- Mount an IMU. -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/imu.xacro"/>
   <xacro:IMU_ADIS16448 
-    namespace="${namespace}" 
+    namespace="" 
     parent_link="${namespace}/base_link" 
     imu_topic="imu"/>
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/altimeter.xacro"/>
   <xacro:Sonar_MB1030 
-    namespace="${namespace}" 
+    namespace="" 
     parent_link="${namespace}/base_link"
     altimeter_topic="altimeter"/>
 
   <!-- Mount an RGBD Camera -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/rgbd.xacro"/>
   <xacro:xtion 
-    namespace="${namespace}" 
+    namespace="" 
     parent_link="${namespace}/base_link"/>
 
   <!-- Laser Scanner -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/laser_scanner.xacro"/>
   <xacro:hokuyo_UTM-30LX
-    namespace="${namespace}"
+    namespace=""
     parent_link="${namespace}/base_link"
-    visualize="true"/>
+    visualize="false"/>
 
   <!-- Instantiate a logger - haven't yet tried this, but left functionality just in case -->
   <xacro:if value="$(arg enable_logging)">
     <xacro:bag_plugin_macro
-      namespace="${namespace}"
+      namespace=""
       bag_file="$(arg log_file)"
       rotor_velocity_slowdown_sim="${rotor_velocity_slowdown_sim}" />
   </xacro:if>

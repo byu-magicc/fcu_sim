@@ -53,7 +53,7 @@ attitudeController::attitudeController() :
 
 void attitudeController::commandCallback(const relative_nav_msgs::CommandConstPtr& msg){
   roll_c_ = msg->roll;
-  pitch_c_ = msg->pitch;
+  pitch_c_ = -msg->pitch; // NED to NWU
   yaw_rate_c_ = msg->yaw_rate;
   thrust_c_ = msg->thrust;
 }

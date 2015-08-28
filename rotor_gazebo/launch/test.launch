@@ -5,25 +5,30 @@
   <arg name="log_file"            default="$(arg mav_name)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find rotor_gazebo)/worlds/powerplant.world"/>
-    <!-- <arg name="debug" value="true"/> -->
+    <arg name="world_name" value="$(find rotor_gazebo)/worlds/basic.world"/>
     <arg name="paused" value="false"/>
     <!-- <arg name="gui" value="false"/> -->
   </include>
 
+  <!-- Spawn MAV -->
+  <include file="$(find rotor_gazebo)/launch/spawn_mav.launch">
+    <arg name="mav_name"            value="$(arg mav_name)" />
+    <arg name="model"               value="$(find rotor_gazebo)/urdf/$(arg mav_name)_base.xacro" />
+    <arg name="enable_logging"      value="$(arg enable_logging)" />
+    <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+    <arg name="log_file"          value="$(arg log_file)"/>
+  </include>
+
+  <!-- Controller -->
+  <node name="joy_node" pkg="joy" type="joy_node" >
+    <param name="deadzone" value="0.12"/>
+    <param name="autorepeat_rate" value="20"/>
+  </node>
+  <node name="sim_reset" pkg="sim_reset" type="sim_reset_node"/>
   <group ns="$(arg mav_name)">
-    <include file="$(find rotor_gazebo)/launch/spawn_mav.launch">
-      <arg name="mav_name"            value="$(arg mav_name)" />
-      <arg name="model"               value="$(find rotor_gazebo)/urdf/$(arg mav_name)_base.xacro" />
-      <arg name="enable_logging"      value="$(arg enable_logging)" />
-      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
-      <arg name="log_file"          value="$(arg log_file)"/>
-    </include>
-    <node name="joy_node" pkg="joy" type="joy_node" >
-      <param name="deadzone" value="0.12"/>
-      <param name="autorepeat_rate" value="20"/>
-    </node>
-    <node name="rotor_sim_joy" pkg="rotor_sim_joy" type="rotor_sim_joy" />
+<!--     <node name="rotor_sim_joy" pkg="rotor_sim_joy" type="rotor_sim_joy" >
+      <remap from="joy" to="/joy"/>
+    </node> -->
     <node name="attitude_controller" pkg="attitude_controller" type="attitude_controller_node" output="screen" >
       <rosparam command="load" file="$(find rotor_gazebo)/param/$(arg mav_name).yaml"/>
       <remap from="odometry" to="ground_truth/odometry"/>
@@ -32,10 +37,31 @@
 
   <!-- FPV Image View -->
   <node name="rgb_image" pkg="image_view" type="image_view">
-    <remap from="image" to="shredder/camera/rgb/image_raw"/>
+    <remap from="image" to="/camera/rgb/image_raw"/>
   </node>
   <node name="depth_image" pkg="image_view" type="image_view">
-    <remap from="image" to="shredder/camera/depth/image_raw"/>
+    <remap from="image" to="/camera/depth/image_raw"/>
   </node>
+
+  <!-- Truth -->
+  <node name="truth" pkg="rotor_estimator" type="truth">
+    <param name="use_vo_keyframes" value="true"/>
+  </node>
+
+  <!--Control-->
+  <rosparam command="load" file="$(find rotor_controller)/gains/pid.yaml"/>
+  <node name="pid_controller"      pkg="rotor_controller"    type="rotor_controller_pid"  output="screen">
+    <remap from="command" to="shredder/command"/>
+  </node>
+  <node name="joy_commander"        pkg="joy_commander"        type="joy_commander_node" output="screen">
+    <!-- <remap from="desired_state" to="joy_desired_state"/>  -->
+  </node>
+
+  <!-- Visualization -->
+  <node name="rqt_graph" pkg="rqt_graph" type="rqt_graph"/>
+  <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot" args="/relative_state/transform/translation"/>
+
+
+
 
 </launch>

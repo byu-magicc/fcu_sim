@@ -13,7 +13,12 @@
       camera_suffix=""
       frame_rate="30"
       depth_range="6.5"
-      rgb_range="">
+      rgb_range=""
+      image_topic="/camera/rgb/image_raw"
+      depth_topic="/camera/depth/image_raw"
+      image_camera_info_topic="/camera/rgb/camera_info"
+      depth_camera_info_topic="/camera/depth/camera_info"
+      pointcloud_topic="/camera/pointcloud">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:depth_camera>
   </xacro:macro>
@@ -27,6 +32,11 @@
             frame_rate
             depth_range
             rgb_range
+            image_topic
+            depth_topic
+            image_camera_info_topic
+            depth_camera_info_topic
+            pointcloud_topic
             *origin">
     <link name="${namespace}/camera_link">
       <collision>
@@ -77,12 +87,12 @@
           <baseline>0.11</baseline>
           <updateRate>${frame_rate}</updateRate>
           <cameraName>camera</cameraName>
-          <imageTopicName>rgb/image_raw</imageTopicName>
-          <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-          <depthImageTopicName>depth/image_raw</depthImageTopicName>
-          <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
-          <pointCloudTopicName>depth/points</pointCloudTopicName>
-          <frameName>camera_base_link</frameName>
+          <imageTopicName>${image_topic}</imageTopicName>
+          <cameraInfoTopicName>${image_camera_info_topic}</cameraInfoTopicName>
+          <depthImageTopicName>${depth_topic}</depthImageTopicName>
+          <depthImageCameraInfoTopicName>${depth_camera_info_topic}</depthImageCameraInfoTopicName>
+          <pointCloudTopicName>${pointcloud_topic}</pointCloudTopicName>
+          <frameName>/camera_base_link</frameName>
           <pointCloudCutoff>0.5</pointCloudCutoff>
           <pointCloudCutoffMax>${depth_range}</pointCloudCutoffMax>
           <distortionK1>0.0</distortionK1>
