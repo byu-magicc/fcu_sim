@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <gazebo_msgs/ModelState.h>
+#include <relative_nav_msgs/DesiredState.h>
 
 namespace sim_reset
 {
@@ -31,6 +32,7 @@ private:
 
   // Publishers and Subscribers
   ros::Subscriber Joy_subscriber_;
+  ros::Subscriber desired_state_subscriber_;
   ros::Publisher ModelState_publisher_;
 
   // Parameters
@@ -40,9 +42,11 @@ private:
   // Local Variables
   Buttons buttons_;
   gazebo_msgs::ModelState reset_msg_;
+  double alt_;
 
   // Functions
   void JoyCallback(const sensor_msgs::JoyConstPtr &msg);
+  void desiredStateCallback(const relative_nav_msgs::DesiredStateConstPtr &msg);
 };
 
 } // namespace sim_reset

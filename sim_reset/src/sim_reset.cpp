@@ -13,6 +13,7 @@ simReset::simReset() :
 
   // Setup publishers and subscribers
   Joy_subscriber_ = nh_.subscribe("joy", 1, &simReset::JoyCallback, this);
+  desired_state_subscriber_ = nh_.subscribe("desired_state",1,&simReset::desiredStateCallback,this);
   ModelState_publisher_ = nh_.advertise<gazebo_msgs::ModelState>("gazebo/set_model_state", 1);
 
   // fill static members of reset_msg_
@@ -39,6 +40,13 @@ void simReset::JoyCallback(const sensor_msgs::JoyConstPtr &msg){
     ModelState_publisher_.publish(reset_msg_);
   }
   buttons_.reset.prev_value = msg->buttons[buttons_.reset.index];
+
+}
+
+void simReset::desiredStateCallback(const relative_nav_msgs::DesiredStateConstPtr &msg)
+{
+  alt_ = msg->pose.z;
+  reset_msg_.pose.position.z = -1.0*alt_;
 
 }
 

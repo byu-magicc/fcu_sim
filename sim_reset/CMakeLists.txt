@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_msgs
   roscpp
   rospy
+  relative_nav_msgs
 )
 
 catkin_package()

@@ -35,15 +35,6 @@
     <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
   </xacro:if>
 
-  <!-- Publish Global State and Mocap for Relative Nav -->
-  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/global_state_plugin.xacro"/>
-  <xacro:global_state_publisher 
-    namespace="" 
-    parent_link="${namespace}/base_link" 
-    mocap_topic="mocap"
-    global_state_topic="global_state"
-    global_state_suffix=""/>
-
   <!-- Mount an IMU. -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/imu.xacro"/>
   <xacro:IMU_ADIS16448 
@@ -69,7 +60,7 @@
   <xacro:hokuyo_UTM-30LX
     namespace=""
     parent_link="${namespace}/base_link"
-    visualize="false"/>
+    visualize="true"/>
 
   <!-- Instantiate a logger - haven't yet tried this, but left functionality just in case -->
   <xacro:if value="$(arg enable_logging)">

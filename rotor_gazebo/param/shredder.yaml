@@ -14,8 +14,8 @@ rotor_configuration:
   '5': {angle: -1.0472, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction: -1.0, max_rotor_speed: 1500.0}
 
 control_gains: {
-kp_roll: 0.45,  ki_roll: 0.0,  kd_roll: 0.3,
-kp_pitch: 0.6, ki_pitch: 0.0, kd_pitch: 0.5,
+kp_roll: 0.4,  ki_roll: 0.0,  kd_roll: 0.3,
+kp_pitch: 0.4, ki_pitch: 0.0, kd_pitch: 0.3,
 kp_yaw: 0.75,    ki_yaw: 0.0,   kd_yaw: 0.5 }
 
 

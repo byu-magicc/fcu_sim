@@ -5,7 +5,7 @@
   <arg name="log_file"            default="$(arg mav_name)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find rotor_gazebo)/worlds/basic.world"/>
+    <arg name="world_name" value="$(find rotor_gazebo)/worlds/powerplant.world"/>
     <arg name="paused" value="false"/>
     <!-- <arg name="gui" value="false"/> -->
   </include>
@@ -24,7 +24,7 @@
     <param name="deadzone" value="0.12"/>
     <param name="autorepeat_rate" value="20"/>
   </node>
-  <node name="sim_reset" pkg="sim_reset" type="sim_reset_node"/>
+  
   <group ns="$(arg mav_name)">
 <!--     <node name="rotor_sim_joy" pkg="rotor_sim_joy" type="rotor_sim_joy" >
       <remap from="joy" to="/joy"/>
@@ -35,17 +35,10 @@
     </node>
   </group>
 
-  <!-- FPV Image View -->
-  <node name="rgb_image" pkg="image_view" type="image_view">
-    <remap from="image" to="/camera/rgb/image_raw"/>
-  </node>
-  <node name="depth_image" pkg="image_view" type="image_view">
-    <remap from="image" to="/camera/depth/image_raw"/>
-  </node>
-
   <!-- Truth -->
   <node name="truth" pkg="rotor_estimator" type="truth">
     <param name="use_vo_keyframes" value="true"/>
+    <remap from="pose" to="shredder/ground_truth/pose_with_covariance"/>
   </node>
 
   <!--Control-->
@@ -59,8 +52,8 @@
 
   <!-- Visualization -->
   <node name="rqt_graph" pkg="rqt_graph" type="rqt_graph"/>
-  <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot" args="/relative_state/transform/translation"/>
-
+  <!-- <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot" args="/relative_state/velocity"/> -->
+  <node name="map_rviz" pkg="rviz" type="rviz" args="-d /home/iman/.rviz/Simulator.rviz" />
 
 
 

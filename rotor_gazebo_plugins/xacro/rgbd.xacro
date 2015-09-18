@@ -19,7 +19,7 @@
       image_camera_info_topic="/camera/rgb/camera_info"
       depth_camera_info_topic="/camera/depth/camera_info"
       pointcloud_topic="/camera/pointcloud">
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0.127 0 -0.0889" rpy="0 0 0" /> <!-- for shredder -->
     </xacro:depth_camera>
   </xacro:macro>
 
@@ -40,7 +40,7 @@
             *origin">
     <link name="${namespace}/camera_link">
       <collision>
-        <origin xyz="0 0 0" rpy="0 0 0" />
+        <xacro:insert_block name="origin" />
         <geometry>
           <cylinder length="0.01" radius="0.007" />
         </geometry>
