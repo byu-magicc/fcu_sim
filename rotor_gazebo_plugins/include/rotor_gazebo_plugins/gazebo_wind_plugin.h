@@ -45,7 +45,6 @@ static constexpr double kDefaultWindGustForceVariance = 0.0;
 static constexpr double kDefaultWindGustStart = 10.0;
 static constexpr double kDefaultWindGustDuration = 0.0;
 
-static const math::Vector3 kDefaultWindDirection = math::Vector3(1, 0, 0);
 static const math::Vector3 kDefaultWindGustDirection = math::Vector3(0, 1, 0);
 
 
@@ -61,7 +60,12 @@ class GazeboWindPlugin : public ModelPlugin {
         wind_force_variance_(kDefaultWindForceVariance),
         wind_gust_force_mean_(kDefaultWindGustForceMean),
         wind_gust_force_variance_(kDefaultWindGustForceVariance),
-        wind_direction_(kDefaultWindDirection),
+        wind_x(0),
+        wind_y(0),
+        wind_z(0),
+        wind_strength(0),
+        wind_change_delay(0),
+        wind_change_value(0),
         wind_gust_direction_(kDefaultWindGustDirection),
         frame_id_(kDefaultFrameId),
         link_name_(kDefaultLinkName),
@@ -97,9 +101,16 @@ class GazeboWindPlugin : public ModelPlugin {
   double wind_force_variance_;
   double wind_gust_force_mean_;
   double wind_gust_force_variance_;
+  double wind_x;
+  double wind_y;
+  double wind_z;
+  double wind_strength;
+
+  int wind_change_delay;
+  int wind_change_value;
 
   math::Vector3 xyz_offset_;
-  math::Vector3 wind_direction_;
+  math::Vector3 wind_direction;
   math::Vector3 wind_gust_direction_;
 
   common::Time wind_gust_end_;

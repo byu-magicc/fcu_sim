@@ -20,8 +20,8 @@
 
 
 #include "rotor_gazebo_plugins/gazebo_wind_plugin.h"
-
 #include <geometry_msgs/WrenchStamped.h>
+#include <chrono>
 
 namespace gazebo {
 
@@ -32,7 +32,6 @@ GazeboWindPlugin::~GazeboWindPlugin() {
     delete node_handle_;
   }
 }
-;
 
 void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Store the pointer to the model.
@@ -56,10 +55,11 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   getSdfParam<std::string>(_sdf, "windPubTopic", wind_pub_topic_, "/" + namespace_ + wind_pub_topic_);
   getSdfParam<std::string>(_sdf, "frameId", frame_id_, frame_id_);
   getSdfParam<std::string>(_sdf, "linkName", link_name_, link_name_);
+
   // Get the wind params from SDF.
   getSdfParam<double>(_sdf, "windForceMean", wind_force_mean_, wind_force_mean_);
   getSdfParam<double>(_sdf, "windForceVariance", wind_force_variance_, wind_force_variance_);
-  getSdfParam<math::Vector3>(_sdf, "windDirection", wind_direction_, wind_direction_);
+
   // Get the wind gust params from SDF.
   getSdfParam<double>(_sdf, "windGustStart", wind_gust_start, wind_gust_start);
   getSdfParam<double>(_sdf, "windGustDuration", wind_gust_duration, wind_gust_duration);
@@ -67,7 +67,6 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   getSdfParam<double>(_sdf, "windGustForceVariance", wind_gust_force_variance_, wind_gust_force_variance_);
   getSdfParam<math::Vector3>(_sdf, "windGustDirection", wind_gust_direction_, wind_gust_direction_);
 
-  wind_direction_.Normalize();
   wind_gust_direction_.Normalize();
   wind_gust_start_ = common::Time(wind_gust_start);
   wind_gust_end_ = common::Time(wind_gust_start + wind_gust_duration);
@@ -89,16 +88,46 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // Get the current simulation time.
   common::Time now = world_->GetSimTime();
 
-  // Calculate the wind force.
-  double wind_strength = wind_force_mean_;
-  math::Vector3 wind = wind_strength * wind_direction_;
-  // Apply a force from the constant wind to the link.
+  // Establish Random Number Generator
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::default_random_engine generator (seed);
+  std::uniform_real_distribution<double> direction_distribution(-1,1);
+  std::normal_distribution<double> force_distribution(wind_force_mean_,sqrt(wind_force_variance_));
+  std::normal_distribution<double> gust_force_distribution(wind_gust_force_mean_,sqrt(wind_gust_force_variance_));
+  std::normal_distribution<double> wind_change_distribution(1000,500);
+
+  // Calculate the wind force
+
+
+  if (wind_change_delay==wind_change_value)
+  {
+      wind_strength = force_distribution(generator);
+      wind_x = direction_distribution(generator);
+      wind_y = direction_distribution(generator);
+      wind_z = direction_distribution(generator);
+      wind_change_value = ceil(abs(wind_change_distribution(generator)));
+      wind_change_delay=0;
+  }
+  else
+  {
+      wind_change_delay++;
+  }
+
+  //Vary the wind direction
+
+  wind_direction={wind_x, wind_y, wind_z};
+  wind_direction.Normalize();
+
+  math::Vector3 wind = wind_strength * wind_direction;
+  // Apply a force from the wind to the link.
   link_->AddForceAtRelativePosition(wind, xyz_offset_);
+
+  //Wind Gust
 
   math::Vector3 wind_gust(0, 0, 0);
   // Calculate the wind gust force.
   if (now >= wind_gust_start_ && now < wind_gust_end_) {
-    double wind_gust_strength = wind_gust_force_mean_;
+    double wind_gust_strength = gust_force_distribution(generator);
     wind_gust = wind_gust_strength * wind_gust_direction_;
     // Apply a force from the wind gust to the link.
     link_->AddForceAtRelativePosition(wind_gust, xyz_offset_);

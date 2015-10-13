@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+  <!-- Wind Parameters -->
+  <xacro:macro 
+    name="wind_param" 
+    params="namespace link_name wind_pub_topic">
+    <xacro:wind_plugin_macro
+      namespace="${namespace}"
+      link_name="${link_name}"
+      wind_pub_topic="${wind_pub_topic}"
+      frame_id="world"
+      xyz_offset="0 0 0"
+      wind_force_mean="0"
+      wind_force_variance="3"
+      wind_gust_start="300"
+      wind_gust_duration="5"
+      wind_gust_force_mean="0"
+      wind_gust_force_variance="1"
+      wind_gust_direction="0 1 0">
+    </xacro:wind_plugin_macro>
+  </xacro:macro>
+
+  <xacro:macro name="wind_plugin_macro"
+  params="namespace link_name wind_pub_topic frame_id xyz_offset 
+          wind_force_mean wind_force_variance
+          wind_gust_start wind_gust_duration wind_gust_force_mean
+          wind_gust_force_variance wind_gust_direction">
+    <gazebo>
+      <plugin filename="librotor_gazebo_wind_plugin.so" name="gazebo_wind_plugin">
+        <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
+        <xyzOffset>${xyz_offset}</xyzOffset> <!-- (Vector3, required): -->
+        <windPubTopic>${wind_pub_topic}</windPubTopic>
+        <frameId>${frame_id}</frameId>
+        <linkName>${link_name}</linkName>
+        <windForceMean>${wind_force_mean}</windForceMean>
+        <windForceVariance>${wind_force_variance}</windForceVariance>
+        <windGustStart>${wind_gust_start}</windGustStart>
+        <windGustDuration>${wind_gust_duration}</windGustDuration>
+        <windGustForceMean>${wind_gust_force_mean}</windGustForceMean>
+        <windGustForceVariance>${wind_gust_force_variance}</windGustForceVariance>
+        <windGustDirection>${wind_gust_direction}</windGustDirection>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+</robot>

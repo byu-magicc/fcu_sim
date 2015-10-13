@@ -10,6 +10,7 @@
   <arg name="enable_logging" default="false"/>
   <arg name="enable_ground_truth" default="true"/>
   <arg name="log_file" default="$(arg mav_name)"/>
+  <arg name="enable_wind" default="true"/>
 
   <!-- send the robot XML to param server -->
   <param name="robot_description" command="
