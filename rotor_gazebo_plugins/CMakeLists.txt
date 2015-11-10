@@ -51,6 +51,12 @@ add_library(rotor_gazebo_motor_model
 target_link_libraries(rotor_gazebo_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(rotor_gazebo_motor_model ${catkin_EXPORTED_TARGETS})
 
+#add_library(rotor_gazebo_aircraft_forces_and_moments_plugin
+#  src/gazebo_aircraft_forces_and_moments.cpp
+#  include/rotor_gazebo_plugins/gazebo_aircraft_forces_and_moments.h)
+#target_link_libraries(rotor_gazebo_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+#add_dependencies(rotor_gazebo_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
+
 add_library(rotor_gazebo_odometry_plugin 
   src/gazebo_odometry_plugin.cpp
   include/rotor_gazebo_plugins/gazebo_odometry_plugin.h)

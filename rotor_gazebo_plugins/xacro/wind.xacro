@@ -12,12 +12,12 @@
       wind_pub_topic="${wind_pub_topic}"
       frame_id="world"
       xyz_offset="0 0 0"
-      wind_force_mean="0"
-      wind_force_variance="3"
-      wind_gust_start="300"
+      wind_force_mean="0.5"
+      wind_force_variance="0.5"
+      wind_gust_start="6"
       wind_gust_duration="5"
-      wind_gust_force_mean="0"
-      wind_gust_force_variance="1"
+      wind_gust_force_mean="0.5"
+      wind_gust_force_variance="0.5"
       wind_gust_direction="0 1 0">
     </xacro:wind_plugin_macro>
   </xacro:macro>

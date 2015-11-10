@@ -114,7 +114,6 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   }
 
   //Vary the wind direction
-
   wind_direction={wind_x, wind_y, wind_z};
   wind_direction.Normalize();
 

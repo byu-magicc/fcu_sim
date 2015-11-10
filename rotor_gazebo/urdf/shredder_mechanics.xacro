@@ -67,7 +67,7 @@
   </xacro:multirotor_base_macro>
 
   <!-- Set Up the Rotors -->
-  <xacro:include filename="$(find rotor_gazebo)/urdf/rotor.xacro" />
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/rotor.xacro" />
   <xacro:vertical_rotor
     robot_namespace="${namespace}"
     suffix="front"
