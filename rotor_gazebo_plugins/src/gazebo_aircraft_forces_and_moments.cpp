@@ -20,9 +20,15 @@
 
 #include "rotor_gazebo_plugins/gazebo_aircraft_forces_and_moments.h"
 
-namespace gazebo {
+namespace gazebo
+{
 
-GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments() {
+GazeboAircraftForcesAndMoments::GazeboAircraftForcesAndMoments() :
+  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
+
+
+GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments()
+{
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
     node_handle_->shutdown();
@@ -30,18 +36,25 @@ GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments() {
   }
 }
 
-void GazeboAircraftForcesAndMoments::InitializeParams() {}
 
-void GazeboAircraftForcesAndMoments::Publish() {
-  turning_velocity_msg_.data = joint_->GetVelocity(0);
-  motor_velocity_pub_.publish(turning_velocity_msg_);
+void GazeboAircraftForcesAndMoments::SendForces()
+{
+  // apply the forces and torques to the joint
+  link_->AddRelativeForce(math::Vector3(forces_.Fx, forces_.Fy, forces_.Fz));
+  link_->AddRelativeTorque(math::Vector3(forces_.l, forces_.m, forces_.n));
 }
 
-void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+
+void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+{
   model_ = _model;
+  world_ = model_->GetWorld();
 
   namespace_.clear();
 
+  /*
+   * Connect the Plugin to the Robot and Save pointers to the various elements in the simulation
+   */
   if (_sdf->HasElement("robotNamespace"))
     namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>();
   else
@@ -51,131 +64,170 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
   if (_sdf->HasElement("jointName"))
     joint_name_ = _sdf->GetElement("jointName")->Get<std::string>();
   else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a jointName, where the rotor is attached.\n";
-  // Get the pointer to the joint.
+    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a jointName, where the forces and moments are attached.\n";
   joint_ = model_->GetJoint(joint_name_);
   if (joint_ == NULL)
     gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified joint \"" << joint_name_ << "\".");
-
-
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the rotor.\n";
+    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
     gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
-
-
-  if (_sdf->HasElement("motorNumber"))
-    motor_number_ = _sdf->GetElement("motorNumber")->Get<int>();
-  else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a motorNumber.\n";
-
-  if (_sdf->HasElement("turningDirection")) {
-    std::string turning_direction = _sdf->GetElement("turningDirection")->Get<std::string>();
-    if (turning_direction == "cw")
-      turning_direction_ = turning_direction::CW;
-    else if (turning_direction == "ccw")
-      turning_direction_ = turning_direction::CCW;
-    else
-      gzerr << "[gazebo_aircraft_forces_and_moments] Please only use 'cw' or 'ccw' as turningDirection.\n";
+  parent_link_ = world_->GetEntity(parent_frame_id_);
+  if (parent_link_ == NULL) {
+    gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified parent link \"" << parent_frame_id_ << "\".");
   }
-  else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a turning direction ('cw' or 'ccw').\n";
 
-  getSdfParam<std::string>(_sdf, "commandSubTopic", command_sub_topic_, command_sub_topic_);
-  getSdfParam<std::string>(_sdf, "windSpeedSubTopic", wind_speed_sub_topic_, wind_speed_sub_topic_);
-  getSdfParam<std::string>(_sdf, "motorSpeedPubTopic", motor_speed_pub_topic_,
-                           motor_speed_pub_topic_);
+  /* Load Params from Gazebo Server */
+  getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "gazebo/wind_speed");
+  getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "control_surface_deflection");
+  getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, "parent_frame_id");
 
-  getSdfParam<double>(_sdf, "rotorDragCoefficient", rotor_drag_coefficient_, rotor_drag_coefficient_);
-  getSdfParam<double>(_sdf, "rollingMomentCoefficient", rolling_moment_coefficient_,
-                      rolling_moment_coefficient_);
-  getSdfParam<double>(_sdf, "maxRotVelocity", max_rot_velocity_, max_rot_velocity_);
-  getSdfParam<double>(_sdf, "motorConstant", motor_constant_, motor_constant_);
-  getSdfParam<double>(_sdf, "momentConstant", moment_constant_, moment_constant_);
+  // physical parameters
+  getSdfParam<double>(_sdf, "mass", mass_, 13.5);
+  getSdfParam<double>(_sdf, "Jx", Jx_, 0.8244);
+  getSdfParam<double>(_sdf, "Jy", Jy_, 1.135);
+  getSdfParam<double>(_sdf, "Jz", Jz_, 1.759);
+  getSdfParam<double>(_sdf, "Jxz", Jxz_, .1204);
+  getSdfParam<double>(_sdf, "rho", rho_, 1.2682);
 
-  getSdfParam<double>(_sdf, "timeConstantUp", time_constant_up_, time_constant_up_);
-  getSdfParam<double>(_sdf, "timeConstantDown", time_constant_down_, time_constant_down_);
-  getSdfParam<double>(_sdf, "rotorVelocitySlowdownSim", rotor_velocity_slowdown_sim_, 10);
+  // Wing Geometry
+  getSdfParam<double>(_sdf, "wing_s", wing_.S, 0.55);
+  getSdfParam<double>(_sdf, "wing_b", wing_.b, 2.8956);
+  getSdfParam<double>(_sdf, "wing_c", wing_.c, 0.18994);
+  getSdfParam<double>(_sdf, "wing_M", wing_.M, 0.55);
+  getSdfParam<double>(_sdf, "wing_epsilon", wing_.epsilon, 2.8956);
+  getSdfParam<double>(_sdf, "wing_alpha0", wing_.alpha0, 0.18994);
 
-  // Set the maximumForce on the joint. This is deprecated from V5 on, and the joint won't move.
-#if GAZEBO_MAJOR_VERSION < 5
-  joint_->SetMaxForce(0, max_force_);
-#endif
-  // Listen to the update event. This event is broadcast every
-  // simulation iteration.
+  // Propeller Coefficients
+  getSdfParam<double>(_sdf, "k_motor",  prop_.k_motor, 80.0);
+  getSdfParam<double>(_sdf, "k_T_P",  prop_.k_T_P, 0.0);
+  getSdfParam<double>(_sdf, "k_Omega",  prop_.k_Omega, 0.0);
+  getSdfParam<double>(_sdf, "prop_e",  prop_.e, 0.9);
+  getSdfParam<double>(_sdf, "prop_S",  prop_.S, 0.202);
+  getSdfParam<double>(_sdf, "prop_C",  prop_.C, 1.);
+
+  // Lift Params
+  getSdfParam<double>(_sdf, "C_L_O", CL_.O, 0.28);
+  getSdfParam<double>(_sdf, "C_L_alpha", CL_.alpha, 3.45);
+  getSdfParam<double>(_sdf, "C_L_beta", CL_.beta, 0.0);
+  getSdfParam<double>(_sdf, "C_L_p", CL_.p, 0.0);
+  getSdfParam<double>(_sdf, "C_L_q", CL_.q, 0.0);
+  getSdfParam<double>(_sdf, "C_L_r", CL_.r, 0.0);
+  getSdfParam<double>(_sdf, "C_L_delta_a", CL_.delta_a, 0.0);
+  getSdfParam<double>(_sdf, "C_L_delta_e", CL_.delta_e, -0.36);
+  getSdfParam<double>(_sdf, "C_L_delta_r", CL_.delta_r, 0.0);
+
+  // Drag Params
+  getSdfParam<double>(_sdf, "C_D_O", CD_.O, 0.03);
+  getSdfParam<double>(_sdf, "C_D_alpha", CD_.alpha, 0.30);
+  getSdfParam<double>(_sdf, "C_D_beta", CD_.beta, 0.0);
+  getSdfParam<double>(_sdf, "C_D_p", CD_.p, 0.0437);
+  getSdfParam<double>(_sdf, "C_D_q", CD_.q, 0.0);
+  getSdfParam<double>(_sdf, "C_D_r", CD_.r, 0.0);
+  getSdfParam<double>(_sdf, "C_D_delta_a", CD_.delta_a, 0.0);
+  getSdfParam<double>(_sdf, "C_D_delta_e", CD_.delta_e, 0.0);
+  getSdfParam<double>(_sdf, "C_D_delta_r", CD_.delta_r, 0.0);
+
+  // ell Params (x axis moment)
+  getSdfParam<double>(_sdf, "C_ell_O", Cell_.O, 0.0);
+  getSdfParam<double>(_sdf, "C_ell_alpha", Cell_.alpha, 0.00);
+  getSdfParam<double>(_sdf, "C_ell_beta", Cell_.beta, -0.12);
+  getSdfParam<double>(_sdf, "C_ell_p", Cell_.p, -0.26);
+  getSdfParam<double>(_sdf, "C_ell_q", Cell_.q, 0.0);
+  getSdfParam<double>(_sdf, "C_ell_r", Cell_.r, 0.14);
+  getSdfParam<double>(_sdf, "C_ell_delta_a", Cell_.delta_a, 0.08);
+  getSdfParam<double>(_sdf, "C_ell_delta_e", Cell_.delta_e, 0.0);
+  getSdfParam<double>(_sdf, "C_ell_delta_r", Cell_.delta_r, 0.105);
+
+  // m Params (y axis moment)
+  getSdfParam<double>(_sdf, "C_m_O", Cm_.O, -0.02338);
+  getSdfParam<double>(_sdf, "C_m_alpha", Cm_.alpha, -0.38);
+  getSdfParam<double>(_sdf, "C_m_beta", Cm_.beta, 0.0);
+  getSdfParam<double>(_sdf, "C_m_p", Cm_.p, 0.0);
+  getSdfParam<double>(_sdf, "C_m_q", Cm_.q, -3.6);
+  getSdfParam<double>(_sdf, "C_m_r", Cm_.r, 0.0);
+  getSdfParam<double>(_sdf, "C_m_delta_a", Cm_.delta_a, 0.0);
+  getSdfParam<double>(_sdf, "C_m_delta_e", Cm_.delta_e, -0.5);
+  getSdfParam<double>(_sdf, "C_m_delta_r", Cm_.delta_r, 0.0);
+
+  // n Params (z axis moment)
+  getSdfParam<double>(_sdf, "C_n_O", Cn_.O, 0.0);
+  getSdfParam<double>(_sdf, "C_n_alpha", Cn_.alpha, 0.0);
+  getSdfParam<double>(_sdf, "C_n_beta", Cn_.beta, 0.25);
+  getSdfParam<double>(_sdf, "C_n_p", Cn_.p, 0.022);
+  getSdfParam<double>(_sdf, "C_n_q", Cn_.q, 0.0);
+  getSdfParam<double>(_sdf, "C_n_r", Cn_.r, -0.35);
+  getSdfParam<double>(_sdf, "C_n_delta_a", Cn_.delta_a, 0.06);
+  getSdfParam<double>(_sdf, "C_n_delta_e", Cn_.delta_e, 0.0);
+  getSdfParam<double>(_sdf, "C_n_delta_r", Cn_.delta_r, -0.032);
+
+  // Y Params (Sideslip Forces)
+  getSdfParam<double>(_sdf, "C_Y_O", CY_.O, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_alpha", CY_.alpha, 0.00);
+  getSdfParam<double>(_sdf, "C_Y_beta", CY_.beta, -0.98);
+  getSdfParam<double>(_sdf, "C_Y_p", CY_.p, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_q", CY_.q, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_r", CY_.r, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_delta_a", CY_.delta_a, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_delta_e", CY_.delta_e, 0.0);
+  getSdfParam<double>(_sdf, "C_Y_delta_r", CY_.delta_r, -0.017);
+
+
+  // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAircraftForcesAndMoments::OnUpdate, this, _1));
 
-  command_sub_ = node_handle_->subscribe(command_sub_topic_, 1, &GazeboAircraftForcesAndMoments::VelocityCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_sub_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
-  motor_velocity_pub_ = node_handle_->advertise<std_msgs::Float32>(motor_speed_pub_topic_, 10);
-
-  // Create the first order filter.
-  rotor_velocity_filter_.reset(new FirstOrderFilter<double>(time_constant_up_, time_constant_down_, ref_motor_rot_vel_));
+  // Connect Subscribers
+  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
 }
 
-// This gets called by the world update start event.
+// This gets called by the world update event.
 void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
-  Publish();
+  SendForces();
 }
 
-void GazeboAircraftForcesAndMoments::VelocityCallback(const rotor_gazebo::ActuatorsConstPtr& rot_velocities) {
-  ROS_ASSERT_MSG(rot_velocities->angular_velocities.size() > motor_number_,
-                 "You tried to access index %d of the MotorSpeed message array which is of size %d.",
-                 (int)motor_number_, (int)rot_velocities->angular_velocities.size());
-  ref_motor_rot_vel_ = std::min(rot_velocities->angular_velocities[motor_number_], static_cast<double>(max_rot_velocity_));
-}
+void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
+{
+  /* Get state information from Gazebo                          *
+   * C denotes child frame, P parent frame, and W world frame.  *
+   * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
+  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
+  double pn = -W_pose_W_C.pos.y; // We should check to make sure that this is right
+  double pe = W_pose_W_C.pos.x;
+  double pd = -W_pose_W_C.pos.z;
+  math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
+  double phi = euler_angles.x;
+  double theta = euler_angles.y;
+  double psi = euler_angles.z;
+  math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
+  double u = C_linear_velocity_W_C.x;
+  double v = C_linear_velocity_W_C.y;
+  double w = C_linear_velocity_W_C.z;
+  math::Vector3 C_angular_velocity_W_C = link_->GetRelativeAngularVel();
+  double p = C_angular_velocity_W_C.x;
+  double q = C_angular_velocity_W_C.y;
+  double r = C_angular_velocity_W_C.z;
 
-void GazeboAircraftForcesAndMoments::WindSpeedCallback(const rotor_gazebo::WindSpeedConstPtr& wind_speed) {
-  // TODO(burrimi): Transform velocity to world frame if frame_id is set to something else.
-  wind_speed_W_.x = wind_speed->velocity.x;
-  wind_speed_W_.y = wind_speed->velocity.y;
-  wind_speed_W_.z = wind_speed->velocity.z;
-}
 
-void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments() {
-  motor_rot_vel_ = joint_->GetVelocity(0);
-  if (motor_rot_vel_ / (2 * M_PI) > 1 / (2 * sampling_time_)) {
-    gzerr << "Aliasing on motor [" << motor_number_ << "] might occur. Consider making smaller simulation time steps or raising the rotor_velocity_slowdown_sim_ param.\n";
-  }
-  double real_motor_velocity = motor_rot_vel_ * rotor_velocity_slowdown_sim_;
-  double force = real_motor_velocity * real_motor_velocity * motor_constant_;
-  // Apply a force to the link.
-  link_->AddRelativeForce(math::Vector3(0, 0, force));
 
-  // Forces from Philppe Martin's and Erwan Salaün's
-  // 2010 IEEE Conference on Robotics and Automation paper
-  // The True Role of Accelerometer Feedback in Quadrotor Control
-  // - \omega * \lambda_1 * V_A^{\perp}
-  math::Vector3 joint_axis = joint_->GetGlobalAxis(0);
-  math::Vector3 body_velocity_W = link_->GetWorldLinearVel();
-  math::Vector3 relative_wind_velocity_W = body_velocity_W - wind_speed_W_;
-  math::Vector3 body_velocity_perpendicular = relative_wind_velocity_W - (relative_wind_velocity_W.Dot(joint_axis) * joint_axis);
-  math::Vector3 air_drag = -std::abs(real_motor_velocity) * rotor_drag_coefficient_ * body_velocity_perpendicular;
-  // Apply air_drag to link.
-  link_->AddForce(air_drag);
-  // Moments
-  // Getting the parent link, such that the resulting torques can be applied to it.
-  physics::Link_V parent_links = link_->GetParentJointsLinks();
-  // The tansformation from the parent_link to the link_.
-  math::Pose pose_difference = link_->GetWorldCoGPose() - parent_links.at(0)->GetWorldCoGPose();
-  math::Vector3 drag_torque(0, 0, -turning_direction_ * force * moment_constant_);
-  // Transforming the drag torque into the parent frame to handle arbitrary rotor orientations.
-  math::Vector3 drag_torque_parent_frame = pose_difference.rot.RotateVector(drag_torque);
-  parent_links.at(0)->AddRelativeTorque(drag_torque_parent_frame);
 
-  math::Vector3 rolling_moment;
-  // - \omega * \mu_1 * V_A^{\perp}
-  rolling_moment = -std::abs(real_motor_velocity) * rolling_moment_coefficient_ * body_velocity_perpendicular;
-  parent_links.at(0)->AddTorque(rolling_moment);
-  // Apply the filter on the motor's velocity.
-  ref_motor_rot_vel_ = rotor_velocity_filter_->updateFilter(ref_motor_rot_vel_, sampling_time_);
-  joint_->SetVelocity(0, turning_direction_ * ref_motor_rot_vel_ / rotor_velocity_slowdown_sim_);
+
+  /*
+   * Pack Forces and Moments into the forces_ member for publishing in
+   * SendForces()
+   */
+  forces_.Fx = 0.0;
+  forces_.Fy = 0.0;
+  forces_.Fz = 0.0;
+  forces_.l = 0.0;
+  forces_.m = 0.0;
+  forces_.n = 0.0;
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftForcesAndMoments);

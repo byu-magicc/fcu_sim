@@ -35,102 +35,134 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <rotor_gazebo/WindSpeed.h>
+#include <rotor_gazebo/FWCommand.h>
 #include <std_msgs/Float32.h>
 
 #include "rotor_gazebo_plugins/common.h"
 #include "rotor_gazebo_plugins/motor_model.hpp"
 
-namespace turning_direction {
-const static int CCW = 1;
-const static int CW = -1;
-}
-
 namespace gazebo {
-// Default values
-static const std::string kDefaultCommandSubTopic = "gazebo/command/motor_speed";
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
-// Set the max_force_ to the max double value. The limitations get handled by the FirstOrderFilter.
-static constexpr double kDefaultMaxForce = std::numeric_limits<double>::max();
-static constexpr double kDefaultMotorConstant = 8.54858e-06;
-static constexpr double kDefaultMomentConstant = 0.016;
-static constexpr double kDefaultTimeConstantUp = 1.0 / 80.0;
-static constexpr double kDefaultTimeConstantDown = 1.0 / 40.0;
-static constexpr double kDefaulMaxRotVelocity = 838.0;
-static constexpr double kDefaultRotorDragCoefficient = 1.0e-4;
-static constexpr double kDefaultRollingMomentCoefficient = 1.0e-6;
 
-class GazeboAircraftForcesAndMoments : public AircraftForcesAndMoments, public ModelPlugin {
+class GazeboAircraftForcesAndMoments : public ModelPlugin {
  public:
-  GazeboAircraftForcesAndMoments()
-      : ModelPlugin(),
-        AircraftForcesAndMoments(),
-        command_sub_topic_(kDefaultCommandSubTopic),
-        wind_speed_sub_topic_(kDefaultWindSpeedSubTopic),
-        motor_speed_sub_topic_(rotor_gazebo::default_topics::MOTOR_MEASUREMENT),
-        motor_number_(0),
-        turning_direction_(turning_direction::CW),
-        max_force_(kDefaultMaxForce),
-        max_rot_velocity_(kDefaulMaxRotVelocity),
-        moment_constant_(kDefaultMomentConstant),
-        motor_constant_(kDefaultMotorConstant),
-        ref_motor_rot_vel_(0.0),
-        rolling_moment_coefficient_(kDefaultRollingMomentCoefficient),
-        rotor_drag_coefficient_(kDefaultRotorDragCoefficient),
-        rotor_velocity_slowdown_sim_(kDefaultRotorVelocitySlowdownSim),
-        time_constant_down_(kDefaultTimeConstantDown),
-        time_constant_up_(kDefaultTimeConstantUp),
-        node_handle_(nullptr),
-        wind_speed_W_(0, 0, 0) {}
+  GazeboAircraftForcesAndMoments();
 
-  virtual ~GazeboAircraftForcesAndMoments();
+  ~GazeboAircraftForcesAndMoments();
 
-  virtual void InitializeParams();
-  virtual void Publish();
+  void InitializeParams();
+  void SendForces();
+  
 
  protected:
-  virtual void UpdateForcesAndMoments();
-  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-  virtual void OnUpdate(const common::UpdateInfo & /*_info*/);
+  void UpdateForcesAndMoments();
+  void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+  void OnUpdate(const common::UpdateInfo & /*_info*/);
 
  private:
-  std::string command_sub_topic_;
-  std::string wind_speed_sub_topic_;
+  std::string command_topic_;
+  std::string wind_speed_topic_;
   std::string joint_name_;
   std::string link_name_;
+  std::string parent_frame_id_;
   std::string motor_speed_pub_topic_;
   std::string namespace_;
 
-  int motor_number_;
-  int turning_direction_;
+  physics::WorldPtr world_;
+  physics::ModelPtr model_;
+  physics::LinkPtr link_;
+  physics::JointPtr joint_;
+  physics::EntityPtr parent_link_;
+  event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
-  double max_force_;
-  double max_rot_velocity_;
-  double moment_constant_;
-  double motor_constant_;
-  double ref_motor_rot_vel_;
-  double rolling_moment_coefficient_;
-  double rotor_drag_coefficient_;
-  double rotor_velocity_slowdown_sim_;
-  double time_constant_down_;
-  double time_constant_up_;
+  // physical parameters
+  double mass_;
+  double Jx_;
+  double Jy_;
+  double Jz_;
+  double Jxz_;
+  double rho_;
+
+  // aerodynamic coefficients
+  struct WingCoeff{
+    double S;
+    double b;
+    double c;
+    double M;
+    double epsilon;
+    double alpha0;
+  } wing_;
+
+  // Propeller Coefficients
+  struct PropCoeff{
+    double k_motor;
+    double k_T_P;
+    double k_Omega;
+    double e;
+    double S;
+    double C;
+  } prop_;
+
+  // Lift Coefficients
+  struct LiftCoeff{
+    double O;
+    double alpha;
+    double beta;
+    double p;
+    double q;
+    double r;
+    double delta_a;
+    double delta_e;
+    double delta_r;
+  };
+
+  LiftCoeff CL_;
+  LiftCoeff CD_;
+  LiftCoeff Cm_;
+  LiftCoeff CY_;
+  LiftCoeff Cell_;
+  LiftCoeff Cn_;
+
+  // actuators
+  struct Actuators{
+    double e;
+    double a;
+    double r;
+    double t;
+  } delta_;
+
+    // wind
+  struct Wind{
+    double N;
+    double E;
+    double D;
+  } wind_;
+
+  // container for forces
+  struct ForcesAndTorques{
+    double Fx;
+    double Fy;
+    double Fz;
+    double l;
+    double m;
+    double n;
+  } forces_;
+
+  // Time Counters
+  double sampling_time_;
+  double prev_sim_time_;
 
   ros::NodeHandle* node_handle_;
-  ros::Publisher motor_velocity_pub_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
 
-  physics::ModelPtr model_;
-  physics::JointPtr joint_;
-  physics::LinkPtr link_;
-  /// \brief Pointer to the update event connection.
-  event::ConnectionPtr updateConnection_;
+
 
   boost::thread callback_queue_thread_;
   void QueueThread();
-  std_msgs::Float32 turning_velocity_msg_;
-  void VelocityCallback(const rotor_gazebo::ActuatorsConstPtr& rot_velocities);
   void WindSpeedCallback(const rotor_gazebo::WindSpeedConstPtr& wind_speed);
+  void CommandCallback(const rotor_gazebo::FWCommandPtr& msg);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;
