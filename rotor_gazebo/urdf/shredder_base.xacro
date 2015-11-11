@@ -67,7 +67,7 @@
   <xacro:hokuyo_UTM-30LX
     namespace=""
     parent_link="${namespace}/base_link"
-    visualize="true"/>
+    visualize="false"/>
 
   <!-- Instantiate a logger - haven't yet tried this, but left functionality just in case -->
   <xacro:if value="$(arg enable_logging)">
