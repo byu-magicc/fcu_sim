@@ -124,6 +124,7 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
   LiftCoeff Cell_;
   LiftCoeff Cn_;
 
+  // not constants
   // actuators
   struct Actuators{
     double e;
