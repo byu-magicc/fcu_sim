@@ -8,6 +8,10 @@
 #include <relative_nav_common/simple_pid.h>
 #include <tf/tf.h>
 #include <attitude_controller/multicopter.h>
+#include <attitude_controller/h_inf_controller.h>
+
+#define PID_CONTROL 0
+#define HINF_CONTROL 1
 
 namespace attitude_controller
 {
@@ -33,6 +37,9 @@ private:
   // Parameters
   std::string odometry_topic_, motor_speed_command_topic_, command_topic_;
 
+  // Controller Type
+  int controller_type_;
+
   // Class Variables
   double dt_;
   double time_of_last_control_;
@@ -40,29 +47,45 @@ private:
   // incoming commands
   double roll_c_;
   double pitch_c_;
-  double yaw_rate_c_;
+  double yaw_c_;
+  double phidot_c_;
+  double thetadot_c_;
+  double psidot_c_;
+  double phiddot_c_;
+  double thetaddot_c_;
+  double psiddot_c_;
   double thrust_c_;
 
   // current attitude
   double phi_;
   double theta_;
+  double psi_;
+  double p_;
+  double q_;
   double r_;
 
   // outgoing commands
   Eigen::Vector4d desired_forces_;
   Eigen::VectorXd rotor_velocities_;
 
+  // PID controllers
   relative_nav_common::SimplePID pid_roll_;
   relative_nav_common::SimplePID pid_pitch_;
   relative_nav_common::SimplePID pid_yaw_rate_;
+
+  // H-Infinity Controller
+  HInfController h_inf_;
+
+  // Multicopter Configuration
   multicopter multicopter_;
-  Eigen::MatrixX4d forces_to_omegas_mapping_;
 
   // Functions
-  void updatePIDLoops();
+  Eigen::Vector4d updatePIDControl();
+  Eigen::Vector4d updateHInfControl();
   void calculateRotorVelocities();
   void calculateRotorMapping();
 
+  // Message Callbacks
   void odometryCallback(const nav_msgs::OdometryConstPtr &msg);
   void commandCallback(const relative_nav_msgs::CommandConstPtr& msg);
 };

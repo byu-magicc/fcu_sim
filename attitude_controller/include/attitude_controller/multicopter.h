@@ -80,7 +80,7 @@ private:
     allocation_matrix.resize(4, num_rotors);
     for(int i = 0; i<num_rotors; i++){
       allocation_matrix(0,i) = sin(rotors[i].angle) * rotors[i].radius * rotors[i].force_constant;
-      allocation_matrix(1,i) = -1.0*cos(rotors[i].angle) * rotors[i].radius * rotors[i].force_constant;
+      allocation_matrix(1,i) = cos(rotors[i].angle) * rotors[i].radius * rotors[i].force_constant;
       allocation_matrix(2,i) = -rotors[i].direction * rotors[i].moment_constant * rotors[i].force_constant;
       allocation_matrix(3,i) = rotors[i].force_constant;
     }

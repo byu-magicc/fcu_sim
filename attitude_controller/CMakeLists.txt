@@ -39,6 +39,8 @@ add_executable(attitude_controller_node
                 src/attitude_controller.cpp
                 include/attitude_controller/attitude_controller.h
                 include/attitude_controller/multicopter.h
+                src/h_inf_controller.cpp
+                include/attitude_controller/h_inf_controller.h
 )
 
 ## Add cmake target dependencies of the executable/library

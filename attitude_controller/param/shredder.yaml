@@ -1,0 +1,15 @@
+PID_gains: {
+  kp_roll: 0.4,  ki_roll: 0.0,  kd_roll: 0.3,
+  kp_pitch: 0.4, ki_pitch: 0.0, kd_pitch: 0.3,
+  kp_yaw: 0.5,  ki_yaw: 0.0,   kd_yaw: 0.05}
+
+HInf_gains: {
+  w1: 10.0,
+  w2: 3.0,
+  w3: 9.0,
+  wu: 1.5}
+
+controller_type: 1
+
+
+
