@@ -20,13 +20,11 @@
 -->
 
 <robot name="shredder" xmlns:xacro="http://ros.org/wiki/xacro">
-  <!-- Plugin Macro Locations -->
-  <xacro:include filename="$(find rotor_gazebo)/urdf/component_snippets.xacro" />
-
   <!-- Instantiate shredder mechanics -->
-  <xacro:include filename="$(find rotor_gazebo)/urdf/shredder_mechanics.xacro" />
+  <xacro:include filename="$(find rotor_gazebo)/urdf/shredder/shredder_mechanics.xacro" />
 
   <!-- Instantiate a controller for the motors. -->
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/controller_interface.xacro"/>
   <xacro:controller_plugin_macro namespace="${namespace}" imu_sub_topic="imu" />
 
   <!-- Enable Ground Truth - Used by attitude_controller -->
@@ -68,13 +66,5 @@
     namespace=""
     parent_link="${namespace}/base_link"
     visualize="false"/>
-
-  <!-- Instantiate a logger - haven't yet tried this, but left functionality just in case -->
-  <xacro:if value="$(arg enable_logging)">
-    <xacro:bag_plugin_macro
-      namespace=""
-      bag_file="$(arg log_file)"
-      rotor_velocity_slowdown_sim="${rotor_velocity_slowdown_sim}" />
-  </xacro:if>
 
 </robot>

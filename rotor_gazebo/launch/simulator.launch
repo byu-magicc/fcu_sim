@@ -19,7 +19,7 @@
   <!-- Spawn MAV -->
   <include file="$(find rotor_gazebo)/launch/spawn_mav.launch">
     <arg name="mav_name"            value="$(arg mav_name)" />
-    <arg name="model"               value="$(find rotor_gazebo)/urdf/$(arg mav_name)_base.xacro" />
+    <arg name="model"               value="$(find rotor_gazebo)/urdf/$(arg mav_name)/$(arg mav_name)_base.xacro" />
     <arg name="enable_logging"      value="$(arg enable_logging)" />
     <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
     <arg name="log_file"          value="$(arg log_file)"/>

@@ -84,6 +84,12 @@ add_library(rotor_gazebo_multirotor_base_plugin
 target_link_libraries(rotor_gazebo_multirotor_base_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(rotor_gazebo_multirotor_base_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(rotor_gazebo_controller_interface 
+  src/gazebo_controller_interface.cpp
+  include/rotor_gazebo_plugins/gazebo_controller_interface.h)
+target_link_libraries(rotor_gazebo_controller_interface ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(rotor_gazebo_controller_interface ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     rotor_gazebo_motor_model
@@ -92,6 +98,7 @@ install(
     rotor_gazebo_altimeter_plugin
     rotor_gazebo_wind_plugin
     rotor_gazebo_multirotor_base_plugin
+    rotor_gazebo_controller_interface 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

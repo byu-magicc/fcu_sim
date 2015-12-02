@@ -22,20 +22,6 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="pi" value="3.14159265359" />
 
-  <!-- Macro to add logging to a bag file. -->
-  <xacro:macro name="bag_plugin_macro"
-    params="namespace bag_file rotor_velocity_slowdown_sim">
-    <gazebo>
-      <plugin filename="librotor_gazebo_bag_plugin.so" name="rosbag">
-        <robotNamespace>${namespace}</robotNamespace>
-        <bagFileName>${bag_file}</bagFileName>
-        <linkName>${namespace}/base_link</linkName>
-        <frameId>${namespace}/base_link</frameId>
-        <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
-      </plugin>
-    </gazebo>
-  </xacro:macro>
-
   <!-- Macro to add a camera. -->
   <xacro:macro name="camera_macro"
     params="namespace parent_link camera_suffix frame_rate
@@ -235,18 +221,18 @@
   </xacro:macro>
 
   <!-- Macro to add the controller interface. -->
-  <xacro:macro name="controller_plugin_macro" params="namespace imu_sub_topic">
-    <gazebo>
-      <plugin name="controller_interface" filename="librotor_gazebo_controller_interface.so">
-        <robotNamespace>${namespace}</robotNamespace>
-        <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic>
-        <commandRateThrustSubTopic>command/rate</commandRateThrustSubTopic>
-        <commandMotorSpeedSubTopic>command/motor_speed</commandMotorSpeedSubTopic>
-        <imuSubTopic>${imu_sub_topic}</imuSubTopic>
-        <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic>
-      </plugin>
-    </gazebo>
-  </xacro:macro>
+  <!-- <xacro:macro name="controller_plugin_macro" params="namespace imu_sub_topic"> -->
+    <!-- <gazebo> -->
+      <!-- <plugin name="controller_interface" filename="librotor_gazebo_controller_interface.so"> -->
+        <!-- <robotNamespace>${namespace}</robotNamespace> -->
+        <!-- <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic> -->
+        <!-- <commandRateThrustSubTopic>command/rate</commandRateThrustSubTopic> -->
+        <!-- <commandMotorSpeedSubTopic>command/motor_speed</commandMotorSpeedSubTopic> -->
+        <!-- <imuSubTopic>${imu_sub_topic}</imuSubTopic> -->
+        <!-- <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic> -->
+      <!-- </plugin> -->
+    <!-- </gazebo> -->
+  <!-- </xacro:macro> -->
 
 
 
