@@ -3,18 +3,16 @@
   <version>2.0.1</version>
   <description>The rotor_gazebo_plugins package</description>
 
-  <maintainer email="fadri.furrer@mavt.ethz.ch">Fadri Furrer</maintainer>
+  <maintainer email="superjax08@gmail.com">James Jackson</maintainer>
 
   <author>Fadri Furrer</author>
   <author>Michael Burri</author>
   <author>Mina Kamel</author>
   <author>Janosch Nikolic</author>
   <author>Markus Achtelik</author>
+  <author>James Jackson</author>
 
   <license>ASL 2.0</license>
-
-  <url type="website">https://github.com/ethz-asl/rotors_simulator</url>
-  <url type="bugtracker">https://github.com/ethz-asl/rotors_simulator/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
