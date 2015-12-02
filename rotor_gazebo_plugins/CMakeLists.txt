@@ -11,8 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   geometry_msgs
   rotor_gazebo
-  octomap_msgs
-  octomap_ros
   rosbag
   roscpp
   rotor_gazebo
@@ -23,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen REQUIRED)
-find_package(octomap REQUIRED)
 find_package(gazebo REQUIRED)
 find_package(OpenCV REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
@@ -33,9 +30,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   LIBRARIES rotor_gazebo_motor_model rotor_gazebo_controller_interface
-  CATKIN_DEPENDS cv_bridge geometry_msgs rotor_gazebo octomap_msgs octomap_ros rosbag roscpp 
+  CATKIN_DEPENDS cv_bridge geometry_msgs rotor_gazebo rosbag roscpp
                  rotor_gazebo std_srvs tf relative_nav_msgs relative_nav_common
-  DEPENDS eigen gazebo octomap opencv
+  DEPENDS eigen gazebo opencv #octomap
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -75,35 +72,11 @@ add_library(rotor_gazebo_altimeter_plugin
 target_link_libraries(rotor_gazebo_altimeter_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(rotor_gazebo_altimeter_plugin ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_global_state_plugin 
-  src/gazebo_global_state_plugin.cpp
-  include/rotor_gazebo_plugins/gazebo_global_state_plugin.h)
-target_link_libraries(rotor_gazebo_global_state_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_global_state_plugin ${catkin_EXPORTED_TARGETS})
-
-add_library(rotor_gazebo_controller_interface 
-  src/gazebo_controller_interface.cpp
-  include/rotor_gazebo_plugins/gazebo_controller_interface.h)
-target_link_libraries(rotor_gazebo_controller_interface ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_controller_interface ${catkin_EXPORTED_TARGETS})
-
-add_library(rotor_gazebo_bag_plugin 
-  src/gazebo_bag_plugin.cpp
-  include/rotor_gazebo_plugins/gazebo_bag_plugin.h)
-target_link_libraries(rotor_gazebo_bag_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_bag_plugin ${catkin_EXPORTED_TARGETS})
-
 add_library(rotor_gazebo_wind_plugin 
   src/gazebo_wind_plugin.cpp
   include/rotor_gazebo_plugins/gazebo_wind_plugin.h)
 target_link_libraries(rotor_gazebo_wind_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(rotor_gazebo_wind_plugin ${catkin_EXPORTED_TARGETS})
-
-add_library(rotor_gazebo_octomap_plugin 
-  src/gazebo_octomap_plugin.cpp
-  include/rotor_gazebo_plugins/gazebo_octomap_plugin.h)
-target_link_libraries(rotor_gazebo_octomap_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_octomap_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(rotor_gazebo_multirotor_base_plugin 
   src/gazebo_multirotor_base_plugin.cpp
@@ -117,10 +90,7 @@ install(
     rotor_gazebo_odometry_plugin
     rotor_gazebo_imu_plugin
     rotor_gazebo_altimeter_plugin
-    rotor_gazebo_controller_interface
-    rotor_gazebo_bag_plugin
     rotor_gazebo_wind_plugin
-    rotor_gazebo_octomap_plugin
     rotor_gazebo_multirotor_base_plugin
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -9,7 +9,7 @@ HInf_gains: {
   w3: 9.0,
   wu: 1.5}
 
-controller_type: 0
+controller_type: 1
 
 
 
