@@ -93,7 +93,7 @@
   <!-- Macro to add a generic odometry sensor. -->
   <xacro:macro name="aircraft_forces_and_moments_macro"
     params="
-        namespace  parent_link wind_speed_topic command_topic parent_frame_id mass Jx Jy Jz Jxz rho wing_s wing_b wing_c wing_M wing_epsilon wing_alpha0 k_motor k_T_P k_Omega prop_e prop_S prop_C C_L_O C_L_alpha C_L_beta C_L_p C_L_q C_L_r C_L_delta_a C_L_delta_e C_L_delta_r C_D_O C_D_alpha C_D_beta C_D_p C_D_q C_D_r C_D_delta_a C_D_delta_e C_D_delta_r C_ell_O C_ell_alpha C_ell_beta C_ell_p C_ell_q C_ell_r C_ell_delta_a C_ell_delta_e C_ell_delta_r C_m_O C_m_alpha C_m_beta C_m_p C_m_q C_m_r C_m_delta_a C_m_delta_e C_m_delta_r C_n_O C_n_alpha C_n_beta C_n_p C_n_q C_n_r C_n_delta_a C_n_delta_e C_n_delta_r C_Y_O C_Y_alpha C_Y_beta C_Y_p C_Y_q C_Y_r C_Y_delta_a C_Y_delta_e C_Y_delta_r *inertia *origin">
+        namespace  parent_link wind_speed_topic command_topic parent_frame_id mass Jx Jy Jz Jxz rho wing_s wing_b wing_c wing_M wing_epsilon wing_alpha0 k_motor k_T_P k_Omega prop_e prop_S prop_C C_L_O C_L_alpha C_L_beta C_L_p C_L_q C_L_r C_L_delta_a C_L_delta_e C_L_delta_r C_D_O C_D_alpha C_D_beta C_D_p C_D_q C_D_r C_D_delta_a C_D_delta_e C_D_delta_r C_ell_O C_ell_alpha C_ell_beta C_ell_p C_ell_q C_ell_r C_ell_delta_a C_ell_delta_e C_ell_delta_r C_m_O C_m_alpha C_m_beta C_m_p C_m_q C_m_r C_m_delta_a C_m_delta_e C_m_delta_r C_n_O C_n_alpha C_n_beta C_n_p C_n_q C_n_r C_n_delta_a C_n_delta_e C_n_delta_r C_Y_O C_Y_alpha C_Y_beta C_Y_p C_Y_q C_Y_r C_Y_delta_a C_Y_delta_e C_Y_delta_r *inertia">
     <!-- link -->
     <link name="${namespace}/aircraft_forces_and_moments_link">
       <inertial>
