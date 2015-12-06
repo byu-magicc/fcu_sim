@@ -55,35 +55,23 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
   /*
    * Connect the Plugin to the Robot and Save pointers to the various elements in the simulation
    */
-  if (_sdf->HasElement("robotNamespace"))
-    namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>();
+  if (_sdf->HasElement("namespace"))
+    namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a robotNamespace.\n";
+    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
-  if (_sdf->HasElement("jointName"))
-    joint_name_ = _sdf->GetElement("jointName")->Get<std::string>();
-  else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a jointName, where the forces and moments are attached.\n";
-  joint_ = model_->GetJoint(joint_name_);
-  if (joint_ == NULL)
-    gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified joint \"" << joint_name_ << "\".");
-  if (_sdf->HasElement("linkName"))
+ if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
     gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
     gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
-  parent_link_ = world_->GetEntity(parent_frame_id_);
-  if (parent_link_ == NULL) {
-    gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified parent link \"" << parent_frame_id_ << "\".");
-  }
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "gazebo/wind_speed");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "control_surface_deflection");
-  getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, "parent_frame_id");
 
   // physical parameters
   getSdfParam<double>(_sdf, "mass", mass_, 13.5);
@@ -178,18 +166,20 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAircraftForcesAndMoments::OnUpdate, this, _1));
+  gzmsg << "done configurating";
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
+  // command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
+  // wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
 }
 
 // This gets called by the world update event.
 void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
+
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
-  SendForces();
+//  SendForces();
 }
 
 void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
@@ -216,8 +206,8 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
 
   // wind info is available in the wind_ struct
   double ur = u - wind_.N;
-  double vr = u - wind_.E;
-  double wr = u - wind_.D;
+  double vr = v - wind_.E;
+  double wr = w - wind_.D;
 
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
   double alpha = atan2(wr , ur);
@@ -246,14 +236,24 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
    * Pack Forces and Moments into the forces_ member for publishing in
    * SendForces()
    */
+  gzmsg << "Va = " << Va << "\n";
+  if(Va < 0.01){ // not moving
+    forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
+    forces_.Fy = 0.0;
+    forces_.Fz = 0.0;
+    forces_.l = 0.0;
+    forces_.m = 0.0;
+    forces_.n = 0.0;
+  }else{
+    forces_.Fx = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CX_a + (CX_q_a*wing_.c*q)/(2.0*Va) + CX_deltaE_a * delta_.e) + 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
+    forces_.Fy = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CY_.O + CY_.beta*beta + ((CY_.p*wing_.b*p)/(2.0*Va)) + ((CY_.r*wing_.b*r)/(2.0*Va)) + CY_.delta_a*delta_.a + CY_.delta_r*delta_.r);
+    forces_.Fz = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CZ_a + (CZ_q_a*wing_.c*q)/(2.0*Va) + CZ_deltaE_a * delta_.e);
 
-  forces_.Fx = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CX_a + (CX_q_a*wing_.c*q)/(2.0*Va) + CX_deltaE_a * delta_.e) + 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
-  forces_.Fy = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CY_.O + CY_.beta*beta + ((CY_.p*wing_.b*p)/(2.0*Va)) + ((CY_.r*wing_.b*r)/(2.0*Va)) + CY_.delta_a*delta_.a + CY_.delta_r*delta_.r);
-  forces_.Fz = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CZ_a + (CZ_q_a*wing_.c*q)/(2.0*Va) + CZ_deltaE_a * delta_.e);
-
-  forces_.l = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cell_.O + Cell_.beta*beta + (Cell_.p*wing_.b*p)/(2.0*Va) + (Cell_.r*wing_.b*r)/(2.0*Va) + Cell_.delta_a*delta_.a + Cell_.delta_r*delta_.r) - prop_.k_T_P*pow((prop_.k_Omega*delta_.t),2.0);
-  forces_.m = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.c*(Cm_.O + Cm_.alpha*alpha + (Cm_.q*wing_.c*q)/(2.0*Va) + Cm_.delta_e*delta_.e);
-  forces_.n = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cn_.O + Cn_.beta*beta + (Cn_.p*wing_.b*p)/(2.0*Va) + (Cn_.r*wing_.b*r)/(2.0*Va) + Cn_.delta_a*delta_.a + Cn_.delta_r*delta_.r);
+    forces_.l = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cell_.O + Cell_.beta*beta + (Cell_.p*wing_.b*p)/(2.0*Va) + (Cell_.r*wing_.b*r)/(2.0*Va) + Cell_.delta_a*delta_.a + Cell_.delta_r*delta_.r) - prop_.k_T_P*pow((prop_.k_Omega*delta_.t),2.0);
+    forces_.m = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.c*(Cm_.O + Cm_.alpha*alpha + (Cm_.q*wing_.c*q)/(2.0*Va) + Cm_.delta_e*delta_.e);
+    forces_.n = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cn_.O + Cn_.beta*beta + (Cn_.p*wing_.b*p)/(2.0*Va) + (Cn_.r*wing_.b*r)/(2.0*Va) + Cn_.delta_a*delta_.a + Cn_.delta_r*delta_.r);
+  }
+  gzmsg << "forces " << forces_.Fx << ", " << forces_.Fy << ", " << forces_.Fz << "\n";
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftForcesAndMoments);

@@ -1,0 +1,28 @@
+<!-- This is a launch file that runs the bare minimum requirements to get -->
+<!-- gazebo running.  It requires a relative_nav_msgs::Command on /command -->
+<!-- to move the hex, and outputs imu, altimeter, laserscan and RGBD images -->
+<!-- as well as a relative_nav_msgs::FilterState message on /global_state  -->
+<!-- a geometry_msgs::StampedTransform on /mocap to imitate motion capture -->
+
+
+<launch>
+  <arg name="mav_name"            default="junker"/>
+  <arg name="enable_logging"      default="false" />
+  <arg name="enable_ground_truth" default="true" />
+  <arg name="log_file"            default="$(arg mav_name)" />
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find rotor_gazebo)/worlds/test_city.world"/>
+    <arg name="paused" value="true"/>
+  </include>
+
+  <!-- Spawn MAV -->
+  <include file="$(find rotor_gazebo)/launch/spawn_mav.launch">
+    <arg name="mav_name"            value="$(arg mav_name)" />
+    <arg name="model"               value="$(find rotor_gazebo)/urdf/$(arg mav_name)/$(arg mav_name)_base.xacro" />
+    <arg name="enable_logging"      value="$(arg enable_logging)" />
+    <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+    <arg name="log_file"          value="$(arg log_file)"/>
+  </include>
+
+</launch>
