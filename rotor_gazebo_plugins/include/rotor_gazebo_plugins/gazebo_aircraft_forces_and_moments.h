@@ -26,14 +26,16 @@
 
 #include <boost/bind.hpp>
 #include <Eigen/Eigen>
+
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <rotor_gazebo/Actuators.h>
-#include <rotor_gazebo/default_topics.h>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
+
+#include <rotor_gazebo/Actuators.h>
+#include <rotor_gazebo/default_topics.h>
 #include <rotor_gazebo/WindSpeed.h>
 #include <rotor_gazebo/FWCommand.h>
 #include <std_msgs/Float32.h>
