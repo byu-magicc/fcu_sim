@@ -71,7 +71,7 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "gazebo/wind_speed");
-  getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "control_surface_deflection");
+  getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command/FWCommand");
 
   // physical parameters
   getSdfParam<double>(_sdf, "mass", mass_, 13.5);
@@ -169,7 +169,7 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
   gzmsg << "done configurating";
 
   // Connect Subscribers
-  // command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
+  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
   // wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
 }
 
@@ -179,8 +179,17 @@ void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
-//  SendForces();
+  SendForces();
 }
+
+void GazeboAircraftForcesAndMoments::CommandCallback(const rotor_gazebo::FWCommandPtr &msg)
+{
+  delta_.t = msg->thrust;
+  delta_.e = msg->delta_e;
+  delta_.a = msg->delta_a;
+  delta_.r = msg->delta_r;
+}
+
 
 void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
 {
@@ -205,13 +214,14 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double r = C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
-  double ur = u - wind_.N;
-  double vr = v - wind_.E;
-  double wr = w - wind_.D;
+  double ur = u ;//- wind_.N;
+  double vr = v ;//- wind_.E;
+  double wr = w ;//- wind_.D;
 
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
   double alpha = atan2(wr , ur);
   double beta = asin(vr/Va);
+  gzmsg << "ur = " << ur << " vr = " << vr << " wr  = " << wr << " Va = " << Va << "\n";
 
   double sign = 1/(1 + exp(-alpha));//Sigmoid function
   double sigma_a = (1 + exp(-(wing_.M*(alpha - wing_.alpha0))) + exp((wing_.M*(alpha + wing_.alpha0))))/((1 + exp(-(wing_.M*(alpha - wing_.alpha0))))*(1 + exp((wing_.M*(alpha + wing_.alpha0)))));
@@ -236,8 +246,7 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
    * Pack Forces and Moments into the forces_ member for publishing in
    * SendForces()
    */
-  gzmsg << "Va = " << Va << "\n";
-  if(Va < 0.01){ // not moving
+  if(Va < 0.1){ // not moving
     forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
     forces_.Fy = 0.0;
     forces_.Fz = 0.0;

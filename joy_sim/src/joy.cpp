@@ -50,6 +50,7 @@ Joy::Joy() {
 
   command_pub_ = nh_.advertise<relative_nav_msgs::Command>(command_topic_,10);
   ctrl_pub_ = nh_.advertise<rotor_gazebo::RollPitchYawrateThrust> ("command/roll_pitch_yawrate_thrust", 10);
+  fw_pub_ = nh_.advertise<rotor_gazebo::FWCommand>("command/FWCommand", 10);
 
   command_msg_.roll = 0;
   command_msg_.pitch = 0;
@@ -63,6 +64,11 @@ Joy::Joy() {
   control_msg_.thrust.y = 0;
   control_msg_.thrust.z = 0;
   current_yaw_vel_ = 0;
+
+  fw_msg_.thrust = 0;
+  fw_msg_.delta_a = 0;
+  fw_msg_.delta_e = 0;
+  fw_msg_.delta_r = 0;
 
   namespace_ = nh_.getNamespace();
   joy_sub_ = nh_.subscribe("joy", 10, &Joy::JoyCallback, this);
@@ -81,6 +87,11 @@ void Joy::StopMav() {
   command_msg_.pitch = 0;
   command_msg_.yaw_rate = 0;
   command_msg_.thrust = 0;
+
+  fw_msg_.thrust = 0;
+  fw_msg_.delta_a = 0;
+  fw_msg_.delta_e = 0;
+  fw_msg_.delta_r = 0;
 }
 
 void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
@@ -95,6 +106,11 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
     command_msg_.pitch = control_msg_.pitch;
     command_msg_.yaw_rate = control_msg_.yaw_rate;
     command_msg_.thrust = control_msg_.thrust.z;
+
+    fw_msg_.thrust = 0.5*(msg->axes[axes_.thrust] + 1.0);
+    fw_msg_.delta_a = msg->axes[axes_.roll] * max_.pitch * axes_.pitch_direction;
+    fw_msg_.delta_e = -1.0*msg->axes[axes_.pitch] * max_.pitch * axes_.pitch_direction;
+    fw_msg_.delta_r = msg->axes[axes_.yaw] * max_.rate_yaw * axes_.yaw_direction;
 
   } else{
     StopMav();
@@ -113,6 +129,7 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
 void Joy::Publish() {
   ctrl_pub_.publish(control_msg_);
   command_pub_.publish(command_msg_);
+  fw_pub_.publish(fw_msg_);
 }
 
 int main(int argc, char** argv) {

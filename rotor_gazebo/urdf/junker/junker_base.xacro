@@ -4,8 +4,8 @@
   <!-- Properties -->
   <xacro:property name="namespace" value="junker"/>
   <xacro:property name="wind_speed_topic" value="gazebo/wind_speed"/>
-  <xacro:property name="command_topic" value="control_surface_deflection"/>
-  <xacro:property name="use_mesh_file" value="false" />
+  <xacro:property name="command_topic" value="/command/FWCommand"/>
+  <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://rotor_gazebo/meshes/ju-87.dae"/>
   <xacro:property name="body_width" value="1.4"/>
   <xacro:property name="body_height" value="1.0" />
@@ -92,55 +92,70 @@
     <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.001" />
   </xacro:property>
     
-  <!-- Instantiate Links and Joints -->
+  <!-- Instantiate Link and Visual -->
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/wheel.xacro"/>
   <link name="${namespace}/base_link">
     <inertial>
       <mass value="${mass}" />
       <origin xyz="0 0 0" />
-      <xacro:insert_block name="empty_inertia" />
+      <xacro:insert_block name="inertia" />
     </inertial>
-    <visual>
+    <visual name="plane_visual">
       <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
       <geometry>
         <xacro:if value="${use_mesh_file}">
-          <mesh filename="${mesh_file}" scale="0.001 0.001 0.001" />
+          <mesh filename="${mesh_file}" scale="0.002 0.002 0.002" />
         </xacro:if>
         <xacro:unless value="${use_mesh_file}">
-          <box size="${body_length} ${body_width} ${body_height}"/> <!-- [m] [m] [m] -->
+            <box size="${body_width} ${body_height} ${body_length}" />
         </xacro:unless>
       </geometry>
     </visual>
-    <collision>
+    <collision name="plane_collision">
       <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
       <geometry>
-        <box size="${body_length} ${body_width} ${body_height}" />
+        <box size="${body_width} ${body_height} ${body_length}" />
       </geometry>
     </collision>    
+
+    <!-- Wheels -->
+    <xacro:caster
+      radius="0.05">
+      <origin xyz="${body_length*0.5} -${body_width*0.5} -${body_height*0.5}"/>
+    </xacro:caster>
+    <xacro:caster
+      radius="0.05">
+      <origin xyz="${body_length*0.5} ${body_width*0.5} -${body_height*0.5}"/>
+    </xacro:caster>
+    <xacro:caster
+      radius="0.05">
+      <origin xyz="-${body_length*0.5} 0 -${body_height*0.5}"/>
+    </xacro:caster>
   </link>
 
-  <!-- Add Aerodynamics Link -->
-  <link name="${namespace}/aerodynamics_link">
-    <inertial>
-      <mass value="${mass}" />
-      <origin xyz="0 0 0" />
-      <xacro:insert_block name="empty_inertia" />
-    </inertial>
-  </link>
-
-  <!-- Add Aerodynamics Joint -->
-  <joint name="${namespace}/aerodynamics_joint" type="revolute">
-    <parent link="${namespace}/base_link"/>
-    <child link="${namespace}/aerodynamics_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <limit upper="0" lower="0" effort="0" velocity="0" />
-  </joint>
+  <!-- Chase Camera -->
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/rgbd.xacro"/>
+  <xacro:depth_camera
+    namespace="${namespace}"
+    parent_link="${namespace}_base_link"
+    camera_suffix=""
+    frame_rate="30"
+    depth_range="6.5"
+    rgb_range=""
+    image_topic="/camera/rgb/image_raw"
+    depth_topic="/camera/depth/image_raw"
+    image_camera_info_topic="/camera/rgb/camera_info"
+    depth_camera_info_topic="/camera/depth/camera_info"
+    pointcloud_topic="/camera/pointcloud">
+    <origin xyz="-${body_length*2.0} 0 ${body_height}" rpy="0 0 0" />
+  </xacro:depth_camera>
 
 
   <!-- Add Aerodynamics -->
   <gazebo>
     <plugin filename="librotor_gazebo_aircraft_forces_and_moments_plugin.so" name="aircraft_forces_and_moments_plugin">
       <namespace>${namespace}</namespace>
-      <linkName>${namespace}/aerodynamics_link</linkName>
+      <linkName>${namespace}/base_link</linkName>
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
       <commandTopic>${command_topic}</commandTopic>
 

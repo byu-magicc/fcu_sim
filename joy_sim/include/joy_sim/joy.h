@@ -24,6 +24,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <rotor_gazebo/RollPitchYawrateThrust.h>
+#include <rotor_gazebo/FWCommand.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <relative_nav_msgs/Command.h>
@@ -62,6 +63,7 @@ class Joy {
  private:
   ros::NodeHandle nh_;
   ros::Publisher ctrl_pub_;
+  ros::Publisher fw_pub_;
   ros::Publisher command_pub_;
   ros::Subscriber joy_sub_;
 
@@ -74,6 +76,7 @@ class Joy {
 
   rotor_gazebo::RollPitchYawrateThrust control_msg_;
   relative_nav_msgs::Command command_msg_;
+  rotor_gazebo::FWCommand fw_msg_;
   geometry_msgs::PoseStamped pose_;
   sensor_msgs::Joy current_joy_;
 
