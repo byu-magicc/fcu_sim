@@ -12,7 +12,7 @@
   <arg name="log_file"            default="$(arg mav_name)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find rotor_gazebo)/worlds/test_city.world"/>
+    <arg name="world_name" value="$(find rotor_gazebo)/worlds/test.world"/>
     <arg name="paused" value="true"/>
   </include>
 

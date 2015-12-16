@@ -112,7 +112,7 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
     command_msg_.thrust = control_msg_.thrust.z;
 
     fw_msg_.thrust = 0.5*(msg->axes[axes_.thrust] + 1.0);
-    fw_msg_.delta_a = msg->axes[axes_.roll] * max_.aileron * axes_.pitch_direction;
+    fw_msg_.delta_a = -1.0*msg->axes[axes_.roll] * max_.aileron * axes_.pitch_direction;
     fw_msg_.delta_e = -1.0*msg->axes[axes_.pitch] * max_.elevator * axes_.pitch_direction;
     fw_msg_.delta_r = msg->axes[axes_.yaw] * max_.rudder * axes_.yaw_direction;
 
