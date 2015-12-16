@@ -46,6 +46,9 @@ struct Max {
   double pitch;
   double rate_yaw;
   double thrust;
+  double aileron;
+  double elevator;
+  double rudder;
 };
 
 struct Button{

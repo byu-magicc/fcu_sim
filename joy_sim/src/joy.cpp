@@ -46,6 +46,10 @@ Joy::Joy() {
   pnh.param("max_yaw_rate", max_.rate_yaw, 180.0 * M_PI / 180.0);  // [rad/s]
   pnh.param("max_thrust", max_.thrust, 74.676);  // [N]
 
+  pnh.param("max_aileron", max_.aileron, 15.0*M_PI/180.0);
+  pnh.param("max_elevator", max_.elevator, 25.0*M_PI/180.0);
+  pnh.param("max_rudder", max_.rudder, 15.0*M_PI/180.0);
+
   pnh.param("button_takeoff_", buttons_.fly.index, 0);
 
   command_pub_ = nh_.advertise<relative_nav_msgs::Command>(command_topic_,10);
@@ -108,9 +112,9 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
     command_msg_.thrust = control_msg_.thrust.z;
 
     fw_msg_.thrust = 0.5*(msg->axes[axes_.thrust] + 1.0);
-    fw_msg_.delta_a = msg->axes[axes_.roll] * max_.pitch * axes_.pitch_direction;
-    fw_msg_.delta_e = -1.0*msg->axes[axes_.pitch] * max_.pitch * axes_.pitch_direction;
-    fw_msg_.delta_r = msg->axes[axes_.yaw] * max_.rate_yaw * axes_.yaw_direction;
+    fw_msg_.delta_a = msg->axes[axes_.roll] * max_.aileron * axes_.pitch_direction;
+    fw_msg_.delta_e = -1.0*msg->axes[axes_.pitch] * max_.elevator * axes_.pitch_direction;
+    fw_msg_.delta_r = msg->axes[axes_.yaw] * max_.rudder * axes_.yaw_direction;
 
   } else{
     StopMav();

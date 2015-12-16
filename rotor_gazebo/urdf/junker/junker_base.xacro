@@ -133,23 +133,23 @@
     </xacro:caster>
   </link>
 
-  <!-- Chase Camera -->
-  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/rgbd.xacro"/>
-  <xacro:depth_camera
-    namespace="${namespace}"
-    parent_link="${namespace}_base_link"
-    camera_suffix=""
-    frame_rate="30"
-    depth_range="6.5"
-    rgb_range=""
-    image_topic="/camera/rgb/image_raw"
-    depth_topic="/camera/depth/image_raw"
-    image_camera_info_topic="/camera/rgb/camera_info"
-    depth_camera_info_topic="/camera/depth/camera_info"
-    pointcloud_topic="/camera/pointcloud">
-    <origin xyz="-${body_length*2.0} 0 ${body_height}" rpy="0 0 0" />
-  </xacro:depth_camera>
 
+  <!-- Chase Camera -->
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/camera.xacro"/>
+  <xacro:simple_camera
+    namespace="${namespace}"
+    frame_rate="30"
+    rgb_range=""
+    parent_link="${namespace}/base_link"
+    image_topic="chase/rgb"
+    image_camera_info_topic="chase/camera_info">
+    <origin xyz="-${1.1*body_length} 0 ${0.8*body_height}"/>
+  </xacro:simple_camera>
+
+  <!-- Color -->
+  <gazebo reference="${namespace}/base_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
 
   <!-- Add Aerodynamics -->
   <gazebo>
