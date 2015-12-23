@@ -26,11 +26,11 @@
   </include>
 
   <node name="joy" pkg="joy_sim" type="joy_sim">
-    <param name="axis_pitch_" value="4"/>
-    <param name="axis_roll_" value="3"/>
+    <!-- <param name="axis_pitch_" value="4"/> -->
+    <!-- <param name="axis_roll_" value="3"/> -->
   </node>
   <node name="xbox" pkg="joy" type="joy_node">
-    <param name="dev" value="/dev/input/js0"/>
+    <param name="dev" value="/dev/input/js2"/>
   </node>
 
   <node name="chase" pkg="image_view" type="image_view">
