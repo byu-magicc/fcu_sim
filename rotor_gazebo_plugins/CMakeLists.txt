@@ -16,8 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   rotor_gazebo
   std_srvs
   tf
-  relative_nav_msgs
-  relative_nav_common
+  relative_nav
+  relative_nav
 )
 
 find_package(Eigen REQUIRED)
@@ -31,7 +31,7 @@ catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   LIBRARIES rotor_gazebo_motor_model rotor_gazebo_controller_interface
   CATKIN_DEPENDS cv_bridge geometry_msgs rotor_gazebo rosbag roscpp
-                 rotor_gazebo std_srvs tf relative_nav_msgs relative_nav_common
+                 rotor_gazebo std_srvs tf relative_nav relative_nav
   DEPENDS eigen gazebo opencv #octomap
 )
 

@@ -4,8 +4,8 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <rotor_gazebo/Actuators.h>
-#include <relative_nav_msgs/Command.h>
-#include <relative_nav_common/simple_pid.h>
+#include <relative_nav/Command.h>
+#include <relative_nav/simple_pid.h>
 #include <tf/tf.h>
 #include <attitude_controller/multicopter.h>
 #include <attitude_controller/h_inf_controller.h>
@@ -69,9 +69,9 @@ private:
   Eigen::VectorXd rotor_velocities_;
 
   // PID controllers
-  relative_nav_common::SimplePID pid_roll_;
-  relative_nav_common::SimplePID pid_pitch_;
-  relative_nav_common::SimplePID pid_yaw_rate_;
+  relative_nav::SimplePID pid_roll_;
+  relative_nav::SimplePID pid_pitch_;
+  relative_nav::SimplePID pid_yaw_rate_;
 
   // H-Infinity Controller
   HInfController h_inf_;
@@ -87,7 +87,7 @@ private:
 
   // Message Callbacks
   void odometryCallback(const nav_msgs::OdometryConstPtr &msg);
-  void commandCallback(const relative_nav_msgs::CommandConstPtr& msg);
+  void commandCallback(const relative_nav::CommandConstPtr& msg);
 };
 
 } // namespace attitude_controller

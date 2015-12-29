@@ -27,8 +27,8 @@
   <build_depend>rotor_gazebo</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>relative_nav_common</build_depend>
-  <build_depend>relative_nav_msgs</build_depend>
+  <build_depend>relative_nav</build_depend>
+  <build_depend>relative_nav</build_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>cv_bridge</run_depend>
@@ -40,7 +40,7 @@
   <run_depend>rotor_gazebo</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>relative_nav_common</run_depend>
-  <run_depend>relative_nav_msgs</run_depend>
+  <run_depend>relative_nav</run_depend>
+  <run_depend>relative_nav</run_depend>
 
 </package>

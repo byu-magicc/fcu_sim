@@ -7,21 +7,21 @@ find_package(catkin REQUIRED COMPONENTS
   rotor_gazebo
   sensor_msgs
   trajectory_msgs
-  relative_nav_msgs
+  relative_nav
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 catkin_package(
   DEPENDS
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp geometry_msgs rotor_gazebo sensor_msgs trajectory_msgs relative_nav_msgs
+  CATKIN_DEPENDS roscpp geometry_msgs rotor_gazebo sensor_msgs trajectory_msgs relative_nav
   LIBRARIES
 )
 
 add_definitions(-std=c++11)
 
 add_executable(joy_sim src/joy.cpp include/joy_sim/joy.h)
-add_dependencies(joy_sim relative_nav_msgs_generate_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(joy_sim relative_nav_generate_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(joy_sim ${catkin_LIBRARIES})
 
 install(TARGETS joy_sim

@@ -1,7 +1,7 @@
 <!-- This is a launch file that runs the bare minimum requirements to get -->
-<!-- gazebo running.  It requires a relative_nav_msgs::Command on /command -->
+<!-- gazebo running.  It requires a relative_nav::Command on /command -->
 <!-- to move the hex, and outputs imu, altimeter, laserscan and RGBD images -->
-<!-- as well as a relative_nav_msgs::FilterState message on /global_state  -->
+<!-- as well as a relative_nav::FilterState message on /global_state  -->
 <!-- a geometry_msgs::StampedTransform on /mocap to imitate motion capture -->
 
 

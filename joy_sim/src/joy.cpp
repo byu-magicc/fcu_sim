@@ -52,7 +52,7 @@ Joy::Joy() {
 
   pnh.param("button_takeoff_", buttons_.fly.index, 0);
 
-  command_pub_ = nh_.advertise<relative_nav_msgs::Command>(command_topic_,10);
+  command_pub_ = nh_.advertise<relative_nav::Command>(command_topic_,10);
   ctrl_pub_ = nh_.advertise<rotor_gazebo::RollPitchYawrateThrust> ("command/roll_pitch_yawrate_thrust", 10);
   fw_pub_ = nh_.advertise<rotor_gazebo::FWCommand>("command/FWCommand", 10);
 

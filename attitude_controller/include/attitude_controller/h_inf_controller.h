@@ -1,5 +1,5 @@
 #include <Eigen/Eigen>
-#include "relative_nav_common/simple_pid.h"
+#include "relative_nav/simple_pid.h"
 
 
 namespace attitude_controller

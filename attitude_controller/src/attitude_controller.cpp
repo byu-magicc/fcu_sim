@@ -69,7 +69,7 @@ attitudeController::attitudeController() :
 }
 
 
-void attitudeController::commandCallback(const relative_nav_msgs::CommandConstPtr& msg){
+void attitudeController::commandCallback(const relative_nav::CommandConstPtr& msg){
   roll_c_ = msg->roll;
   pitch_c_ = msg->pitch;
   psidot_c_ = msg->yaw_rate;

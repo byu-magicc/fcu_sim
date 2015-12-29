@@ -43,7 +43,7 @@ void simReset::JoyCallback(const sensor_msgs::JoyConstPtr &msg){
 
 }
 
-void simReset::desiredStateCallback(const relative_nav_msgs::DesiredStateConstPtr &msg)
+void simReset::desiredStateCallback(const relative_nav::DesiredStateConstPtr &msg)
 {
   alt_ = msg->pose.z;
   reset_msg_.pose.position.z = -1.0*alt_;

@@ -15,7 +15,7 @@
 
   <!--Estimation-->
   <node name="start_trigger"       pkg="rmekf"               type="start_trigger.py"/> 
-  <rosparam command="load" file="$(find relative_nav_common)/param/shredder.yaml"/>
+  <rosparam command="load" file="$(find relative_nav)/param/shredder.yaml"/>
   <node name="rmekf"               pkg="rmekf"               type="rmekf_node"> 
     <rosparam command="load" file="$(find rmekf)/params/estimator.yaml" /> 
     <remap from="altimeter" to="/mavros/distance_sensor"/> 

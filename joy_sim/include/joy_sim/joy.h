@@ -27,7 +27,7 @@
 #include <rotor_gazebo/FWCommand.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
-#include <relative_nav_msgs/Command.h>
+#include <relative_nav/Command.h>
 
 struct Axes {
   int roll;
@@ -78,7 +78,7 @@ class Joy {
   bool fly_mav_;
 
   rotor_gazebo::RollPitchYawrateThrust control_msg_;
-  relative_nav_msgs::Command command_msg_;
+  relative_nav::Command command_msg_;
   rotor_gazebo::FWCommand fw_msg_;
   geometry_msgs::PoseStamped pose_;
   sensor_msgs::Joy current_joy_;

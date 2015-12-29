@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_msgs
   roscpp
   rospy
-  relative_nav_msgs
+  relative_nav
 )
 
 catkin_package()
@@ -28,7 +28,7 @@ include_directories(
 add_executable(sim_reset_node src/sim_reset_node.cpp include/sim_reset/sim_reset.h src/sim_reset.cpp)
 
 ## Add cmake target dependencies of the executable/library
-add_dependencies(sim_reset_node relative_nav_msgs_generate_messages_cpp)
+add_dependencies(sim_reset_node relative_nav_generate_messages_cpp)
 
 target_link_libraries(sim_reset_node
   ${catkin_LIBRARIES}

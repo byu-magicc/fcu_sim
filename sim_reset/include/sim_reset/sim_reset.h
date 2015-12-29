@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <gazebo_msgs/ModelState.h>
-#include <relative_nav_msgs/DesiredState.h>
+#include <relative_nav/DesiredState.h>
 
 namespace sim_reset
 {
@@ -46,7 +46,7 @@ private:
 
   // Functions
   void JoyCallback(const sensor_msgs::JoyConstPtr &msg);
-  void desiredStateCallback(const relative_nav_msgs::DesiredStateConstPtr &msg);
+  void desiredStateCallback(const relative_nav::DesiredStateConstPtr &msg);
 };
 
 } // namespace sim_reset

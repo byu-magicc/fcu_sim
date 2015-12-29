@@ -5,7 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   rotor_gazebo
   nav_msgs
   roscpp
-  relative_nav_common
+  relative_nav
   tf
   geometry_msgs
   cmake_modules
@@ -44,7 +44,7 @@ add_executable(attitude_controller_node
 )
 
 ## Add cmake target dependencies of the executable/library
-add_dependencies(attitude_controller_node relative_nav_msgs_generate_messages_cpp)
+add_dependencies(attitude_controller_node relative_nav_generate_messages_cpp)
 
 target_link_libraries(attitude_controller_node
   ${catkin_LIBRARIES}
