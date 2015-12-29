@@ -30,7 +30,7 @@ This is a metapackage.  The packages are organized as follows:
 	This package was made specifically for testing the simulation.  In this mode the Joystick functions like a RC transmitter while the multirotor files in "stabilize" mode.  It cannot work at the same time as joy_commander.  It assumes that you are using xboxdrv by default, but parameters can be used to map different joy inputs.
 
 * attitude_controler
-	This implements a standard PID controller around roll, pitch, and yawrate, and outputs thrust based on inputs from a relative_nav_msgs::Command message.  This should be a drop-in replacement for mavros so it hooks in with the rest of the code seamlessly.
+	This implements a standard PID controller around roll, pitch, and yawrate, and outputs thrust based on inputs from a relative_nav::Command message.  This should be a drop-in replacement for mavros so it hooks in with the rest of the code seamlessly.
 
 	It automatically maps outputs by calculating the inverse transform of the allocation matrix.  The allocation matrix is formed using the data from the shredder.yaml file, and gains for the controller are also found in the same file.  The mass and inertia information in the yaml file is also used to inform the controller.
 
