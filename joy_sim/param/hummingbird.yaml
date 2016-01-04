@@ -1,0 +1,5 @@
+max_roll: .785398
+max_pitch: .785398
+max_yaw_rate: 3.1415
+max_thrust: 50.0
+mass: 0.5755
