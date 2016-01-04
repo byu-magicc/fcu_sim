@@ -30,31 +30,33 @@ Joy::Joy() {
 
   pnh.param<std::string>("command_topic", command_topic_, "command");
 
-  pnh.param("axis_roll_", axes_.roll, 2);
-  pnh.param("axis_pitch_", axes_.pitch, 3);
-  pnh.param("axis_thrust_", axes_.thrust, 1);
-  pnh.param("axis_yaw_", axes_.yaw, 0);
+  pnh.param<int>("axis_roll_", axes_.roll, 2);
+  pnh.param<int>("axis_pitch_", axes_.pitch, 3);
+  pnh.param<int>("axis_thrust_", axes_.thrust, 1);
+  pnh.param<int>("axis_yaw_", axes_.yaw, 0);
 
-  pnh.param("axis_direction_roll", axes_.roll_direction, -1);
-  pnh.param("axis_direction_pitch", axes_.pitch_direction, 1);
-  pnh.param("axis_direction_thrust", axes_.thrust_direction, 1);
-  pnh.param("axis_direction_yaw", axes_.yaw_direction, -1);
+  pnh.param<int>("axis_direction_roll", axes_.roll_direction, -1);
+  pnh.param<int>("axis_direction_pitch", axes_.pitch_direction, -1);
+  pnh.param<int>("axis_direction_thrust", axes_.thrust_direction, 1);
+  pnh.param<int>("axis_direction_yaw", axes_.yaw_direction, -1);
 
-  pnh.param("max_v_xy", max_.v_xy, 1.0);  // [m/s]
-  pnh.param("max_roll", max_.roll, 25.0 * M_PI / 180.0);  // [rad]
-  pnh.param("max_pitch", max_.pitch, 25.0 * M_PI / 180.0);  // [rad]
-  pnh.param("max_yaw_rate", max_.rate_yaw, 180.0 * M_PI / 180.0);  // [rad/s]
-  pnh.param("max_thrust", max_.thrust, 74.676);  // [N]
+  pnh.param<double>("max_roll", max_.roll, 25.0 * M_PI / 180.0);  // [rad]
+  pnh.param<double>("max_pitch", max_.pitch, 25.0 * M_PI / 180.0);  // [rad]
+  pnh.param<double>("max_yaw_rate", max_.rate_yaw, 180.0 * M_PI / 180.0);  // [rad/s]
+  pnh.param<double>("max_thrust", max_.thrust, 74.676);  // [N]
+  pnh.param<double>("mass", mass_, 3.81);  // [N]
 
-  pnh.param("max_aileron", max_.aileron, 15.0*M_PI/180.0);
-  pnh.param("max_elevator", max_.elevator, 25.0*M_PI/180.0);
-  pnh.param("max_rudder", max_.rudder, 15.0*M_PI/180.0);
+  pnh.param<double>("max_aileron", max_.aileron, 15.0*M_PI/180.0);
+  pnh.param<double>("max_elevator", max_.elevator, 25.0*M_PI/180.0);
+  pnh.param<double>("max_rudder", max_.rudder, 15.0*M_PI/180.0);
 
-  pnh.param("button_takeoff_", buttons_.fly.index, 0);
+  pnh.param<int>("button_takeoff_", buttons_.fly.index, 0);
 
   command_pub_ = nh_.advertise<relative_nav::Command>(command_topic_,10);
   ctrl_pub_ = nh_.advertise<rotor_gazebo::RollPitchYawrateThrust> ("command/roll_pitch_yawrate_thrust", 10);
   fw_pub_ = nh_.advertise<rotor_gazebo::FWCommand>("command/FWCommand", 10);
+
+  ROS_ERROR_STREAM("mass = " << mass_ <<" max_thrust = " << max_.thrust);
 
   command_msg_.roll = 0;
   command_msg_.pitch = 0;
@@ -104,7 +106,13 @@ void Joy::JoyCallback(const sensor_msgs::JoyConstPtr& msg) {
     control_msg_.roll = msg->axes[axes_.roll] * max_.roll * axes_.roll_direction;
     control_msg_.pitch = msg->axes[axes_.pitch] * max_.pitch * axes_.pitch_direction;
     control_msg_.yaw_rate = msg->axes[axes_.yaw] * max_.rate_yaw * axes_.yaw_direction;
-    control_msg_.thrust.z = (msg->axes[axes_.thrust] + 1) * max_.thrust / 2.0 * axes_.thrust_direction;
+    if(msg->axes[axes_.thrust]*axes_.thrust_direction < 0){
+      // some fraction of the mass
+      control_msg_.thrust.z = (msg->axes[axes_.thrust]+1)*mass_*9.81; 
+    }else{
+      // some fraction of remaining thrust
+      control_msg_.thrust.z = msg->axes[axes_.thrust]*(max_.thrust-mass_*9.81)+mass_*9.81; 
+    }
 
     command_msg_.roll = control_msg_.roll;
     command_msg_.pitch = control_msg_.pitch;

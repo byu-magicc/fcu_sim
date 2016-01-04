@@ -9,6 +9,8 @@
 #include <tf/tf.h>
 #include <attitude_controller/multicopter.h>
 #include <attitude_controller/h_inf_controller.h>
+#include <dynamic_reconfigure/server.h>
+#include <attitude_controller/GainConfig.h>
 
 #define PID_CONTROL 0
 #define HINF_CONTROL 1
@@ -84,6 +86,11 @@ private:
   Eigen::Vector4d updateHInfControl();
   void calculateRotorVelocities();
   void calculateRotorMapping();
+
+  // Dynamic Gain Configuration
+  dynamic_reconfigure::Server<attitude_controller::GainConfig> server_;
+  dynamic_reconfigure::Server<attitude_controller::GainConfig>::CallbackType func_;
+  void gainCallback(attitude_controller::GainConfig &config, uint32_t level);
 
   // Message Callbacks
   void odometryCallback(const nav_msgs::OdometryConstPtr &msg);

@@ -11,23 +11,27 @@ attitudeController::attitudeController() :
   // retrieve frame params
   multicopter_.loadfromParam(nh_private_);
 
+  // dynamic reconfigure
+  func_ = boost::bind(&attitudeController::gainCallback, this, _1, _2);
+  server_.setCallback(func_);
+
   // retrieve gain params for PID control
-  double kp_roll, ki_roll, kd_roll, kp_pitch, ki_pitch, kd_pitch, kp_yaw, ki_yaw, kd_yaw;
-  double w1, w2, w3, wu;
-  nh_private_.param<double>("PID_gains/kp_roll", kp_roll, 0.55);
-  nh_private_.param<double>("PID_gains/ki_roll", ki_roll, 0);
-  nh_private_.param<double>("PID_gains/kd_roll", kd_roll, 0.35);
-  nh_private_.param<double>("PID_gains/kp_pitch", kp_pitch, 0.55);
-  nh_private_.param<double>("PID_gains/ki_pitch", ki_pitch, 0);
-  nh_private_.param<double>("PID_gains/kd_pitch", kd_pitch, 0.35);
-  nh_private_.param<double>("PID_gains/kp_yaw", kp_yaw, 0.1);
-  nh_private_.param<double>("PID_gains/ki_yaw", ki_yaw, 0);
-  nh_private_.param<double>("PID_gains/kd_yaw", kd_yaw, 0);
-  nh_private_.param<double>("HInf_gains/w1", w1, 0.1);
-  nh_private_.param<double>("HInf_gains/w2", w2, 3);
-  nh_private_.param<double>("HInf_gains/w3", w3, 9);
-  nh_private_.param<double>("HInf_gains/wu", wu, 1.5);
-  nh_private_.param<int>("controller_type", controller_type_, PID_CONTROL);
+//  double kp_roll, ki_roll, kd_roll, kp_pitch, ki_pitch, kd_pitch, kp_yaw, ki_yaw, kd_yaw;
+//  double w1, w2, w3, wu;
+//  nh_private_.param<double>("PID_gains/kp_roll", kp_roll, 0.55);
+//  nh_private_.param<double>("PID_gains/ki_roll", ki_roll, 0);
+//  nh_private_.param<double>("PID_gains/kd_roll", kd_roll, 0.35);
+//  nh_private_.param<double>("PID_gains/kp_pitch", kp_pitch, 0.55);
+//  nh_private_.param<double>("PID_gains/ki_pitch", ki_pitch, 0);
+//  nh_private_.param<double>("PID_gains/kd_pitch", kd_pitch, 0.35);
+//  nh_private_.param<double>("PID_gains/kp_yaw", kp_yaw, 0.1);
+//  nh_private_.param<double>("PID_gains/ki_yaw", ki_yaw, 0);
+//  nh_private_.param<double>("PID_gains/kd_yaw", kd_yaw, 0);
+//  nh_private_.param<double>("HInf_gains/w1", w1, 0.1);
+//  nh_private_.param<double>("HInf_gains/w2", w2, 3);
+//  nh_private_.param<double>("HInf_gains/w3", w3, 9);
+//  nh_private_.param<double>("HInf_gains/wu", wu, 1.5);
+//  nh_private_.param<int>("controller_type", controller_type_, PID_CONTROL);
 
   // retrieve topic names
   nh_private_.param<std::string>("odometry_topic", odometry_topic_, "odometry");
@@ -40,20 +44,20 @@ attitudeController::attitudeController() :
   actuators_publisher_ = nh_.advertise<rotor_gazebo::Actuators>(motor_speed_command_topic_, 1);
 
   // intialize proper controller
-  if(controller_type_ == PID_CONTROL){
-    ROS_WARN("using PID Control");
-    // set PID gains
-    pid_roll_.setGains(kp_roll, ki_roll, kd_roll);
-    pid_pitch_.setGains(kp_pitch, ki_pitch, kd_pitch);
-    pid_yaw_rate_.setGains(kp_yaw, ki_yaw, kd_yaw);
-  }else if(controller_type_ == HINF_CONTROL){
-    ROS_WARN("using H-Inf Control");
-    h_inf_.setOmega(w1,w2,w3,wu);
-    h_inf_.setMassMatrix(multicopter_.inertia_matrix);
-    h_inf_.resetIntegrator();
-  }else{
-    ROS_ERROR_STREAM("Improper controller type: " << controller_type_);
-  }
+//  if(controller_type_ == PID_CONTROL){
+//    ROS_WARN("using PID Control");
+//    // set PID gains
+//    pid_roll_.setGains(kp_roll, ki_roll, kd_roll);
+//    pid_pitch_.setGains(kp_pitch, ki_pitch, kd_pitch);
+//    pid_yaw_rate_.setGains(kp_yaw, ki_yaw, kd_yaw);
+//  }else if(controller_type_ == HINF_CONTROL){
+//    ROS_WARN("using H-Inf Control");
+//    h_inf_.setOmega(w1,w2,w3,wu);
+//    h_inf_.setMassMatrix(multicopter_.inertia_matrix);
+//    h_inf_.resetIntegrator();
+//  }else{
+//    ROS_ERROR_STREAM("Improper controller type: " << controller_type_);
+//  }
 
   // set time and outputs to zero
   dt_ = 0;
@@ -147,6 +151,32 @@ Eigen::Vector4d attitudeController::updateHInfControl(){
   desired_forces << moments(0), moments(1), moments(2), thrust_c_;
   ROS_INFO_STREAM("desired_forces " << desired_forces);
   return desired_forces;
+}
+
+void attitudeController::gainCallback(attitude_controller::GainConfig &config, uint32_t level)
+{
+  controller_type_ = config.controller;
+  // intialize proper controller
+  if(controller_type_ == PID_CONTROL){
+    ROS_WARN("using PID Control");
+    ROS_WARN_STREAM("New Gains => Roll: { P: = " << config.roll_P << " I: = " << config.roll_I << " D: = " << config.roll_D);
+    ROS_WARN_STREAM("New Gains => Pitch: { P: = " << config.pitch_P << " I: = " << config.pitch_I << " D: = " << config.pitch_D);
+    ROS_WARN_STREAM("New Gains => yaw: { P: = " << config.yaw_rate_P << " I: = " << config.yaw_rate_I << " D: = " << config.yaw_rate_D);
+    // set PID gains
+    pid_roll_.setGains(config.roll_P, config.roll_I, config.roll_D);
+    pid_pitch_.setGains(config.pitch_P, config.pitch_I, config.pitch_D);
+    pid_yaw_rate_.setGains(config.yaw_rate_P, config.yaw_rate_I, config.yaw_rate_D);
+    pid_roll_.clearIntegrator();
+    pid_pitch_.clearIntegrator();
+    pid_yaw_rate_.clearIntegrator();
+  }else if(controller_type_ == HINF_CONTROL){
+    ROS_WARN("using H-Inf Control");
+    h_inf_.setOmega(config.w1,config.w2,config.w3,config.wu);
+    h_inf_.setMassMatrix(multicopter_.inertia_matrix);
+    h_inf_.resetIntegrator();
+  }else{
+    ROS_ERROR_STREAM("Improper controller type: " << controller_type_);
+  }
 }
 
 

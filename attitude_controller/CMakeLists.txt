@@ -9,14 +9,19 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   geometry_msgs
   cmake_modules
+  dynamic_reconfigure
 )
 
 find_package(Eigen REQUIRED)
 
+generate_dynamic_reconfigure_options(
+  cfg/gains.cfg
+)
+
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   CATKIN_DEPENDS geometry_msgs rotor_gazebo nav_msgs roscpp
-  DEPENDS Eigen
+  DEPENDS Eigen dynamic_reconfigure
 )
 
 ###########
@@ -27,6 +32,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Eigen_INCLUDE_DIRS}
 )
+include_directories(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 
 ## Declare a cpp library
 # add_library(attitude_controller

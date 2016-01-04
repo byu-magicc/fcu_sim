@@ -88,6 +88,7 @@ class Joy {
 
   double current_yaw_vel_;
   double v_yaw_step_;
+  double mass_;
 
   void StopMav();
 

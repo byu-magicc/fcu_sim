@@ -1,15 +1,12 @@
-PID_gains: {
-  kp_roll: 0.4,  ki_roll: 0.0,  kd_roll: 0.3,
-  kp_pitch: 0.4, ki_pitch: 0.0, kd_pitch: 0.3,
-  kp_yaw: 0.5,  ki_yaw: 0.0,   kd_yaw: 0.05}
-
-HInf_gains: {
+attitude_controller: {
+  roll_P: 0.4, roll_I: 0.0, roll_D: 0.3,
+  pitch_P: 0.4, pitch_I: 0.0, pitch_D: 0.3,
+  yaw_rate_P: 0.5, yaw_rate_I: 0.0, yaw_rate_D: 0.05,
   w1: 10.0,
   w2: 3.0,
   w3: 9.0,
-  wu: 1.5}
-
-controller_type: 0
+  wu: 1.5,
+  controller_type: 0}
 
 
 
