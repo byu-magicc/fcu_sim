@@ -169,7 +169,10 @@ Author: James Jackson
   <!-- ***************** SENSORS ******************* -->
   <!-- Mount an ADIS16448 IMU. -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/imu.xacro"/>
-  <xacro:default_imu namespace="${namespace}" parent_link="${namespace}/base_link" />
+  <xacro:IMU_ADIS16448 
+    namespace="${namespace}" 
+    parent_link="${namespace}/base_link"
+    imu_topic="/imu/data" />
 
   <!-- Enable Ground Truth -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/odometry_sensor.xacro"/>
