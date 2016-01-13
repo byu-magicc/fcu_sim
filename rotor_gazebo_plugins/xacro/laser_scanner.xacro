@@ -23,7 +23,7 @@
     </xacro:laser_scanner>
   </xacro:macro>
 
-  <!-- Macro to add a depth camera. -->
+  <!-- Macro to add a laser scanner. -->
   <xacro:macro 
     name="laser_scanner"
     params="namespace

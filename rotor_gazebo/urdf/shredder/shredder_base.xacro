@@ -224,11 +224,11 @@ Author: James Jackson
     imu_topic="imu"/>
 
   <!--Enable Wind -->
-<!--   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/wind.xacro"/>
+  <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
     namespace=""
     link_name="${namespace}/base_link"
-    wind_pub_topic="wind"/> -->
+    wind_pub_topic="wind"/>
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find rotor_gazebo_plugins)/xacro/altimeter.xacro"/>
