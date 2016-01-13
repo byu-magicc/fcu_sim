@@ -30,15 +30,15 @@ Joy::Joy() {
 
   pnh.param<std::string>("command_topic", command_topic_, "command");
 
-  pnh.param<int>("axis_roll_", axes_.roll, 2);
-  pnh.param<int>("axis_pitch_", axes_.pitch, 3);
+  pnh.param<int>("x_axis", axes_.roll, 2);
+  pnh.param<int>("y_axis", axes_.pitch, 3);
   pnh.param<int>("axis_thrust_", axes_.thrust, 1);
-  pnh.param<int>("axis_yaw_", axes_.yaw, 0);
+  pnh.param<int>("yaw_axis", axes_.yaw, 0);
 
-  pnh.param<int>("axis_direction_roll", axes_.roll_direction, -1);
-  pnh.param<int>("axis_direction_pitch", axes_.pitch_direction, -1);
+  pnh.param<int>("x_sign", axes_.roll_direction, -1);
+  pnh.param<int>("y_sign", axes_.pitch_direction, -1);
   pnh.param<int>("axis_direction_thrust", axes_.thrust_direction, 1);
-  pnh.param<int>("axis_direction_yaw", axes_.yaw_direction, -1);
+  pnh.param<int>("yaw_sign", axes_.yaw_direction, -1);
 
   pnh.param<double>("max_roll", max_.roll, 25.0 * M_PI / 180.0);  // [rad]
   pnh.param<double>("max_pitch", max_.pitch, 25.0 * M_PI / 180.0);  // [rad]

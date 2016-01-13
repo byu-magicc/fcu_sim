@@ -1,6 +1,6 @@
 # Firefly vehicle parameters
 mass: 0.5755
-inertia: {xx: 0.007, xy: 0.0, xz: 0.0, yy: 0.007, yz: 0.0, zz: 0.012}
+inertia: {xx: 0.179, xy: 0.0, xz: 0.0, yy: 0.182, yz: 0.0, zz: 0.3258}
 
 # angle should be expressed in rad
 # direction 1 means counter clockwise, -1 clockwise

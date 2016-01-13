@@ -29,7 +29,7 @@ Author: James Jackson
   <xacro:property name="rotor_drag_coefficient" value="8.06428e-05" />
   <xacro:property name="rolling_moment_coefficient" value="0.000001" />
   <xacro:property name="body_inertia">
-    <inertia ixx="0.007" ixy="0.0" ixz="0.0" iyy="0.007" iyz="0.0" izz="0.012" />
+    <inertia ixx="0.182" ixy="0.0" ixz="0.0" iyy="0.179" iyz="0.0" izz="0.3258" />
   </xacro:property>
   <xacro:property name="rotor_inertia">
     <xacro:box_inertia x="${radius_rotor}" y="0.015" z="0.003" mass="${mass_rotor*rotor_velocity_slowdown_sim}" />
