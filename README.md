@@ -11,7 +11,7 @@ File Descriptions
 
 This is a metapackage.  The packages are organized as follows:
 
-* rotor_gazebo is the meat of the package.  Most of the configuration for the simulation is found in rotor_gazebo.  The subfolder organization is a bit cryptic.  Here is how it is organized, besides what is obvious.
+* fcu_sim is the meat of the package.  Most of the configuration for the simulation is found in fcu_sim.  The subfolder organization is a bit cryptic.  Here is how it is organized, besides what is obvious.
 
 	** meshes:  the meshes folder contains the 3D geometry for displaying multirotors.  Since the original file was based on Ascending Tech MAV's the Pelican, Hummingbird, and Firefly have been programmed in.  The shredder model uses the Firefly, even though Shredder is quite a bit larger than the Firefly, and is also a Hex + configuration instead of a Hex X like the Firefly.  It just works for now.
 
@@ -23,7 +23,7 @@ This is a metapackage.  The packages are organized as follows:
 
 	** code:  There is some C++ ROS code in this package, but it's mostly legacy.  At some point, it can probably all be removed.
 
-* rotor_gazebo_plugins
+* fcu_sim_plugins
 	This package is used to basically manipulate the model in gazebo.  At the time of this writing, there are 10 plugins.  The plugins are defined by the files in src/ and include/, and are hooked into gazebo via the xacro files.  The xacro files in this package have been expanded to include some customized sensor xacros whose plugins are implemented in the ROS system files.  These are the rgbd camera, laser scanner and odometry sensor files.  You can import the xacro files for the various sensors and models into your shredder_base.xacro file to use them on your model.  They have arguments much like ROS launch files to customize them to your needs.
 
 * rotor_sim_joy
@@ -43,12 +43,12 @@ How To Use
 To use for simulating shredder, one can simply just copy the launch file and customize it for their needs.  However, creating a new model may be more complicated.
 
 * First, you will need to duplicate a number of files, those are
-	1 - rotor_gazebo/urdf/shredder_base.xacro
-	2 - rotor_gazebo/urdf/shredder_mechanics.xacro
-	3 - rotor_gazebo/param/shredder.yaml
+	1 - fcu_sim/urdf/shredder_base.xacro
+	2 - fcu_sim/urdf/shredder_mechanics.xacro
+	3 - fcu_sim/param/shredder.yaml
 
-* Go through these files and reconfigure them to match your desired MAV.  If you want to import new geometry from a .dae mesh file, that can be saved in the rotor_gazebo/meshes folder.
+* Go through these files and reconfigure them to match your desired MAV.  If you want to import new geometry from a .dae mesh file, that can be saved in the fcu_sim/meshes folder.
 
-* Copy rotor_gazebo/launch/simulator.launch, which is a bare-bones launch file for simply creating the simulation environment.  Modify the model launched by the spawn_mav.launch command, and the param file loaded by the attitude_controller node to match the files you copied earlier.
+* Copy fcu_sim/launch/simulator.launch, which is a bare-bones launch file for simply creating the simulation environment.  Modify the model launched by the spawn_mav.launch command, and the param file loaded by the attitude_controller node to match the files you copied earlier.
 
 Try launching simulator.launch.  It should function, and you will see your MAV flying in Gazebo.  You can additionally run rotor_sim_joy to control your MAV like it were being commaned by RC inputs.
