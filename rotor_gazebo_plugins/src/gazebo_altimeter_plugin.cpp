@@ -20,13 +20,6 @@
 
 #include "rotor_gazebo_plugins/gazebo_altimeter_plugin.h"
 
-#include <chrono>
-#include <cmath>
-#include <iostream>
-#include <stdio.h>
-
-#include <boost/bind.hpp>
-
 namespace gazebo {
 
 GazeboAltimeterPlugin::GazeboAltimeterPlugin()

@@ -34,14 +34,11 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
-#include <rotor_gazebo/Actuators.h>
-#include <rotor_gazebo/default_topics.h>
-#include <rotor_gazebo/WindSpeed.h>
-#include <rotor_gazebo/FWCommand.h>
+#include <fcu_io/Command.h>
 #include <std_msgs/Float32.h>
+#include <geometry_msgs/Vector3.h>
 
 #include "rotor_gazebo_plugins/common.h"
-#include "rotor_gazebo_plugins/motor_model.hpp"
 
 namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
@@ -160,12 +157,10 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
 
-
-
   boost::thread callback_queue_thread_;
   void QueueThread();
-  void WindSpeedCallback(const rotor_gazebo::WindSpeedConstPtr& wind_speed);
-  void CommandCallback(const rotor_gazebo::FWCommandPtr& msg);
+  void WindSpeedCallback(const geometry_msgs::Vector3& wind);
+  void CommandCallback(const fcu_io::CommandConstPtr& msg);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;

@@ -28,30 +28,23 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <rotor_gazebo/Actuators.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <ros/ros.h>
-#include <rotor_gazebo/default_topics.h>
-
+#include <ctime>
 #include "rotor_gazebo_plugins/common.h"
 
 namespace gazebo {
 // Default values
-static const std::string kDefaultLinkName = "base_link";
-static const std::string kDefaultFrameId = "base_link";
+//static const std::string kDefaultLinkName = "base_link";
+//static const std::string kDefaultFrameId = "base_link";
 
 /// \brief This plugin publishes the motor speeds of your multirotor model.
 class GazeboMultirotorBasePlugin : public ModelPlugin {
   typedef std::map<const unsigned int, const physics::JointPtr> MotorNumberToJointMap;
   typedef std::pair<const unsigned int, const physics::JointPtr> MotorNumberToJointPair;
  public:
-  GazeboMultirotorBasePlugin()
-      : ModelPlugin(),
-        namespace_(kDefaultNamespace),
-        motor_pub_topic_(rotor_gazebo::default_topics::MOTOR_MEASUREMENT),
-        link_name_(kDefaultLinkName),
-        frame_id_(kDefaultFrameId),
-        rotor_velocity_slowdown_sim_(kDefaultRotorVelocitySlowdownSim),
-        node_handle_(NULL) {}
+  GazeboMultirotorBasePlugin(): ModelPlugin() {}
+
 
   virtual ~GazeboMultirotorBasePlugin();
 

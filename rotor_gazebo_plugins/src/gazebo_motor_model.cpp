@@ -84,20 +84,18 @@ void GazeboMotorModel::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   else
     gzerr << "[gazebo_motor_model] Please specify a turning direction ('cw' or 'ccw').\n";
 
-  getSdfParam<std::string>(_sdf, "commandSubTopic", command_sub_topic_, command_sub_topic_);
-  getSdfParam<std::string>(_sdf, "windSpeedSubTopic", wind_speed_sub_topic_, wind_speed_sub_topic_);
-  getSdfParam<std::string>(_sdf, "motorSpeedPubTopic", motor_speed_pub_topic_,
-                           motor_speed_pub_topic_);
+  getSdfParam<std::string>(_sdf, "commandSubTopic", command_sub_topic_, "command");
+  getSdfParam<std::string>(_sdf, "windSpeedSubTopic", wind_speed_sub_topic_, "wind");
+  getSdfParam<std::string>(_sdf, "motorSpeedPubTopic", motor_speed_pub_topic_, "motors");
 
-  getSdfParam<double>(_sdf, "rotorDragCoefficient", rotor_drag_coefficient_, rotor_drag_coefficient_);
-  getSdfParam<double>(_sdf, "rollingMomentCoefficient", rolling_moment_coefficient_,
-                      rolling_moment_coefficient_);
-  getSdfParam<double>(_sdf, "maxRotVelocity", max_rot_velocity_, max_rot_velocity_);
-  getSdfParam<double>(_sdf, "motorConstant", motor_constant_, motor_constant_);
-  getSdfParam<double>(_sdf, "momentConstant", moment_constant_, moment_constant_);
+  getSdfParam<double>(_sdf, "rotorDragCoefficient", rotor_drag_coefficient_, 1.0e-4);
+  getSdfParam<double>(_sdf, "rollingMomentCoefficient",rolling_moment_coefficient_, 1.3e-6);
+  getSdfParam<double>(_sdf, "maxRotVelocity", max_rot_velocity_, 838.0);
+  getSdfParam<double>(_sdf, "motorConstant", motor_constant_, 8.54858e-6);
+  getSdfParam<double>(_sdf, "momentConstant", moment_constant_, 0.016);
 
-  getSdfParam<double>(_sdf, "timeConstantUp", time_constant_up_, time_constant_up_);
-  getSdfParam<double>(_sdf, "timeConstantDown", time_constant_down_, time_constant_down_);
+  getSdfParam<double>(_sdf, "timeConstantUp", time_constant_up_, 1.0/80.0);
+  getSdfParam<double>(_sdf, "timeConstantDown", time_constant_down_, 1.0/40.0);
   getSdfParam<double>(_sdf, "rotorVelocitySlowdownSim", rotor_velocity_slowdown_sim_, 10);
 
   // Set the maximumForce on the joint. This is deprecated from V5 on, and the joint won't move.
@@ -124,18 +122,18 @@ void GazeboMotorModel::OnUpdate(const common::UpdateInfo& _info) {
   Publish();
 }
 
-void GazeboMotorModel::VelocityCallback(const rotor_gazebo::ActuatorsConstPtr& rot_velocities) {
-  ROS_ASSERT_MSG(rot_velocities->angular_velocities.size() > motor_number_,
+void GazeboMotorModel::VelocityCallback(const std_msgs::Float64MultiArrayConstPtr& rot_velocities) {
+  ROS_ASSERT_MSG(rot_velocities->data.size() > motor_number_,
                  "You tried to access index %d of the MotorSpeed message array which is of size %d.",
-                 (int)motor_number_, (int)rot_velocities->angular_velocities.size());
-  ref_motor_rot_vel_ = std::min(rot_velocities->angular_velocities[motor_number_], static_cast<double>(max_rot_velocity_));
+                 (int)motor_number_, (int)rot_velocities->data.size());
+  ref_motor_rot_vel_ = std::min(rot_velocities->data[motor_number_], static_cast<double>(max_rot_velocity_));
 }
 
-void GazeboMotorModel::WindSpeedCallback(const rotor_gazebo::WindSpeedConstPtr& wind_speed) {
+void GazeboMotorModel::WindSpeedCallback(const geometry_msgs::Vector3ConstPtr& wind_speed) {
   // TODO(burrimi): Transform velocity to world frame if frame_id is set to something else.
-  wind_speed_W_.x = wind_speed->velocity.x;
-  wind_speed_W_.y = wind_speed->velocity.y;
-  wind_speed_W_.z = wind_speed->velocity.z;
+  wind_speed_W_.x = wind_speed->x;
+  wind_speed_W_.y = wind_speed->y;
+  wind_speed_W_.z = wind_speed->z;
 }
 
 void GazeboMotorModel::UpdateForcesAndMoments() {

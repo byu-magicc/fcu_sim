@@ -28,10 +28,16 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <rotor_gazebo/default_topics.h>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+
+#include <chrono>
+#include <cmath>
+#include <iostream>
+#include <stdio.h>
+
+#include <boost/bind.hpp>
 
 #include "rotor_gazebo_plugins/common.h"
 

@@ -21,14 +21,6 @@
 
 #include "rotor_gazebo_plugins/gazebo_odometry_plugin.h"
 
-#include <chrono>
-#include <iostream>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <rotor_gazebo_plugins/common.h>
-
 namespace gazebo {
 
 GazeboOdometryPlugin::~GazeboOdometryPlugin() {
@@ -88,12 +80,12 @@ void GazeboOdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   else {
     random_generator_.seed(std::chrono::system_clock::now().time_since_epoch().count());
   }
-  getSdfParam<std::string>(_sdf, "poseTopic", pose_pub_topic_, pose_pub_topic_);
-  getSdfParam<std::string>(_sdf, "poseWithCovarianceTopic", pose_with_covariance_pub_topic_, pose_with_covariance_pub_topic_);
-  getSdfParam<std::string>(_sdf, "positionTopic", position_pub_topic_, position_pub_topic_);
-  getSdfParam<std::string>(_sdf, "transformTopic", transform_pub_topic_, transform_pub_topic_);
-  getSdfParam<std::string>(_sdf, "odometryTopic", odometry_pub_topic_, odometry_pub_topic_);
-  getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, parent_frame_id_);
+  getSdfParam<std::string>(_sdf, "poseTopic", pose_pub_topic_, "pose");
+  getSdfParam<std::string>(_sdf, "poseWithCovarianceTopic", pose_with_covariance_pub_topic_, "pose_with_covariance");
+  getSdfParam<std::string>(_sdf, "positionTopic", position_pub_topic_, "position");
+  getSdfParam<std::string>(_sdf, "transformTopic", transform_pub_topic_, "transform");
+  getSdfParam<std::string>(_sdf, "odometryTopic", odometry_pub_topic_, "odometry");
+  getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, "world");
   getSdfParam<sdf::Vector3>(_sdf, "noiseNormalPosition", noise_normal_position, zeros3);
   getSdfParam<sdf::Vector3>(_sdf, "noiseNormalQuaternion", noise_normal_quaternion, zeros3);
   getSdfParam<sdf::Vector3>(_sdf, "noiseNormalLinearVelocity", noise_normal_linear_velocity, zeros3);
@@ -102,13 +94,13 @@ void GazeboOdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   getSdfParam<sdf::Vector3>(_sdf, "noiseUniformQuaternion", noise_uniform_quaternion, zeros3);
   getSdfParam<sdf::Vector3>(_sdf, "noiseUniformLinearVelocity", noise_uniform_linear_velocity, zeros3);
   getSdfParam<sdf::Vector3>(_sdf, "noiseUniformAngularVelocity", noise_uniform_angular_velocity, zeros3);
-  getSdfParam<int>(_sdf, "measurementDelay", measurement_delay_, measurement_delay_);
-  getSdfParam<int>(_sdf, "measurementDivisor", measurement_divisor_, measurement_divisor_);
-  getSdfParam<double>(_sdf, "unknownDelay", unknown_delay_, unknown_delay_);
-  getSdfParam<double>(_sdf, "covarianceImageScale", covariance_image_scale_, covariance_image_scale_);
+  getSdfParam<int>(_sdf, "measurementDelay", measurement_delay_, 0);
+  getSdfParam<int>(_sdf, "measurementDivisor", measurement_divisor_, 1);
+  getSdfParam<double>(_sdf, "unknownDelay", unknown_delay_, 0);
+  getSdfParam<double>(_sdf, "covarianceImageScale", covariance_image_scale_, 1.0);
 
   parent_link_ = world_->GetEntity(parent_frame_id_);
-  if (parent_link_ == NULL && parent_frame_id_ != kDefaultParentFrameId) {
+  if (parent_link_ == NULL && parent_frame_id_ != "world") {
     gzthrow("[gazebo_odometry_plugin] Couldn't find specified parent link \"" << parent_frame_id_ << "\".");
   }
   position_n_[0] = NormalDistribution(0, noise_normal_position.x);
@@ -189,7 +181,7 @@ void GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info) {
   math::Vector3 gazebo_angular_velocity = C_angular_velocity_W_C;
   math::Pose gazebo_pose = W_pose_W_C;
 
-  if (parent_frame_id_ != kDefaultParentFrameId) {
+  if (parent_frame_id_ != "world") {
     math::Pose W_pose_W_P = parent_link_->GetWorldPose();
     math::Vector3 P_linear_velocity_W_P = parent_link_->GetRelativeLinearVel();
     math::Vector3 P_angular_velocity_W_P = parent_link_->GetRelativeAngularVel();

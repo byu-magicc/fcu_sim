@@ -20,8 +20,6 @@
 
 
 #include "rotor_gazebo_plugins/gazebo_wind_plugin.h"
-#include <geometry_msgs/WrenchStamped.h>
-#include <chrono>
 
 namespace gazebo {
 
@@ -38,9 +36,6 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   model_ = _model;
   world_ = model_->GetWorld();
 
-  double wind_gust_start = kDefaultWindGustStart;
-  double wind_gust_duration = kDefaultWindGustDuration;
-
   if (_sdf->HasElement("robotNamespace"))
     namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>();
   else
@@ -52,20 +47,22 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   else
     gzerr << "[gazebo_wind_plugin] Please specify a xyzOffset.\n";
 
-  getSdfParam<std::string>(_sdf, "windPubTopic", wind_pub_topic_, "/" + namespace_ + wind_pub_topic_);
-  getSdfParam<std::string>(_sdf, "frameId", frame_id_, frame_id_);
-  getSdfParam<std::string>(_sdf, "linkName", link_name_, link_name_);
+  getSdfParam<std::string>(_sdf, "windPubTopic", wind_pub_topic_, "wind");
+  getSdfParam<std::string>(_sdf, "frameId", frame_id_, "world");
+  getSdfParam<std::string>(_sdf, "linkName", link_name_, "wind");
 
   // Get the wind params from SDF.
-  getSdfParam<double>(_sdf, "windForceMean", wind_force_mean_, wind_force_mean_);
-  getSdfParam<double>(_sdf, "windForceVariance", wind_force_variance_, wind_force_variance_);
+  getSdfParam<double>(_sdf, "windForceMean", wind_force_mean_, 0.0);
+  getSdfParam<double>(_sdf, "windForceVariance", wind_force_variance_, 0.0);
 
   // Get the wind gust params from SDF.
-  getSdfParam<double>(_sdf, "windGustStart", wind_gust_start, wind_gust_start);
-  getSdfParam<double>(_sdf, "windGustDuration", wind_gust_duration, wind_gust_duration);
-  getSdfParam<double>(_sdf, "windGustForceMean", wind_gust_force_mean_, wind_gust_force_mean_);
-  getSdfParam<double>(_sdf, "windGustForceVariance", wind_gust_force_variance_, wind_gust_force_variance_);
-  getSdfParam<math::Vector3>(_sdf, "windGustDirection", wind_gust_direction_, wind_gust_direction_);
+  double wind_gust_start;
+  double wind_gust_duration;
+  getSdfParam<double>(_sdf, "windGustStart", wind_gust_start, 0.0);
+  getSdfParam<double>(_sdf, "windGustDuration", wind_gust_duration, 0.0);
+  getSdfParam<double>(_sdf, "windGustForceMean", wind_gust_force_mean_, 0.0);
+  getSdfParam<double>(_sdf, "windGustForceVariance", wind_gust_force_variance_, 0.0);
+  getSdfParam<math::Vector3>(_sdf, "windGustDirection", wind_gust_direction_, math::Vector3(0,0,0));
 
   wind_gust_direction_.Normalize();
   wind_gust_start_ = common::Time(wind_gust_start);
@@ -132,19 +129,13 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
     link_->AddForceAtRelativePosition(wind_gust, xyz_offset_);
   }
 
-  geometry_msgs::WrenchStamped wrench_msg;
+  geometry_msgs::Vector3 wind_msg;
 
-  wrench_msg.header.frame_id = frame_id_;
-  wrench_msg.header.stamp.sec = now.sec;
-  wrench_msg.header.stamp.nsec = now.nsec;
-  wrench_msg.wrench.force.x = wind.x + wind_gust.x;
-  wrench_msg.wrench.force.y = wind.y + wind_gust.y;
-  wrench_msg.wrench.force.z = wind.z + wind_gust.z;
-  wrench_msg.wrench.torque.x = 0;
-  wrench_msg.wrench.torque.y = 0;
-  wrench_msg.wrench.torque.z = 0;
+  wind_msg.x = wind.x + wind_gust.x;
+  wind_msg.y = wind.y + wind_gust.y;
+  wind_msg.z = wind.z + wind_gust.z;
 
-  wind_pub_.publish(wrench_msg);
+  wind_pub_.publish(wind_msg);
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboWindPlugin);

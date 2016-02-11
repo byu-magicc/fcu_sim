@@ -20,19 +20,10 @@
 
 #include "rotor_gazebo_plugins/gazebo_imu_plugin.h"
 
-#include <chrono>
-#include <cmath>
-#include <iostream>
-#include <stdio.h>
-
-#include <boost/bind.hpp>
 
 namespace gazebo {
 
-GazeboImuPlugin::GazeboImuPlugin()
-    : ModelPlugin(),
-      node_handle_(0),
-      velocity_prev_W_(0, 0, 0) {}
+GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_W_(0, 0, 0) {}
 
 GazeboImuPlugin::~GazeboImuPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
@@ -72,30 +63,30 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
                            rotor_gazebo::default_topics::IMU);
   getSdfParam<double>(_sdf, "gyroscopeNoiseDensity",
                       imu_parameters_.gyroscope_noise_density,
-                      imu_parameters_.gyroscope_noise_density);
+                      2.0 * 35.0 / 3600.0 / 180.0 * M_PI);
   getSdfParam<double>(_sdf, "gyroscopeBiasRandomWalk",
                       imu_parameters_.gyroscope_random_walk,
-                      imu_parameters_.gyroscope_random_walk);
+                      2.0 * 4.0 / 3600.0 / 180.0 * M_PI);
   getSdfParam<double>(_sdf, "gyroscopeBiasCorrelationTime",
                       imu_parameters_.gyroscope_bias_correlation_time,
-                      imu_parameters_.gyroscope_bias_correlation_time);
+                      1.0e+3);
   assert(imu_parameters_.gyroscope_bias_correlation_time > 0.0);
   getSdfParam<double>(_sdf, "gyroscopeTurnOnBiasSigma",
                       imu_parameters_.gyroscope_turn_on_bias_sigma,
-                      imu_parameters_.gyroscope_turn_on_bias_sigma);
+                      0.5 / 180.0 * M_PI);
   getSdfParam<double>(_sdf, "accelerometerNoiseDensity",
                       imu_parameters_.accelerometer_noise_density,
-                      imu_parameters_.accelerometer_noise_density);
+                      2.0 * 2.0e-3);
   getSdfParam<double>(_sdf, "accelerometerRandomWalk",
                       imu_parameters_.accelerometer_random_walk,
-                      imu_parameters_.accelerometer_random_walk);
+                      2.0 * 3.0e-3);
   getSdfParam<double>(_sdf, "accelerometerBiasCorrelationTime",
                       imu_parameters_.accelerometer_bias_correlation_time,
-                      imu_parameters_.accelerometer_bias_correlation_time);
+                      300.0);
   assert(imu_parameters_.accelerometer_bias_correlation_time > 0.0);
   getSdfParam<double>(_sdf, "accelerometerTurnOnBiasSigma",
                       imu_parameters_.accelerometer_turn_on_bias_sigma,
-                      imu_parameters_.accelerometer_turn_on_bias_sigma);
+                      20.0e-3 * 9.8);
 
   last_time_ = world_->GetSimTime();
 
@@ -244,7 +235,7 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   imu_message_.header.stamp.sec = current_time.sec;
   imu_message_.header.stamp.nsec = current_time.nsec;
 
-  // TODO(burrimi): Add orientation estimator.
+  // TODO: Add orientation estimator.
   imu_message_.orientation.w = 1;
   imu_message_.orientation.x = 0;
   imu_message_.orientation.y = 0;

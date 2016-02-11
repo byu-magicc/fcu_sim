@@ -20,9 +20,7 @@
 
 #include "rotor_gazebo_plugins/gazebo_multirotor_base_plugin.h"
 
-#include <ctime>
 
-#include <rotor_gazebo/Actuators.h>
 
 namespace gazebo {
 
@@ -39,14 +37,14 @@ void GazeboMultirotorBasePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr 
   world_ = model_->GetWorld();
   namespace_.clear();
 
-  getSdfParam<std::string>(_sdf, "robotNamespace", namespace_, namespace_, true);
-  getSdfParam<std::string>(_sdf, "linkName", link_name_, link_name_, true);
-  getSdfParam<std::string>(_sdf, "motorPubTopic", motor_pub_topic_, motor_pub_topic_);
-  getSdfParam<double>(_sdf, "rotorVelocitySlowdownSim", rotor_velocity_slowdown_sim_,
-                      rotor_velocity_slowdown_sim_);
+  getSdfParam<std::string>(_sdf, "robotNamespace", namespace_, "", true);
+  getSdfParam<std::string>(_sdf, "linkName", link_name_, "base_link", true);
+  getSdfParam<std::string>(_sdf, "frameId", frame_id_, "base_link");
+  getSdfParam<std::string>(_sdf, "motorPubTopic", motor_pub_topic_, "motors");
+  getSdfParam<double>(_sdf, "rotorVelocitySlowdownSim", rotor_velocity_slowdown_sim_,10.0);
 
   node_handle_ = new ros::NodeHandle(namespace_);
-  motor_pub_ = node_handle_->advertise<rotor_gazebo::Actuators>(motor_pub_topic_, 10);
+  motor_pub_ = node_handle_->advertise<std_msgs::Float64MultiArray>(motor_pub_topic_, 10);
   frame_id_ = link_name_;
 
   link_ = model_->GetLink(link_name_);
@@ -78,18 +76,14 @@ void GazeboMultirotorBasePlugin::Load(physics::ModelPtr _model, sdf::ElementPtr 
 void GazeboMultirotorBasePlugin::OnUpdate(const common::UpdateInfo& _info) {
   // Get the current simulation time.
   common::Time now = world_->GetSimTime();
-  rotor_gazebo::ActuatorsPtr msg(new rotor_gazebo::Actuators);
-  msg->angular_velocities.resize(motor_joints_.size());
+  std_msgs::Float64MultiArray msg;
+  msg.data.resize(motor_joints_.size());
 
   MotorNumberToJointMap::iterator m;
   for (m = motor_joints_.begin(); m != motor_joints_.end(); ++m) {
     double motor_rot_vel = m->second->GetVelocity(0) * rotor_velocity_slowdown_sim_;
-    msg->angular_velocities[m->first] = motor_rot_vel;
+    msg.data[m->first] = motor_rot_vel;
   }
-  msg->header.stamp.sec = now.sec;
-  msg->header.stamp.nsec = now.nsec;
-  msg->header.frame_id = frame_id_;
-
   motor_pub_.publish(msg);
 }
 

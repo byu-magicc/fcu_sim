@@ -1,9 +1,0 @@
-x_axis: 2,
-y_axis: 3,
-axis_thrust: 1,
-yaw_axis: 0,
-x_sign: -1,
-y_sign: -1,
-axis_direction_thrust: 1,
-yaw_sign: -1,
-button_takeoff: 0

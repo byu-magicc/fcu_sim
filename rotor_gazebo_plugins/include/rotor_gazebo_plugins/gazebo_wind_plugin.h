@@ -29,47 +29,17 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+#include <geometry_msgs/WrenchStamped.h>
+#include <chrono>
 
 #include "rotor_gazebo_plugins/common.h"
 
 namespace gazebo {
-// Default values
-static const std::string kDefaultFrameId = "world";
-static const std::string kDefaultLinkName = "base_link";
-
-static constexpr double kDefaultWindForceMean = 0.0;
-static constexpr double kDefaultWindForceVariance = 0.0;
-static constexpr double kDefaultWindGustForceMean = 0.0;
-static constexpr double kDefaultWindGustForceVariance = 0.0;
-
-static constexpr double kDefaultWindGustStart = 10.0;
-static constexpr double kDefaultWindGustDuration = 0.0;
-
-static const math::Vector3 kDefaultWindGustDirection = math::Vector3(0, 1, 0);
-
-
 
 /// \brief This gazebo plugin simulates wind acting on a model.
 class GazeboWindPlugin : public ModelPlugin {
  public:
-  GazeboWindPlugin()
-      : ModelPlugin(),
-        namespace_(kDefaultNamespace),
-        wind_pub_topic_(rotor_gazebo::default_topics::WIND),
-        wind_force_mean_(kDefaultWindForceMean),
-        wind_force_variance_(kDefaultWindForceVariance),
-        wind_gust_force_mean_(kDefaultWindGustForceMean),
-        wind_gust_force_variance_(kDefaultWindGustForceVariance),
-        wind_x(0),
-        wind_y(0),
-        wind_z(0),
-        wind_strength(0),
-        wind_change_delay(0),
-        wind_change_value(0),
-        wind_gust_direction_(kDefaultWindGustDirection),
-        frame_id_(kDefaultFrameId),
-        link_name_(kDefaultLinkName),
-        node_handle_(NULL) {}
+  GazeboWindPlugin() : ModelPlugin(){}
 
   virtual ~GazeboWindPlugin();
 
@@ -105,6 +75,8 @@ class GazeboWindPlugin : public ModelPlugin {
   double wind_y;
   double wind_z;
   double wind_strength;
+
+
 
   int wind_change_delay;
   int wind_change_value;

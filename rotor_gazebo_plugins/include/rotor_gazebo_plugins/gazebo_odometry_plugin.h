@@ -44,25 +44,20 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/TwistWithCovariance.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
-#include <rotor_gazebo/default_topics.h>
 #include <nav_msgs/Odometry.h>
 #include <opencv2/core/core.hpp>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <rotor_gazebo_plugins/common.h>
 #include <tf/transform_broadcaster.h>
+#include <chrono>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
 
 namespace gazebo {
-// Default values
-static const std::string kDefaultParentFrameId = "world";
-static const std::string kDefaultLinkName = "odometry_sensor_link";
 
-static constexpr int kDefaultMeasurementDelay = 0;
-static constexpr int kDefaultMeasurementDivisor = 1;
-static constexpr int kDefaultGazeboSequence = 0;
-static constexpr int kDefaultOdometrySequence = 0;
-static constexpr double kDefaultUnknownDelay = 0.0;
-static constexpr double kDefaultCovarianceImageScale = 1.0;
 
 class GazeboOdometryPlugin : public ModelPlugin {
  public:
@@ -70,23 +65,7 @@ class GazeboOdometryPlugin : public ModelPlugin {
   typedef std::uniform_real_distribution<> UniformDistribution;
   typedef std::deque<std::pair<int, nav_msgs::Odometry> > OdometryQueue;
 
-  GazeboOdometryPlugin()
-      : ModelPlugin(),
-        random_generator_(random_device_()),
-        pose_pub_topic_(rotor_gazebo::default_topics::POSE),
-        pose_with_covariance_pub_topic_(rotor_gazebo::default_topics::POSE_WITH_COVARIANCE),
-        position_pub_topic_(rotor_gazebo::default_topics::POSITION),
-        transform_pub_topic_(rotor_gazebo::default_topics::TRANSFORM),
-        odometry_pub_topic_(rotor_gazebo::default_topics::ODOMETRY),
-        parent_frame_id_(kDefaultParentFrameId),
-        link_name_(kDefaultLinkName),
-        measurement_delay_(kDefaultMeasurementDelay),
-        measurement_divisor_(kDefaultMeasurementDivisor),
-        unknown_delay_(kDefaultUnknownDelay),
-        gazebo_sequence_(kDefaultGazeboSequence),
-        odometry_sequence_(kDefaultOdometrySequence),
-        covariance_image_scale_(kDefaultCovarianceImageScale),
-        node_handle_(NULL) {}
+  GazeboOdometryPlugin() : ModelPlugin() {}
 
   ~GazeboOdometryPlugin();
 

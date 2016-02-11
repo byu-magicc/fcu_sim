@@ -70,8 +70,8 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
     gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
 
   /* Load Params from Gazebo Server */
-  getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "gazebo/wind_speed");
-  getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command/FWCommand");
+  getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
+  getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
 
   // physical parameters
   getSdfParam<double>(_sdf, "mass", mass_, 13.5);
@@ -166,11 +166,10 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAircraftForcesAndMoments::OnUpdate, this, _1));
-  gzmsg << "done configurating";
 
   // Connect Subscribers
   command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
-  // wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
 }
 
 // This gets called by the world update event.
@@ -182,12 +181,18 @@ void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
   SendForces();
 }
 
-void GazeboAircraftForcesAndMoments::CommandCallback(const rotor_gazebo::FWCommandPtr &msg)
+void GazeboAircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+  wind_.N = wind.x;
+  wind_.E = wind.y;
+  wind_.D = wind.z;
+}
+
+void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_io::CommandConstPtr &msg)
 {
-  delta_.t = msg->thrust;
-  delta_.e = msg->delta_e;
-  delta_.a = msg->delta_a;
-  delta_.r = msg->delta_r;
+  delta_.t = msg->normalized_throttle;
+  delta_.e = msg->normalized_pitch;
+  delta_.a = msg->normalized_roll;
+  delta_.r = msg->normalized_yaw;
 }
 
 
@@ -221,7 +226,6 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
   double alpha = atan2(wr , ur);
   double beta = asin(vr/Va);
-  gzmsg << "ur = " << ur << " vr = " << vr << " wr  = " << wr << " Va = " << Va << "\n";
 
   double sign = 1/(1 + exp(-alpha));//Sigmoid function
   double sigma_a = (1 + exp(-(wing_.M*(alpha - wing_.alpha0))) + exp((wing_.M*(alpha + wing_.alpha0))))/((1 + exp(-(wing_.M*(alpha - wing_.alpha0))))*(1 + exp((wing_.M*(alpha + wing_.alpha0)))));
@@ -241,12 +245,11 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
 
   // calculate forces
 
-
   /*
    * Pack Forces and Moments into the forces_ member for publishing in
    * SendForces()
    */
-  if(Va < 0.1){ // not moving
+  if(Va < 0.1){ // not moving (we need this check to make sure we don't divide by zero)
     forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
     forces_.Fy = 0.0;
     forces_.Fz = 0.0;
@@ -262,7 +265,6 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
     forces_.m = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.c*(Cm_.O + Cm_.alpha*alpha + (Cm_.q*wing_.c*q)/(2.0*Va) + Cm_.delta_e*delta_.e);
     forces_.n = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cn_.O + Cn_.beta*beta + (Cn_.p*wing_.b*p)/(2.0*Va) + (Cn_.r*wing_.b*r)/(2.0*Va) + Cn_.delta_a*delta_.a + Cn_.delta_r*delta_.r);
   }
-  gzmsg << "forces " << forces_.Fx << ", " << forces_.Fy << ", " << forces_.Fz << "\n";
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftForcesAndMoments);
