@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+    <!-- Forces And Moments Plugin -->
+    <xacro:macro 
+      name="aircraft_forces_and_moments" 
+      params="namespace parent_link">
+      <xacro:aircraft_forces_and_moments_macro
+        namespace="${namespace}/aircraft_forces_and_moments"
+        parent_link="${namespace}/base_link"
+        wind_speed_topic="gazebo/wind_speed"
+        command_topic="control_surface_deflection"
+        parent_frame_id="airplane"
+        mass="13.5"
+        Jx="0.8244"
+        Jy="1.135"
+        Jz="1.759"
+        Jxz=".1204"
+        rho="1.2682"
+        wing_s="0.55"
+        wing_b="2.8956"
+        wing_c="0.18994"
+        wing_M="0.55"
+        wing_epsilon="2.8956"
+        wing_alpha0="0.18994"
+        k_motor="80.0"
+        k_T_P="0.0"
+        k_Omega="0.0"
+        prop_e="0.9"
+        prop_S="0.202"
+        prop_C="1.0"
+        C_L_O="0.28"
+        C_L_alpha="3.45"
+        C_L_beta="0.0"
+        C_L_p="0.0"
+        C_L_q="0.0"
+        C_L_r="0.0"
+        C_L_delta_a="0.0"
+        C_L_delta_e="-0.36"
+        C_L_delta_r="0.0"
+        C_D_O="0.03"
+        C_D_alpha="0.30"
+        C_D_beta="0.0"
+        C_D_p="0.0437"
+        C_D_q="0.0"
+        C_D_r="0.0"
+        C_D_delta_a="0.0"
+        C_D_delta_e="0.0"
+        C_D_delta_r="0.0"
+        C_ell_O="0.0"
+        C_ell_alpha="0.00"
+        C_ell_beta="-0.12"
+        C_ell_p="-0.26"
+        C_ell_q="0.0"
+        C_ell_r="0.14"
+        C_ell_delta_a="0.08"
+        C_ell_delta_e="0.0"
+        C_ell_delta_r="0.105"
+        C_m_O="-0.02338"
+        C_m_alpha="-0.38"
+        C_m_beta="0.0"
+        C_m_p="0.0"
+        C_m_q="-3.6"
+        C_m_r="0.0"
+        C_m_delta_a="0.0"
+        C_m_delta_e="-0.5"
+        C_m_delta_r="0.0"
+        C_n_O="0.0"
+        C_n_alpha="0.0"
+        C_n_beta="0.25"
+        C_n_p="0.022"
+        C_n_q="0.0"
+        C_n_r="-0.35"
+        C_n_delta_a="0.06"
+        C_n_delta_e="0.0"
+        C_n_delta_r="-0.032"
+        C_Y_O="0.0"
+        C_Y_alpha="0.00"
+        C_Y_beta="-0.98"
+        C_Y_p="0.0"
+        C_Y_q="0.0"
+        C_Y_r="0.0"
+        C_Y_delta_a="0.0"
+        C_Y_delta_e="0.0"
+        C_Y_delta_r="-0.017"
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </xacro:aircraft_forces_and_moments_macro>
+    </xacro:macro>
+
+
+  <!-- Macro to add a generic odometry sensor. -->
+  <xacro:macro name="aircraft_forces_and_moments_macro"
+    params="
+        namespace  parent_link wind_speed_topic command_topic parent_frame_id mass Jx Jy Jz Jxz rho wing_s wing_b wing_c wing_M wing_epsilon wing_alpha0 k_motor k_T_P k_Omega prop_e prop_S prop_C C_L_O C_L_alpha C_L_beta C_L_p C_L_q C_L_r C_L_delta_a C_L_delta_e C_L_delta_r C_D_O C_D_alpha C_D_beta C_D_p C_D_q C_D_r C_D_delta_a C_D_delta_e C_D_delta_r C_ell_O C_ell_alpha C_ell_beta C_ell_p C_ell_q C_ell_r C_ell_delta_a C_ell_delta_e C_ell_delta_r C_m_O C_m_alpha C_m_beta C_m_p C_m_q C_m_r C_m_delta_a C_m_delta_e C_m_delta_r C_n_O C_n_alpha C_n_beta C_n_p C_n_q C_n_r C_n_delta_a C_n_delta_e C_n_delta_r C_Y_O C_Y_alpha C_Y_beta C_Y_p C_Y_q C_Y_r C_Y_delta_a C_Y_delta_e C_Y_delta_r *inertia">
+    <!-- link -->
+    <link name="${namespace}/aircraft_forces_and_moments_link">
+      <inertial>
+        <xacro:insert_block name="inertia" />
+        <mass value="${mass}" />  <!-- [kg] -->
+      </inertial>
+    </link>
+    <!-- odometry joint -->
+    <joint name="${namespace}/aircraft_forces_and_moments_joint" type="revolute">
+      <parent link="${parent_link}" />
+      <xacro:insert_block name="origin" />
+      <child link="${namespace}/aircraft_forces_and_moments_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0" />
+    </joint>
+    <gazebo>
+      <plugin filename="librotor_gazebo_aircraft_and_moments_plugin.so" name="aircraft_forces_and_moments">
+        <linkName>${namespace}/aircraft_forces_and_moments_link</linkName>
+        <robotNamespace>${namespace}</robotNamespace>
+        <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
+        <commandTopic>${command_topic}</commandTopic>
+        <parentFrameId>${parent_frame_id}</parentFrameId>
+        <mass>${mass}</mass>
+        <Jx>${Jx}</Jx>
+        <Jy>${Jy}</Jy>
+        <Jz>${Jz}</Jz>
+        <Jxz>${Jxz}</Jxz>
+        <rho>${rho}</rho>
+        <wing_s>${wing_s}</wing_s>
+        <wing_b>${wing_b}</wing_b>
+        <wing_c>${wing_c}</wing_c>
+        <wing_M>${wing_M}</wing_M>
+        <wing_epsilon>${wing_epsilon}</wing_epsilon>
+        <wing_alpha0>${wing_alpha0}</wing_alpha0>
+        <k_motor>${k_motor}</k_motor>
+        <k_T_P>${k_T_P}</k_T_P>
+        <k_Omega>${k_Omega}</k_Omega>
+        <prop_e>${prop_e}</prop_e>
+        <prop_S>${prop_S}</prop_S>
+        <prop_C>${prop_C}</prop_C>
+        <C_L_O>${C_L_O}</C_L_O>
+        <C_L_alpha>${C_L_alpha}</C_L_alpha>
+        <C_L_beta>${C_L_beta}</C_L_beta>
+        <C_L_p>${C_L_p}</C_L_p>
+        <C_L_q>${C_L_q}</C_L_q>
+        <C_L_r>${C_L_r}</C_L_r>
+        <C_L_delta_a>${C_L_delta_a}</C_L_delta_a>
+        <C_L_delta_e>${C_L_delta_e}</C_L_delta_e>
+        <C_L_delta_r>${C_L_delta_r}</C_L_delta_r>
+        <C_D_O>${C_D_O}</C_D_O>
+        <C_D_alpha>${C_D_alpha}</C_D_alpha>
+        <C_D_beta>${C_D_beta}</C_D_beta>
+        <C_D_p>${C_D_p}</C_D_p>
+        <C_D_q>${C_D_q}</C_D_q>
+        <C_D_r>${C_D_r}</C_D_r>
+        <C_D_delta_a>${C_D_delta_a}</C_D_delta_a>
+        <C_D_delta_e>${C_D_delta_e}</C_D_delta_e>
+        <C_D_delta_r>${C_D_delta_r}</C_D_delta_r>
+        <C_ell_O>${C_ell_O}</C_ell_O>
+        <C_ell_alpha>${C_ell_alpha}</C_ell_alpha>
+        <C_ell_beta>${C_ell_beta}</C_ell_beta>
+        <C_ell_p>${C_ell_p}</C_ell_p>
+        <C_ell_q>${C_ell_q}</C_ell_q>
+        <C_ell_r>${C_ell_r}</C_ell_r>
+        <C_ell_delta_a>${C_ell_delta_a}</C_ell_delta_a>
+        <C_ell_delta_e>${C_ell_delta_e}</C_ell_delta_e>
+        <C_ell_delta_r>${C_ell_delta_r}</C_ell_delta_r>
+        <C_m_O>${C_m_O}</C_m_O>
+        <C_m_alpha>${C_m_alpha}</C_m_alpha>
+        <C_m_beta>${C_m_beta}</C_m_beta>
+        <C_m_p>${C_m_p}</C_m_p>
+        <C_m_q>${C_m_q}</C_m_q>
+        <C_m_r>${C_m_r}</C_m_r>
+        <C_m_delta_a>${C_m_delta_a}</C_m_delta_a>
+        <C_m_delta_e>${C_m_delta_e}</C_m_delta_e>
+        <C_m_delta_r>${C_m_delta_r}</C_m_delta_r>
+        <C_n_O>${C_n_O}</C_n_O>
+        <C_n_alpha>${C_n_alpha}</C_n_alpha>
+        <C_n_beta>${C_n_beta}</C_n_beta>
+        <C_n_p>${C_n_p}</C_n_p>
+        <C_n_q>${C_n_q}</C_n_q>
+        <C_n_r>${C_n_r}</C_n_r>
+        <C_n_delta_a>${C_n_delta_a}</C_n_delta_a>
+        <C_n_delta_e>${C_n_delta_e}</C_n_delta_e>
+        <C_n_delta_r>${C_n_delta_r}</C_n_delta_r>
+        <C_Y_O>${C_Y_O}</C_Y_O>
+        <C_Y_alpha>${C_Y_alpha}</C_Y_alpha>
+        <C_Y_beta>${C_Y_beta}</C_Y_beta>
+        <C_Y_p>${C_Y_p}</C_Y_p>
+        <C_Y_q>${C_Y_q}</C_Y_q>
+        <C_Y_r>${C_Y_r}</C_Y_r>
+        <C_Y_delta_a>${C_Y_delta_a}</C_Y_delta_a>
+        <C_Y_delta_e>${C_Y_delta_e}</C_Y_delta_e>
+        <C_Y_delta_r>${C_Y_delta_r}</C_Y_delta_r>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+</robot>
