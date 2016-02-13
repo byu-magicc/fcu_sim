@@ -28,7 +28,7 @@
           wind_gust_start wind_gust_duration wind_gust_force_mean
           wind_gust_force_variance wind_gust_direction">
     <gazebo>
-      <plugin filename="librotor_gazebo_wind_plugin.so" name="gazebo_wind_plugin">
+      <plugin filename="libfcu_sim_wind_plugin.so" name="gazebo_wind_plugin">
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
         <xyzOffset>${xyz_offset}</xyzOffset> <!-- (Vector3, required): -->
         <windPubTopic>${wind_pub_topic}</windPubTopic>

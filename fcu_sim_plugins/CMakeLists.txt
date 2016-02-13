@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_srvs
   tf
-  relative_nav
+  fcu_common
 )
 
 find_package(Eigen REQUIRED)
@@ -27,7 +27,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
-  LIBRARIES rotor_gazebo_motor_model rotor_gazebo_controller_interface
+  LIBRARIES fcu_sim_motor_model fcu_sim_controller_interface
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
                  fcu_sim std_srvs tf relative_nav relative_nav
   DEPENDS eigen gazebo opencv
@@ -36,62 +36,62 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
 
-add_library(rotor_gazebo_motor_model 
+add_library(fcu_sim_motor_model
   src/gazebo_motor_model.cpp  
   include/fcu_sim_plugins/motor_model.hpp
   include/fcu_sim_plugins/gazebo_motor_model.h
   include/fcu_sim_plugins/common.h   
   include/fcu_sim_plugins/motor_controller.hpp  
   include/fcu_sim_plugins/multi_copter.hpp)
-target_link_libraries(rotor_gazebo_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_motor_model ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_motor_model ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_aircraft_forces_and_moments_plugin
+add_library(fcu_sim_aircraft_forces_and_moments_plugin
   src/gazebo_aircraft_forces_and_moments.cpp
   include/fcu_sim_plugins/gazebo_aircraft_forces_and_moments.h)
-target_link_libraries(rotor_gazebo_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
 
 
-add_library(rotor_gazebo_odometry_plugin 
+add_library(fcu_sim_odometry_plugin
   src/gazebo_odometry_plugin.cpp
   include/fcu_sim_plugins/gazebo_odometry_plugin.h)
-target_link_libraries(rotor_gazebo_odometry_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBRARIES})
-add_dependencies(rotor_gazebo_odometry_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_odometry_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${OpenCV_LIBRARIES})
+add_dependencies(fcu_sim_odometry_plugin ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_imu_plugin 
+add_library(fcu_sim_imu_plugin
   src/gazebo_imu_plugin.cpp
   include/fcu_sim_plugins/gazebo_imu_plugin.h)
-target_link_libraries(rotor_gazebo_imu_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_imu_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_imu_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_imu_plugin ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_altimeter_plugin 
+add_library(fcu_sim_altimeter_plugin
   src/gazebo_altimeter_plugin.cpp
   include/fcu_sim_plugins/gazebo_altimeter_plugin.h)
-target_link_libraries(rotor_gazebo_altimeter_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_altimeter_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_altimeter_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_altimeter_plugin ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_wind_plugin 
+add_library(fcu_sim_wind_plugin
   src/gazebo_wind_plugin.cpp
   include/fcu_sim_plugins/gazebo_wind_plugin.h)
-target_link_libraries(rotor_gazebo_wind_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_wind_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_wind_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_wind_plugin ${catkin_EXPORTED_TARGETS})
 
-add_library(rotor_gazebo_multirotor_base_plugin 
+add_library(fcu_sim_multirotor_base_plugin
   src/gazebo_multirotor_base_plugin.cpp
   include/fcu_sim_plugins/gazebo_multirotor_base_plugin.h)
-target_link_libraries(rotor_gazebo_multirotor_base_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(rotor_gazebo_multirotor_base_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_multirotor_base_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_multirotor_base_plugin ${catkin_EXPORTED_TARGETS})
 
 install(
   TARGETS
-    rotor_gazebo_motor_model
-    rotor_gazebo_odometry_plugin
-    rotor_gazebo_imu_plugin
-    rotor_gazebo_altimeter_plugin
-    rotor_gazebo_wind_plugin
-    rotor_gazebo_multirotor_base_plugin
-#    rotor_gazebo_controller_interface
+    fcu_sim_motor_model
+    fcu_sim_odometry_plugin
+    fcu_sim_imu_plugin
+    fcu_sim_altimeter_plugin
+    fcu_sim_wind_plugin
+    fcu_sim_multirotor_base_plugin
+#    fcu_sim_controller_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

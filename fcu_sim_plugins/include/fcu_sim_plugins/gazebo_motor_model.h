@@ -19,8 +19,8 @@
  */
 
 
-#ifndef rotor_gazebo_PLUGINS_MOTOR_MODELS_H
-#define rotor_gazebo_PLUGINS_MOTOR_MODELS_H
+#ifndef fcu_sim_PLUGINS_MOTOR_MODELS_H
+#define fcu_sim_PLUGINS_MOTOR_MODELS_H
 
 #include <stdio.h>
 
@@ -104,4 +104,4 @@ class GazeboMotorModel : public MotorModel, public ModelPlugin {
 };
 }
 
-#endif // rotor_gazebo_PLUGINS_MOTOR_MODELS_H
+#endif // fcu_sim_PLUGINS_MOTOR_MODELS_H

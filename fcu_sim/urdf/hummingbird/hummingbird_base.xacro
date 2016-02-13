@@ -67,7 +67,7 @@ Author: James Jackson
 
   <!-- ************************* ROTOR DYNAMICS ********************** -->
   <gazebo>
-    <plugin filename="librotor_gazebo_multirotor_base_plugin.so" name="multirotor_base_plugin">
+    <plugin filename="libfcu_sim_multirotor_base_plugin.so" name="multirotor_base_plugin">
       <robotNamespace>${namespace}</robotNamespace>
       <linkName>${namespace}/base_link</linkName>
       <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>

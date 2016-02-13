@@ -19,8 +19,8 @@
  */
 
 
-#ifndef rotor_gazebo_PLUGINS_MULTI_COPTER_H
-#define rotor_gazebo_PLUGINS_MULTI_COPTER_H
+#ifndef fcu_sim_PLUGINS_MULTI_COPTER_H
+#define fcu_sim_PLUGINS_MULTI_COPTER_H
 
 #include <Eigen/Eigen>
 
@@ -79,4 +79,4 @@ class MultiCopter
     Eigen::VectorXd rotor_rot_vels_;
 };
 
-#endif // rotor_gazebo_PLUGINS_MULTI_COPTER_H
+#endif // fcu_sim_PLUGINS_MULTI_COPTER_H

@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef rotor_gazebo_PLUGINS_RANGE_PLUGIN_H
-#define rotor_gazebo_PLUGINS_RANGE_PLUGIN_H
+#ifndef fcu_sim_PLUGINS_RANGE_PLUGIN_H
+#define fcu_sim_PLUGINS_RANGE_PLUGIN_H
 
 #include <random>
 
@@ -88,4 +88,4 @@ class GazeboAltimeterPlugin : public ModelPlugin {
 };
 }
 
-#endif // rotor_gazebo_PLUGINS_RANGE_PLUGIN_H
+#endif // fcu_sim_PLUGINS_RANGE_PLUGIN_H

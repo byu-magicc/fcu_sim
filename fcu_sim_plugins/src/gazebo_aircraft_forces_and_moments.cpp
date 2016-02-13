@@ -187,7 +187,7 @@ void GazeboAircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vect
   wind_.D = wind.z;
 }
 
-void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_io::CommandConstPtr &msg)
+void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
 {
   delta_.t = msg->normalized_throttle;
   delta_.e = msg->normalized_pitch;
@@ -227,7 +227,7 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double alpha = atan2(wr , ur);
   double beta = asin(vr/Va);
 
-  double sign = 1/(1 + exp(-alpha));//Sigmoid function
+  double sign = (alpha >= 0? 1: -1);//Sigmoid function
   double sigma_a = (1 + exp(-(wing_.M*(alpha - wing_.alpha0))) + exp((wing_.M*(alpha + wing_.alpha0))))/((1 + exp(-(wing_.M*(alpha - wing_.alpha0))))*(1 + exp((wing_.M*(alpha + wing_.alpha0)))));
   double CL_a = (1 - sigma_a)*(CL_.O + CL_.alpha*alpha) + sigma_a*(2*sign*pow(sin(alpha),2.0)*cos(alpha));
   double AR = (pow(wing_.b, 2.0))/wing_.S;

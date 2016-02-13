@@ -18,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef rotor_gazebo_PLUGINS_COMMON_H_
-#define rotor_gazebo_PLUGINS_COMMON_H_
+#ifndef fcu_sim_PLUGINS_COMMON_H_
+#define fcu_sim_PLUGINS_COMMON_H_
 
 #include <Eigen/Dense>
 #include <gazebo/gazebo.hh>
@@ -131,4 +131,4 @@ void copyPosition(const In& in, Out* out) {
   out->z = in.z;
 }
 
-#endif /* rotor_gazebo_PLUGINS_COMMON_H_ */
+#endif /* fcu_sim_PLUGINS_COMMON_H_ */

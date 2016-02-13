@@ -4,7 +4,7 @@
   <!-- Properties -->
   <xacro:property name="namespace" value="junker"/>
   <xacro:property name="wind_speed_topic" value="gazebo/wind_speed"/>
-  <xacro:property name="command_topic" value="/command/FWCommand"/>
+  <xacro:property name="command_topic" value="/command"/>
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/ju-87.dae"/>
   <xacro:property name="body_width" value="1.4"/>
@@ -153,7 +153,7 @@
 
   <!-- Add Aerodynamics -->
   <gazebo>
-    <plugin filename="librotor_gazebo_aircraft_forces_and_moments_plugin.so" name="aircraft_forces_and_moments_plugin">
+    <plugin filename="libfcu_sim_aircraft_forces_and_moments_plugin.so" name="aircraft_forces_and_moments_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${namespace}/base_link</linkName>
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
@@ -233,5 +233,16 @@
       <C_Y_delta_r>${C_Y_delta_r}</C_Y_delta_r>
     </plugin>
   </gazebo>
+
+
+
+
+  <!-- Odometry Sensor -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
+  <xacro:ground_truth
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link">
+  </xacro:ground_truth> 
+  
 
 </robot>

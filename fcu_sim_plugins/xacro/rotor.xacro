@@ -71,7 +71,7 @@
       </collision>
     </link>
     <gazebo>
-      <plugin name="${robot_namespace}_${suffix}_motor_model" filename="librotor_gazebo_motor_model.so">
+      <plugin name="${robot_namespace}_${suffix}_motor_model" filename="libfcu_sim_motor_model.so">
         <robotNamespace>${robot_namespace}</robotNamespace>
         <jointName>${robot_namespace}/rotor_${motor_number}_joint</jointName>
         <linkName>${robot_namespace}/rotor_${motor_number}</linkName>

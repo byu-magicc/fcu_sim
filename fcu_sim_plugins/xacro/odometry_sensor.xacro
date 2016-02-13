@@ -63,7 +63,7 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="librotor_gazebo_odometry_plugin.so" name="odometry_sensor${odometry_sensor_suffix}">
+      <plugin filename="libfcu_sim_odometry_plugin.so" name="odometry_sensor${odometry_sensor_suffix}">
         <linkName>${namespace}/odometry_sensor${odometry_sensor_suffix}_link</linkName>
         <robotNamespace>${namespace}</robotNamespace>
         <poseTopic>${pose_topic}</poseTopic>
