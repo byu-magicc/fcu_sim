@@ -7,7 +7,7 @@ It based on the RotorS simulator created by researchers at eth-Zurich, however m
 
 Tutorials
 ==============
-We have created tutorials to help you get started building models, worlds and plugins.  They located at magiccvs.byu.edu/wiki/Gazebo_Tutorials.  These should be publicly available for anyone who is interested in using this simulator to help with their research.
+We have created tutorials to help you get started building models, worlds and plugins.  They located at [magiccvs.byu.edu/wiki/Gazebo_Tutorials](http://magiccvs.byu.edu/wiki/Gazebo_Tutorials).  These should be publicly available for anyone who is interested in using this simulator to help with their research.
 
 
 File Descriptions
