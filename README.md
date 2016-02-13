@@ -1,7 +1,7 @@
-Rotor Simulator
+FCI Sim
 ===============
 
-Rotor_simulator is a MAV gazebo simulator.  It has been modified for use in the MAGICC lab, specifically the GPS-Denied Research group.
+fcu_sim is a MAV gazebo simulator.  It has been modified for use in the MAGICC ros_plane and ros_copter framework.
 
 It based on the RotorS simulator created by researchers at eth-Zurich, however much of that package has been removed.  If interested, the original package can be found at https://github.com/ethz-asl/rotors_simulator.
 
