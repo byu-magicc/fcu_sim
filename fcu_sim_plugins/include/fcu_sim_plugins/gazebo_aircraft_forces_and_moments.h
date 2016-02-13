@@ -19,8 +19,8 @@
  */
 
 
-#ifndef rotor_gazebo_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
-#define rotor_gazebo_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#ifndef fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#define fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
 
 #include <stdio.h>
 
@@ -34,7 +34,7 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
-#include <fcu_io/Command.h>
+#include <fcu_common/Command.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
 
@@ -160,11 +160,11 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
   boost::thread callback_queue_thread_;
   void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_io::CommandConstPtr& msg);
+  void CommandCallback(const fcu_common::CommandConstPtr& msg);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;
 };
 }
 
-#endif // rotor_gazebo_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#endif // fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H

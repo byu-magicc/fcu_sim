@@ -19,8 +19,8 @@
  */
 
 
-#ifndef rotor_gazebo_PLUGINS_MOTOR_MODEL_H
-#define rotor_gazebo_PLUGINS_MOTOR_MODEL_H
+#ifndef fcu_sim_PLUGINS_MOTOR_MODEL_H
+#define fcu_sim_PLUGINS_MOTOR_MODEL_H
 
 #include <Eigen/Eigen>
 
@@ -54,4 +54,4 @@ class MotorModel
     virtual void UpdateForcesAndMoments() = 0;
 };
 
-#endif // rotor_gazebo_PLUGINS_MOTOR_MODEL_H
+#endif // fcu_sim_PLUGINS_MOTOR_MODEL_H

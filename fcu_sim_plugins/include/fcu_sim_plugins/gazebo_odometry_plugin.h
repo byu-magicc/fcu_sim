@@ -19,8 +19,8 @@
  */
 
 
-#ifndef rotor_gazebo_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H
-#define rotor_gazebo_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H
+#ifndef fcu_sim_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H
+#define fcu_sim_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H
 
 #include <cmath>
 #include <deque>
@@ -134,4 +134,4 @@ class GazeboOdometryPlugin : public ModelPlugin {
 };
 }
 
-#endif // rotor_gazebo_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H
+#endif // fcu_sim_PLUGINS_GAZEBO_ODOMETRY_PLUGIN_H

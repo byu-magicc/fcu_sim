@@ -109,7 +109,7 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="librotor_gazebo_aircraft_and_moments_plugin.so" name="aircraft_forces_and_moments">
+      <plugin filename="libfcu_sim_aircraft_and_moments_plugin.so" name="aircraft_forces_and_moments">
         <linkName>${namespace}/aircraft_forces_and_moments_link</linkName>
         <robotNamespace>${namespace}</robotNamespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>

@@ -48,7 +48,7 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="librotor_gazebo_altimeter_plugin.so" name="rotor_gazebo_altimeter${altimeter_suffix}_plugin">
+      <plugin filename="libfcu_sim_altimeter_plugin.so" name="fcu_sim_altimeter${altimeter_suffix}_plugin">
       <!-- A good description of the altimeter parameters can be found in the kalibr documentation:
            https://github.com/ethz-asl/kalibr/wiki/altimeter-Noise-Model-and-Intrinsics -->
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->

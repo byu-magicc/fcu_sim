@@ -12,7 +12,7 @@
   <arg name="log_file"            default="$(arg mav_name)" />
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find fcu_sim)/worlds/test.world"/>
+    <arg name="world_name" value="$(find fcu_sim)/worlds/fixed_wing.world"/>
     <arg name="paused" value="true"/>
   </include>
 
@@ -30,7 +30,7 @@
     <!-- <param name="axis_roll_" value="3"/> -->
   </node>
   <node name="xbox" pkg="joy" type="joy_node">
-    <param name="dev" value="/dev/input/js2"/>
+    <param name="dev" value="/dev/input/js0"/>
   </node>
 
   <node name="chase" pkg="image_view" type="image_view">
