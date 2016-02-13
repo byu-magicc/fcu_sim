@@ -1,4 +1,4 @@
-FCI Sim
+FCU Sim
 ===============
 
 fcu_sim is a MAV gazebo simulator.  It has been modified for use in the MAGICC ros_plane and ros_copter framework.
