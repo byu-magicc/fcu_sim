@@ -1,0 +1,40 @@
+<!-- This is a launch file that runs the bare minimum requirements to get -->
+<!-- gazebo running.  It requires a relative_nav::Command on /command -->
+<!-- to move the hex, and outputs imu, altimeter, laserscan and RGBD images -->
+<!-- as well as a relative_nav::FilterState message on /global_state  -->
+<!-- a geometry_msgs::StampedTransform on /mocap to imitate motion capture -->
+
+
+<launch>
+  <arg name="mav_name"            default="shredder"/>
+  <arg name="enable_logging"      default="false" />
+  <arg name="enable_ground_truth" default="true" />
+  <arg name="log_file"            default="$(arg mav_name)" />
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find fcu_sim)/worlds/powerplant_fast.world"/>
+    <arg name="paused" value="false"/>
+  </include>
+
+  <!-- Spawn MAV -->
+  <include file="$(find fcu_sim)/launch/spawn_mav.launch">
+    <arg name="mav_name"            value="$(arg mav_name)" />
+    <arg name="model"               value="$(find fcu_sim)/urdf/$(arg mav_name)_simple/$(arg mav_name)_simple_base.xacro" />
+    <arg name="enable_logging"      value="$(arg enable_logging)" />
+    <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+    <arg name="log_file"          value="$(arg log_file)"/>
+  </include>
+
+  <!-- Controller -->
+  <group ns="$(arg mav_name)">
+    <node name="attitude_controller" pkg="attitude_controller" type="attitude_controller_node" output="screen" >
+      <rosparam command="load" file="$(find fcu_sim)/param/$(arg mav_name).yaml"/>
+      <remap from="odometry" to="ground_truth/odometry"/>
+      <remap from="command" to="/command"/>
+    </node>
+    <node name="sim_reset" pkg="sim_reset" type="sim_reset_node">
+      <remap from="joy" to="/joy"/>
+    </node>
+  </group>
+
+</launch>
