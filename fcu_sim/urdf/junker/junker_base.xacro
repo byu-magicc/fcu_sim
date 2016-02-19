@@ -129,7 +129,7 @@
     </xacro:caster>
     <xacro:caster
       radius="0.05">
-      <origin xyz="-${body_length*0.5} 0 -${body_height*0.5}"/>
+      <origin xyz="-${body_length*0.5} 0 -${body_height*0.4}"/>
     </xacro:caster>
   </link>
 
@@ -139,7 +139,7 @@
   <xacro:simple_camera
     namespace="${namespace}"
     frame_rate="30"
-    rgb_range=""
+    rgb_range="1000"
     parent_link="${namespace}/base_link"
     image_topic="chase/rgb"
     image_camera_info_topic="chase/camera_info">
@@ -231,18 +231,22 @@
       <C_Y_delta_a>${C_Y_delta_a}</C_Y_delta_a>
       <C_Y_delta_e>${C_Y_delta_e}</C_Y_delta_e>
       <C_Y_delta_r>${C_Y_delta_r}</C_Y_delta_r>
+    </plugin> 
+  </gazebo>
+  <gazebo>
+    <plugin filename="libfcu_sim_aircraft_truth_plugin.so" name="aircraft_truth_plugin">
+      <namespace>${namespace}</namespace>
+      <linkName>${namespace}/base_link</linkName>
+      <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
     </plugin>
   </gazebo>
 
-
-
-
-  <!-- Odometry Sensor -->
+  <!-- Odometry Sensor 
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
   <xacro:ground_truth
     namespace="${namespace}"
     parent_link="${namespace}/base_link">
-  </xacro:ground_truth> 
+  </xacro:ground_truth> -->
   
 
 </robot>

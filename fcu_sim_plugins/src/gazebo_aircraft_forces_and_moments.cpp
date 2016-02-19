@@ -40,8 +40,8 @@ GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments()
 void GazeboAircraftForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
-  link_->AddRelativeForce(math::Vector3(forces_.Fx, forces_.Fy, forces_.Fz));
-  link_->AddRelativeTorque(math::Vector3(forces_.l, forces_.m, forces_.n));
+  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
+  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
 }
 
 
@@ -202,21 +202,21 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
    * C denotes child frame, P parent frame, and W world frame.  *
    * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
   math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  double pn = -W_pose_W_C.pos.y; // We should check to make sure that this is right
-  double pe = W_pose_W_C.pos.x;
+  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
+  double pe = -W_pose_W_C.pos.y;
   double pd = -W_pose_W_C.pos.z;
   math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
   double phi = euler_angles.x;
-  double theta = euler_angles.y;
-  double psi = euler_angles.z;
+  double theta = -euler_angles.y;
+  double psi = -euler_angles.z;
   math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
   double u = C_linear_velocity_W_C.x;
-  double v = C_linear_velocity_W_C.y;
-  double w = C_linear_velocity_W_C.z;
+  double v = -C_linear_velocity_W_C.y;
+  double w = -C_linear_velocity_W_C.z;
   math::Vector3 C_angular_velocity_W_C = link_->GetRelativeAngularVel();
   double p = C_angular_velocity_W_C.x;
-  double q = C_angular_velocity_W_C.y;
-  double r = C_angular_velocity_W_C.z;
+  double q = -C_angular_velocity_W_C.y;
+  double r = -C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
   double ur = u ;//- wind_.N;
