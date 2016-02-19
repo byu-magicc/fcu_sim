@@ -52,6 +52,11 @@ add_library(fcu_sim_aircraft_forces_and_moments_plugin
 target_link_libraries(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_aircraft_truth_plugin
+  src/gazebo_aircraft_truth.cpp
+  include/fcu_sim_plugins/gazebo_aircraft_truth.h)
+target_link_libraries(fcu_sim_aircraft_truth_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_aircraft_truth_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(fcu_sim_odometry_plugin
   src/gazebo_odometry_plugin.cpp
