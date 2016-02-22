@@ -33,7 +33,10 @@
     <param name="y_sign" value="-1"/>
     <param name="x_sign" value="1"/>
   </node>
-  <!--<node name="autopilot" pkg="ros_plane" type="ros_plane_controller" />-->
+  <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
+    <remap from="command" to="autopilot_command"/>
+    <remap from="state" to="/junker/truth"/>
+  </node>
 
   <node name="xbox" pkg="joy" type="joy_node">
     <param name="dev" value="/dev/input/js0"/>
