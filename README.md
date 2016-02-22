@@ -1,9 +1,13 @@
-FCI Sim
+FCU Sim
 ===============
 
 fcu_sim is a MAV gazebo simulator.  It has been modified for use in the MAGICC ros_plane and ros_copter framework.
 
 It based on the RotorS simulator created by researchers at eth-Zurich, however much of that package has been removed.  If interested, the original package can be found at https://github.com/ethz-asl/rotors_simulator.
+
+Tutorials
+==============
+We have created tutorials to help you get started building models, worlds and plugins.  They located at [magiccvs.byu.edu/wiki/Gazebo_Tutorials](http://magiccvs.byu.edu/wiki/Gazebo_Tutorials).  These should be publicly available for anyone who is interested in using this simulator to help with their research.
 
 
 File Descriptions
