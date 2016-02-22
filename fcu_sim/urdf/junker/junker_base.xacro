@@ -10,23 +10,23 @@
   <xacro:property name="body_width" value="1.4"/>
   <xacro:property name="body_height" value="1.0" />
   <xacro:property name="body_length" value="1.6"/>
-  <xacro:property name="mass" value="13.5"/>
-  <xacro:property name="Jx" value="0.8244"/>
-  <xacro:property name="Jy" value="1.135"/>
-  <xacro:property name="Jz" value="1.759"/>
-  <xacro:property name="Jxz" value=".1204"/>
+  <xacro:property name="mass" value="1.5"/>
+  <xacro:property name="Jx" value="0.1147"/>
+  <xacro:property name="Jy" value="0.0576"/>
+  <xacro:property name="Jz" value="0.1712"/>
+  <xacro:property name="Jxz" value="0.0015"/>
   <xacro:property name="rho" value="1.2682"/>
-  <xacro:property name="wing_s" value="0.55"/>
-  <xacro:property name="wing_b" value="2.8956"/>
-  <xacro:property name="wing_c" value="0.18994"/>
+  <xacro:property name="wing_s" value="0.2589"/>
+  <xacro:property name="wing_b" value="1.4224"/>
+  <xacro:property name="wing_c" value="0.3302"/>
   <xacro:property name="wing_M" value="0.55"/>
   <xacro:property name="wing_epsilon" value="2.8956"/>
   <xacro:property name="wing_alpha0" value="0.18994"/>
-  <xacro:property name="k_motor" value="80.0"/>
+  <xacro:property name="k_motor" value="40.0"/>
   <xacro:property name="k_T_P" value="0.0"/>
   <xacro:property name="k_Omega" value="0.0"/>
   <xacro:property name="prop_e" value="0.9"/>
-  <xacro:property name="prop_S" value="0.202"/>
+  <xacro:property name="prop_S" value="0.0314"/>
   <xacro:property name="prop_C" value="1.0"/>
   <xacro:property name="C_L_O" value="0.28"/>
   <xacro:property name="C_L_alpha" value="3.45"/>
@@ -38,7 +38,7 @@
   <xacro:property name="C_L_delta_e" value="-0.36"/>
   <xacro:property name="C_L_delta_r" value="0.0"/>
   <xacro:property name="C_D_O" value="0.03"/>
-  <xacro:property name="C_D_alpha" value="0.30"/>
+  <xacro:property name="C_D_alpha" value="0.2108"/>
   <xacro:property name="C_D_beta" value="0.0"/>
   <xacro:property name="C_D_p" value="0.0437"/>
   <xacro:property name="C_D_q" value="0.0"/>
@@ -55,7 +55,7 @@
   <xacro:property name="C_ell_delta_a" value="0.08"/>
   <xacro:property name="C_ell_delta_e" value="0.0"/>
   <xacro:property name="C_ell_delta_r" value="0.105"/>
-  <xacro:property name="C_m_O" value="-0.02338"/>
+  <xacro:property name="C_m_O" value="0.0"/>
   <xacro:property name="C_m_alpha" value="-0.38"/>
   <xacro:property name="C_m_beta" value="0.0"/>
   <xacro:property name="C_m_p" value="0.0"/>
@@ -81,7 +81,7 @@
   <xacro:property name="C_Y_r" value="0.0"/>
   <xacro:property name="C_Y_delta_a" value="0.0"/>
   <xacro:property name="C_Y_delta_e" value="0.0"/>
-  <xacro:property name="C_Y_delta_r" value="-0.017"/>
+  <xacro:property name="C_Y_delta_r" value="-0.17"/>
 
   <!-- Property Blocks -->
   <xacro:property name="inertia">
