@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+  <!-- Configure Airspeed -->
+    <xacro:macro 
+      name="GPS_BYU" 
+      params="namespace parent_link GPS_topic">
+    <xacro:gps_plugin_macro
+      namespace=""
+      parent_link="${parent_link}"
+      gps_topic="gps/data"
+      mass_gps_sensor="0.001"
+      north_stdev="0.21"
+      east_stdev="0.21"
+      alt_stdev="0.41"
+      north_k_GPS="0.00091"
+      east_k_GPS="0.00091"
+      alt_k_GPS="0.00091"
+      sample_time="1.0"
+      initial_latitude="40.2444"
+      initial_longitude="111.6608"
+      initial_altitude="1387.0">
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:gps_plugin_macro>
+  </xacro:macro>
+
+
+
+  <!-- Macro to add a GPS module. -->
+  <xacro:macro name="gps_plugin_macro"
+    params="namespace parent_link gps_topic 
+      north_stdev east_stdev alt_stdev
+      north_k_GPS east_k_GPS alt_k_GPS
+      initial_latitude initial_longitude initial_altitude
+      sample_time mass_gps_sensor
+      *inertia *origin">
+
+    <!-- Airspeed link -->
+    <link name="${namespace}/GPS_link">
+      <inertial>
+        <xacro:insert_block name="inertia" />
+        <mass value="${mass_gps_sensor}" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </inertial>
+    </link>
+
+    <!-- Airspeed joint -->
+    <joint name="${namespace}/GPS_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/GPS_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0" />
+    </joint>
+
+    <!-- Load Plugin -->
+    <gazebo>
+      <plugin filename="libfcu_sim_GPS_plugin.so" name="fcu_sim_GPS_plugin">
+      <namespace>${namespace}</namespace>
+      <linkName>${namespace}/GPS_link</linkName>
+      <GPSTopic>${gps_topic}</GPSTopic>
+      <north_stdev>${north_stdev}</north_stdev>
+      <east_stdev>${east_stdev}</east_stdev>
+      <alt_stdev>${alt_stdev}</alt_stdev>
+      <north_k_GPS>${north_k_GPS}</north_k_GPS>
+      <east_k_GPS>${east_k_GPS}</east_k_GPS>
+      <alt_k_GPS>${alt_k_GPS}</alt_k_GPS>
+      <sampleTime>${sample_time}</sampleTime>
+      <initialLatitude>${initial_latitude}</initialLatitude>
+      <initialLongitude>${initial_longitude}</initialLongitude>
+      <initialAltitude>${initial_altitude}</initialAltitude>
+
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+
+
+</robot>
