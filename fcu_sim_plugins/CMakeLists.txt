@@ -88,6 +88,18 @@ add_library(fcu_sim_multirotor_base_plugin
 target_link_libraries(fcu_sim_multirotor_base_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_multirotor_base_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_airspeed_plugin
+  src/gazebo_airspeed_plugin.cpp
+  include/fcu_sim_plugins/gazebo_airspeed_plugin.h)
+target_link_libraries(fcu_sim_airspeed_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_airspeed_plugin ${catkin_EXPORTED_TARGETS})
+
+add_library(fcu_sim_GPS_plugin
+  src/gazebo_GPS_plugin.cpp
+  include/fcu_sim_plugins/gazebo_GPS_plugin.h)
+target_link_libraries(fcu_sim_GPS_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_GPS_plugin ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     fcu_sim_motor_model

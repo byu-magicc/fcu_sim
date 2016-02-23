@@ -233,6 +233,8 @@
       <C_Y_delta_r>${C_Y_delta_r}</C_Y_delta_r>
     </plugin> 
   </gazebo>
+
+  <!-- Sensors -->
   <gazebo>
     <plugin filename="libfcu_sim_aircraft_truth_plugin.so" name="aircraft_truth_plugin">
       <namespace>${namespace}</namespace>
@@ -241,12 +243,41 @@
     </plugin>
   </gazebo>
 
-  <!-- Odometry Sensor 
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
-  <xacro:ground_truth
+  <!-- Airspeed -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/airspeed.xacro"/>
+  <xacro:airspeed_MPXV5004G
     namespace="${namespace}"
-    parent_link="${namespace}/base_link">
-  </xacro:ground_truth> -->
-  
+    parent_link="${namespace}/base_link"
+    airspeed_topic="airspeed/data">
+  </xacro:airspeed_MPXV5004G>
+
+  <!-- GPS -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/GPS.xacro"/>
+  <xacro:GPS_BYU
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    GPS_topic="gps/data">
+  </xacro:GPS_BYU>
+
+  <!-- Sonar and Barometer -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
+  <xacro:Sonar_HC-SR04
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    altimeter_topic="sonar/data">
+  </xacro:Sonar_HC-SR04>
+  <xacro:Barometer_MS5611
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    altimeter_topic="baro/data">
+  </xacro:Barometer_MS5611>
+
+  <!-- IMU -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
+  <xacro:IMU_MPU6050
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    imu_topic="imu/data">
+  </xacro:IMU_MPU6050>
 
 </robot>
