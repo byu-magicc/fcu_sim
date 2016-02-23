@@ -2,6 +2,48 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="pi" value="3.14159265359" />
 
+  <!-- Sonar  HC-SR04 -->
+  <xacro:macro 
+    name="Sonar_HC-SR04" 
+    params="namespace parent_link altimeter_topic">
+    <xacro:altimeter_plugin_macro
+      namespace="${namespace}"
+      altimeter_suffix="sonar"
+      parent_link="${parent_link}"
+      altimeter_topic="${altimeter_topic}"
+      mass_altimeter_sensor="0.0043"
+      altimeter_min_range="0.2"
+      altimeter_max_range="4.0"
+      altimeter_error_stdev="0.2"
+      altimeter_field_of_view="0.2618"
+      altimeter_publish_rate="20"
+      altimeter_noise_on="true" >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:altimeter_plugin_macro>
+  </xacro:macro>
+
+  <!-- Barometer  MS5611-->
+  <xacro:macro 
+    name="Barometer_MS5611" 
+    params="namespace parent_link altimeter_topic">
+    <xacro:altimeter_plugin_macro
+      namespace="${namespace}"
+      altimeter_suffix="baro"
+      parent_link="${parent_link}"
+      altimeter_topic="${altimeter_topic}"
+      mass_altimeter_sensor="0.0043"
+      altimeter_min_range="-10000.0"
+      altimeter_max_range="10000.0"
+      altimeter_error_stdev="8.0"
+      altimeter_field_of_view="0.0"
+      altimeter_publish_rate="20"
+      altimeter_noise_on="true" >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:altimeter_plugin_macro>
+  </xacro:macro>
+
   <!-- LV-MaxSonar-EZ3 MB1030 -->
   <xacro:macro 
     name="Sonar_MB1030" 
@@ -32,6 +74,7 @@
     mass_altimeter_sensor altimeter_min_range altimeter_max_range 
     altimeter_error_stdev altimeter_field_of_view 
     altimeter_publish_rate altimeter_noise_on *inertia *origin">
+
     <!-- altimeter link -->
     <link name="${namespace}/altimeter${altimeter_suffix}_link">
       <inertial>
@@ -40,6 +83,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
       </inertial>
     </link>
+
     <!-- altimeter joint -->
     <joint name="${namespace}/altimeter${altimeter_suffix}_joint" type="revolute">
       <xacro:insert_block name="origin" />

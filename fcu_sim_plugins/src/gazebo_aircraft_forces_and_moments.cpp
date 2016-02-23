@@ -219,9 +219,9 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double r = -C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
-  double ur = u ;//- wind_.N;
-  double vr = v ;//- wind_.E;
-  double wr = w ;//- wind_.D;
+  double ur = u - wind_.N;
+  double vr = v - wind_.E;
+  double wr = w - wind_.D;
 
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
   double alpha = atan2(wr , ur);
