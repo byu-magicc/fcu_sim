@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+    <!-- Configure Airspeed -->
+    <xacro:macro 
+      name="airspeed_MPXV5004G" 
+      params="namespace parent_link airspeed_topic">
+    <xacro:airspeed_plugin_macro
+      namespace="${namespace}"
+      parent_link="${parent_link}"
+      airspeed_topic="${airspeed_topic}"
+      mass_airspeed_sensor="0.001"
+      pressure_bias="20.0"
+      pressure_noise_sigma="2.0"
+      max_pressure="4000.0"
+      air_density="1.225"
+      min_pressure="0.0">
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:airspeed_plugin_macro>
+  </xacro:macro>
+
+    <!-- Macro to add an Airspeed. -->
+  <xacro:macro name="airspeed_plugin_macro"
+    params="namespace parent_link airspeed_topic pressure_bias pressure_noise_sigma air_density 
+      mass_airspeed_sensor max_pressure min_pressure
+      *inertia *origin">
+
+    <!-- Airspeed link -->
+    <link name="${namespace}/airspeed_link">
+      <inertial>
+        <xacro:insert_block name="inertia" />
+        <mass value="${mass_airspeed_sensor}" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </inertial>
+    </link>
+
+    <!-- Airspeed joint -->
+    <joint name="${namespace}/airspeed_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/airspeed_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0" />
+    </joint>
+
+    <!-- Load Plugin -->
+    <gazebo>
+      <plugin filename="libfcu_sim_airspeed_plugin.so" name="fcu_sim_airspeed_plugin">
+        <namespace>${namespace}</namespace>
+        <linkName>${namespace}/airspeed_link</linkName>
+        <airspeedTopic>${airspeed_topic}</airspeedTopic>
+        <pressureBias>${pressure_bias}</pressureBias> <!-- [Pascals] -->
+        <pressureNoiseSigma>${pressure_noise_sigma}</pressureNoiseSigma> <!-- [Pascals] -->
+        <airDensity>${air_density}</airDensity> <!-- [kg/m^3] -->
+        <maxPressure>${max_pressure}</maxPressure> <!-- [Pascals] -->
+        <minPressure>${min_pressure}</minPressure> <!-- [Pascals] -->
+
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+
+
+</robot>
