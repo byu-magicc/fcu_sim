@@ -13,7 +13,7 @@
       parent_link="${parent_link}"
       airspeed_topic="${airspeed_topic}"
       mass_airspeed_sensor="0.001"
-      pressure_bias="20.0"
+      pressure_bias="00.0"
       pressure_noise_sigma="2.0"
       max_pressure="4000.0"
       air_density="1.225"

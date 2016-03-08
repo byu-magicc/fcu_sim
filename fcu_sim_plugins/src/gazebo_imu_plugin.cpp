@@ -246,11 +246,11 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 //  imu_message_.orientation.z = C_W_I.z;
 
   imu_message_.linear_acceleration.x = linear_acceleration_I[0];
-  imu_message_.linear_acceleration.y = linear_acceleration_I[1];
-  imu_message_.linear_acceleration.z = linear_acceleration_I[2];
+  imu_message_.linear_acceleration.y = -linear_acceleration_I[1];
+  imu_message_.linear_acceleration.z = -linear_acceleration_I[2];
   imu_message_.angular_velocity.x = angular_velocity_I[0];
-  imu_message_.angular_velocity.y = angular_velocity_I[1];
-  imu_message_.angular_velocity.z = angular_velocity_I[2];
+  imu_message_.angular_velocity.y = -angular_velocity_I[1];
+  imu_message_.angular_velocity.z = -angular_velocity_I[2];
 
   imu_pub_.publish(imu_message_);
 

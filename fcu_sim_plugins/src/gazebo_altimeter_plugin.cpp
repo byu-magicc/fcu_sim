@@ -62,13 +62,17 @@ void GazeboAltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   getSdfParam<double>(_sdf, "altimeterMaxRange", max_range_, 6.45);
   getSdfParam<double>(_sdf, "altimeterErrorStdev", error_stdev_, 0.10);
   getSdfParam<double>(_sdf, "altimeterFOV", field_of_view_, 1.107);
-  getSdfParam<double>(_sdf, "altimeterPublishRate", pub_rate_, 20);
+  getSdfParam<double>(_sdf, "altimeterPublishRate", pub_rate_, 20.0);
   getSdfParam<bool>(_sdf, "altimeterNoiseOn", alt_noise_on_, true);
+  getSdfParam<bool>(_sdf, "publishFloat32", publish_float_, false);
   last_time_ = world_->GetSimTime();
 
   // Configure ROS Integration
   node_handle_ = new ros::NodeHandle(namespace_);
-  alt_pub_ = node_handle_->advertise<sensor_msgs::Range>(alt_topic_, 10);
+  if(publish_float_)
+      alt_pub_ = node_handle_->advertise<std_msgs::Float32>(alt_topic_, 10);
+  else
+      alt_pub_ = node_handle_->advertise<sensor_msgs::Range>(alt_topic_, 10);
 
   // Fill static members of alt message.
   alt_message_.header.frame_id = frame_id_;
@@ -105,7 +109,14 @@ void GazeboAltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
 
     // publish message
     alt_message_.header.stamp = ros::Time::now();
-    alt_pub_.publish(alt_message_);
+    if(publish_float_)
+    {
+        std_msgs::Float32 msg;
+        msg.data = alt_message_.range;
+        alt_pub_.publish(msg);
+    }
+    else
+        alt_pub_.publish(alt_message_);
     last_time_ = current_time;
   }
 }

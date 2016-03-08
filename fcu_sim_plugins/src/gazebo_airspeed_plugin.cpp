@@ -96,11 +96,12 @@ void GazeboAirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
   double ur = u - wind_.N;
   double vr = v - wind_.E;
   double wr = w - wind_.D;
-  double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
+//  double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
+  double Va = sqrt(pow(u,2.0) + pow(v,2.0) + pow(w,2.0));
 
   // Invert Airpseed to get sensor measurement
   double y = rho_*Va*Va/2.0; // Page 130 in the UAV Book
-  y += pressure_bias_+pressure_noise_sigma_*standard_normal_distribution_(random_generator_);
+  y += pressure_bias_ + pressure_noise_sigma_*standard_normal_distribution_(random_generator_);
 
   y = (y>max_pressure_)?max_pressure_:y;
   y = (y<min_pressure_)?min_pressure_:y;
