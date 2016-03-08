@@ -76,6 +76,7 @@ void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGPSPlugin::OnUpdate, this, _1));
 
   GPS_pub_ = nh_->advertise<fcu_common::GPS>(GPS_topic_, 10);
+  pub_rate_ = 1.0;
 
   // Fill static members of airspeed message.
   GPS_message_.header.frame_id = frame_id_;
@@ -93,52 +94,63 @@ void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 // This gets called by the world update start event.
 void GazeboGPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
-  // Add noise per Gauss-Markov Process (p. 139 UAV Book)
-  double noise = north_stdev_*standard_normal_distribution_(random_generator_);
-  north_GPS_error_ = exp(-1.0*north_k_GPS_*sample_time_)*north_GPS_error_ + noise;
+  // check if time to publish
+  common::Time current_time  = world_->GetSimTime();
+  if((current_time - last_time_).Double() > 1.0/pub_rate_){
 
-  noise = east_stdev_*standard_normal_distribution_(random_generator_);
-  east_GPS_error_ = exp(-1.0*east_k_GPS_*sample_time_)*east_GPS_error_ + noise;
+      // Add noise per Gauss-Markov Process (p. 139 UAV Book)
+      double noise = north_stdev_*standard_normal_distribution_(random_generator_);
+      north_GPS_error_ = exp(-1.0*north_k_GPS_*sample_time_)*north_GPS_error_ + noise;
 
-  noise = alt_stdev_*standard_normal_distribution_(random_generator_);
-  alt_GPS_error_ = exp(-1.0*alt_k_GPS_*sample_time_)*alt_GPS_error_ + noise;
+      noise = east_stdev_*standard_normal_distribution_(random_generator_);
+      east_GPS_error_ = exp(-1.0*east_k_GPS_*sample_time_)*east_GPS_error_ + noise;
 
-  // Find NED position in meters
-  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
-  double pe = -W_pose_W_C.pos.y;
-  double pd = -W_pose_W_C.pos.z;
+      noise = alt_stdev_*standard_normal_distribution_(random_generator_);
+      alt_GPS_error_ = exp(-1.0*alt_k_GPS_*sample_time_)*alt_GPS_error_ + noise;
 
-  double y_GPS_n = pn + north_GPS_error_;
-  double y_GPS_e = pe + east_GPS_error_;
-  double y_GPS_alt = -pd + alt_GPS_error_;
+      // Find NED position in meters
+      math::Pose W_pose_W_C = link_->GetWorldCoGPose();
+      double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
+      double pe = -W_pose_W_C.pos.y;
+      double pd = -W_pose_W_C.pos.z;
 
-  // Convert meters to GPS angle
-  double dlat, dlon;
-  measure(y_GPS_n, y_GPS_e, dlat, dlon);
-  GPS_message_.latitude = initial_latitude_+dlat;
-  GPS_message_.longitude = initial_longitude_+dlon;
+      double y_GPS_n = pn + north_GPS_error_;
+      double y_GPS_e = pe + east_GPS_error_;
+      double y_GPS_alt = -pd + alt_GPS_error_;
 
-  // Altitude
-  GPS_message_.altitude = y_GPS_alt;
+      // Convert meters to GPS angle
+      double dlat, dlon;
+      measure(y_GPS_n, y_GPS_e, dlat, dlon);
+      GPS_message_.latitude = initial_latitude_+dlat;
+      GPS_message_.longitude = initial_longitude_+dlon;
 
-  // Get Ground Speed
-  math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
-  double u = C_linear_velocity_W_C.x;
-  double v = -C_linear_velocity_W_C.y;
-  double Vg = pow(u*u+v*v,0.5);
-  double sigma_vg = pow((u*u*north_stdev_*north_stdev_ + v*v*east_stdev_*east_stdev_)/(u*u+v*v),0.5);
-  double ground_speed_error = sigma_vg*standard_normal_distribution_(random_generator_);
-  GPS_message_.speed = Vg + ground_speed_error;
+      // Altitude
+      GPS_message_.altitude = y_GPS_alt;
 
-  // Get Course Angle
-  double chi = atan2(v,u);
-  double sigma_chi = pow((u*u*north_stdev_*north_stdev_ + v*v*east_stdev_*east_stdev_)/((u*u+v*v)*(u*u+v*v)),0.5);
-  double chi_error = sigma_chi*standard_normal_distribution_(random_generator_);
-  GPS_message_.ground_course = chi + chi_error;
+      // Get Ground Speed
+      math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
+      double u = C_linear_velocity_W_C.x;
+      double v = -C_linear_velocity_W_C.y;
+      double Vg = pow(u*u+v*v,0.5);
+      double sigma_vg = pow((u*u*north_stdev_*north_stdev_ + v*v*east_stdev_*east_stdev_)/(u*u+v*v),0.5);
+      double ground_speed_error = sigma_vg*standard_normal_distribution_(random_generator_);
+      GPS_message_.speed = Vg + ground_speed_error;
 
-  // Publish
-  GPS_pub_.publish(GPS_message_);
+      // Get Course Angle
+      math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
+      double psi = -euler_angles.z;
+      double chi = atan2(Vg*sin(psi), Vg*cos(psi));
+      double sigma_chi = pow((u*u*north_stdev_*north_stdev_ + v*v*east_stdev_*east_stdev_)/((u*u+v*v)*(u*u+v*v)),0.5);
+      double chi_error = sigma_chi*standard_normal_distribution_(random_generator_);
+      GPS_message_.ground_course = chi + chi_error;
+
+      // Publish
+      ros::Time t;
+      GPS_message_.header.stamp = t.now();
+      GPS_pub_.publish(GPS_message_);
+
+      last_time_ = current_time;
+  }
 
 }
 

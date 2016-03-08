@@ -4,7 +4,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="pi" value="3.14159265359" />
 
-  <!-- Configure Airspeed -->
+  <!-- Configure GPS -->
     <xacro:macro 
       name="GPS_BYU" 
       params="namespace parent_link GPS_topic">
@@ -39,7 +39,7 @@
       sample_time mass_gps_sensor
       *inertia *origin">
 
-    <!-- Airspeed link -->
+    <!-- GPS link -->
     <link name="${namespace}/GPS_link">
       <inertial>
         <xacro:insert_block name="inertia" />
@@ -48,7 +48,7 @@
       </inertial>
     </link>
 
-    <!-- Airspeed joint -->
+    <!-- GPS joint -->
     <joint name="${namespace}/GPS_joint" type="revolute">
       <xacro:insert_block name="origin" />
       <parent link="${parent_link}" />

@@ -58,6 +58,7 @@ class GazeboGPSPlugin : public ModelPlugin {
   std::string GPS_topic_;
   ros::NodeHandle* nh_;
   ros::Publisher GPS_pub_;
+  double pub_rate_;
   std::string frame_id_;
   std::string link_name_;
 

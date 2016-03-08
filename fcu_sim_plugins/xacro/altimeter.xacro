@@ -17,7 +17,8 @@
       altimeter_error_stdev="0.2"
       altimeter_field_of_view="0.2618"
       altimeter_publish_rate="20"
-      altimeter_noise_on="true" >
+      altimeter_noise_on="1"
+      publish_float="0" >
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:altimeter_plugin_macro>
@@ -35,10 +36,11 @@
       mass_altimeter_sensor="0.0043"
       altimeter_min_range="-10000.0"
       altimeter_max_range="10000.0"
-      altimeter_error_stdev="8.0"
+      altimeter_error_stdev="0.5"
       altimeter_field_of_view="0.0"
       altimeter_publish_rate="20"
-      altimeter_noise_on="true" >
+      altimeter_noise_on="1"
+      publish_float="1" >
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:altimeter_plugin_macro>
@@ -59,7 +61,8 @@
       altimeter_error_stdev="0.10"
       altimeter_field_of_view="1.107"
       altimeter_publish_rate="20"
-      altimeter_noise_on="true" >
+      altimeter_noise_on="1"
+      publish_float="0" >
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:altimeter_plugin_macro>
@@ -73,7 +76,7 @@
     namespace altimeter_suffix parent_link altimeter_topic 
     mass_altimeter_sensor altimeter_min_range altimeter_max_range 
     altimeter_error_stdev altimeter_field_of_view 
-    altimeter_publish_rate altimeter_noise_on *inertia *origin">
+    altimeter_publish_rate altimeter_noise_on publish_float *inertia *origin">
 
     <!-- altimeter link -->
     <link name="${namespace}/altimeter${altimeter_suffix}_link">
@@ -104,6 +107,7 @@
         <altimeterFOV>${altimeter_field_of_view}</altimeterFOV>
         <altimeterPublishRate>${altimeter_publish_rate}</altimeterPublishRate>
         <altimeterNoiseOn>${altimeter_noise_on}</altimeterNoiseOn>
+        <publishFloat32>${publish_float}</publishFloat32>
       </plugin>
     </gazebo>
   </xacro:macro>

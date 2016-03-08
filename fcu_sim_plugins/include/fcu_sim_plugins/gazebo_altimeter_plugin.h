@@ -31,6 +31,7 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Range.h>
+#include <std_msgs/Float32.h>
 
 #include <chrono>
 #include <cmath>
@@ -69,6 +70,7 @@ class GazeboAltimeterPlugin : public ModelPlugin {
   double field_of_view_;
   double pub_rate_;
   bool alt_noise_on_;
+  bool publish_float_;
 
   // Random Engine
   std::default_random_engine random_generator_;
