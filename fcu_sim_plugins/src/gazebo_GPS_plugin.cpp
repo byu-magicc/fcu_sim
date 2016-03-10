@@ -88,7 +88,7 @@ void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   north_GPS_error_ = 0.0;
   east_GPS_error_ = 0.0;
   alt_GPS_error_ = 0.0;
-  gzerr << " finished GPS initializaiton \n" ;
+//  gzerr << " finished GPS initializaiton \n" ;
 }
 
 // This gets called by the world update start event.
