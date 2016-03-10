@@ -35,7 +35,7 @@
   </node>
   <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
     <remap from="command" to="autopilot_command"/>
-    <remap from="state" to="/junker/truth"/>
+    <!--<remap from="state" to="/junker/truth"/>-->
   </node>
 
   <node name="estimator" pkg="ros_plane" type="ros_plane_estimator" output="screen">
@@ -51,5 +51,7 @@
   <node name="chase" pkg="image_view" type="image_view">
     <remap from="image" to="/junker/camera/chase/rgb"/>
   </node>
+
+  <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
 
 </launch>
