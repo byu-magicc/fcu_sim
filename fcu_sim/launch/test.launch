@@ -1,29 +1,32 @@
 <launch>
-  <arg name="mav_name"            default="junker"/>
-  <arg name="world_file"          default="your_world.world"
+  <arg name="mav_name"            default="hummingbird"/>
+  <arg name="world_file"          default="basic.world"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/$(arg world_file)"/>
-    <arg name="paused" value="false"/>
-    <arg name="gui" value="true"/>r
+    <arg name="paused" value="true"/>
+    <arg name="gui" value="true"/>
   </include>
 
   <!-- Spawn MAV -->
   <include file="$(find fcu_sim)/launch/spawn_mav.launch">
     <arg name="mav_name"            value="$(arg mav_name)" />
     <arg name="model"               value="$(find fcu_sim)/urdf/$(arg mav_name)/$(arg mav_name)_base.xacro" />
+    <arg name="z" value="0.1"/>
   </include>
 
   <!-- Joystick -->
-  <node name="xbox"                pkg="joy"                 type="joy_node"/>
+  <node name="xbox"                pkg="joy"                 type="joy_node">
+    <param name="dev" value="/dev/input/js1"/>
+  </node>
   <node name="joy_sim" pkg="joy_sim" type="joy_sim" >
-    <rosparam command="load" file="$(find joy_sim)/param/xbox.yaml"/>
+    <rosparam command="load" file="$(find joy_sim)/param/ps2.yaml"/>
     <rosparam command="load" file="$(find joy_sim)/param/$(arg mav_name).yaml"/>
   </node>
-  <node name="sim_reset" pkg="sim_reset" type="sim_reset_node">
+<!--   <node name="sim_reset" pkg="sim_reset" type="sim_reset_node">
     <param name="reset_button" value="9"/>
     <param name="model_name" value="$(arg mav_name)"/>
-  </node>
+  </node> -->
 
   <!-- Attitude Control -->
   <rosparam command="load" file="$(find attitude_controller)/param/$(arg mav_name).yaml"/>
@@ -32,4 +35,7 @@
     <remap from="odometry" to="$(arg mav_name)/ground_truth/odometry"/>
     <remap from="command/motor_speed" to="$(arg mav_name)/gazebo/command/motor_speed"/>
   </node>
+
+  <!-- High Level Controller -->
+  
 </launch>
