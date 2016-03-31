@@ -97,6 +97,7 @@ void GazeboMotorModel::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   getSdfParam<double>(_sdf, "timeConstantUp", time_constant_up_, 1.0/80.0);
   getSdfParam<double>(_sdf, "timeConstantDown", time_constant_down_, 1.0/40.0);
   getSdfParam<double>(_sdf, "rotorVelocitySlowdownSim", rotor_velocity_slowdown_sim_, 10);
+  getSdfParam<double>(_sdf, "initialRotorSpeed", ref_motor_rot_vel_, 0.0);
 
   // Set the maximumForce on the joint. This is deprecated from V5 on, and the joint won't move.
 #if GAZEBO_MAJOR_VERSION < 5
@@ -176,5 +177,5 @@ void GazeboMotorModel::UpdateForcesAndMoments() {
   joint_->SetVelocity(0, turning_direction_ * ref_motor_rot_vel_ / rotor_velocity_slowdown_sim_);
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboMotorModel);
+GZ_REGISTER_MODEL_PLUGIN(GazeboMotorModel)
 }

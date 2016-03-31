@@ -55,7 +55,6 @@ Author: James Jackson
         </xacro:unless>
       </geometry>
     </visual>
-
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
@@ -71,7 +70,7 @@ Author: James Jackson
       <robotNamespace>${namespace}</robotNamespace>
       <linkName>${namespace}/base_link</linkName>
       <rotorVelocitySlowdownSim>${rotor_velocity_slowdown_sim}</rotorVelocitySlowdownSim>
-    </plugin>
+    </plugin>i
   </gazebo>
 
 
