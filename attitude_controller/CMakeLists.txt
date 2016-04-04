@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(attitude_controller)
 
 find_package(catkin REQUIRED COMPONENTS
-  rotor_gazebo
   nav_msgs
   roscpp
   fcu_common
@@ -14,13 +13,15 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen REQUIRED)
 
+set(CMAKE_CXX_FLAGS "-std=c++0x")
+
 generate_dynamic_reconfigure_options(
   cfg/gains.cfg
 )
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
-  CATKIN_DEPENDS geometry_msgs rotor_gazebo nav_msgs roscpp
+  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp
   DEPENDS Eigen dynamic_reconfigure
 )
 
