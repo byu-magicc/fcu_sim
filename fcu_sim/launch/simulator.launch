@@ -6,12 +6,12 @@
 
 
 <launch>
-  <arg name="mav_name"            default="shredder"/>
-  <arg name="enable_logging"      default="false" />
+  <arg name="mav_name"            default="hummingbird"/>
+  <arg name="world_file"          default="basic.world" />
   <arg name="enable_ground_truth" default="true" />
   <arg name="log_file"            default="$(arg mav_name)" />
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find fcu_sim)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/powerplant_fast.world"/>
     <arg name="paused" value="false"/>
   </include>

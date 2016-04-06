@@ -29,7 +29,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <geometry_msgs/WrenchStamped.h>
+#include <geometry_msgs/Vector3.h>
 #include <chrono>
 
 #include "fcu_sim_plugins/common.h"
