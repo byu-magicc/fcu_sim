@@ -41,31 +41,35 @@ public:
     inertia_matrix.setIdentity();
   }
 
-  void loadfromParam(ros::NodeHandle& nh_private){
+  void loadfromParam(ros::NodeHandle& robot_nh){
     clear();
 
+    ROS_WARN_STREAM("Getting based on " << robot_nh.getNamespace());
+
     // load inertial data - only use diagonal
-    nh_private.param<double>("inertia/xx", inertia_matrix(0,0), 0.060224);
-    nh_private.param<double>("inertia/yy", inertia_matrix(1,1), 0.122198);
-    nh_private.param<double>("inertia/zz", inertia_matrix(2,2), 0.0977);
-    nh_private.param<double>("mass",       inertia_matrix(3,3), 3.81);
+    ROS_ASSERT(  robot_nh.getParam("inertia/xx", inertia_matrix(0,0))
+              && robot_nh.getParam("inertia/yy", inertia_matrix(1,1))
+              && robot_nh.getParam("inertia/zz", inertia_matrix(2,2))
+              && robot_nh.getParam("mass",       inertia_matrix(3,3)));
     ROS_INFO_STREAM("INERTIA MATRIX \n" << inertia_matrix);
+
 
     // load rotor configuration - default to shredder
     int i = 0;
     double dummy_double;
-    while(nh_private.getParam("rotor_configuration/" + std::to_string(i) + "/angle", dummy_double)){
+    while(robot_nh.getParam("rotor_configuration/" + std::to_string(i) + "/angle", dummy_double)){
       Rotor rotor;
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/angle", rotor.angle, 0.0);
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/arm_length" , rotor.radius, 0.3429);
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/rotor_force_constant" , rotor.force_constant, 1.426e-5);
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/rotor_moment_constant" , rotor.moment_constant, 0.25);
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/direction" , rotor.direction, 1.0);
-      nh_private.param<double>("rotor_configuration/" + std::to_string(i) + "/max_rotor_speed", rotor.max_rotor_speed, 903.2);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/angle", rotor.angle, 0.0);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/arm_length" , rotor.radius, 0.3429);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/rotor_force_constant" , rotor.force_constant, 1.426e-5);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/rotor_moment_constant" , rotor.moment_constant, 0.25);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/direction" , rotor.direction, 1.0);
+      robot_nh.param<double>("rotor_configuration/" + std::to_string(i) + "/max_rotor_speed", rotor.max_rotor_speed, 903.2);
       rotors.push_back(rotor);
       i++;
     }
     num_rotors = rotors.size();
+    ROS_ASSERT(num_rotors>0);
     calculateAllocationMatrix();
   }
 

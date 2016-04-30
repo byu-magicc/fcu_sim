@@ -3,9 +3,9 @@
   <xacro:property name="pi" value="3.14159265359" />
 
   <!-- XTION -->
-  <xacro:macro 
-    name="xtion" 
-    params="namespace 
+  <xacro:macro
+    name="xtion"
+    params="namespace
             parent_link">
     <xacro:depth_camera
       namespace="${namespace}"
@@ -14,19 +14,19 @@
       frame_rate="30"
       depth_range="6.5"
       rgb_range=""
-      image_topic="/camera/rgb/image_raw"
-      depth_topic="/camera/depth/image_raw"
-      image_camera_info_topic="/camera/rgb/camera_info"
-      depth_camera_info_topic="/camera/depth/camera_info"
-      pointcloud_topic="/camera/pointcloud">
+      image_topic="${namespace}/camera/rgb/image_raw"
+      depth_topic="${namespace}/camera/depth/image_raw"
+      image_camera_info_topic="${namespace}/camera/rgb/camera_info"
+      depth_camera_info_topic="${namespace}/camera/depth/camera_info"
+      pointcloud_topic="${namespace}/camera/pointcloud">
       <origin xyz="0.127 0 -0.0889" rpy="0 0 0" /> <!-- for shredder -->
     </xacro:depth_camera>
   </xacro:macro>
 
   <!-- Macro to add a depth camera. -->
-  <xacro:macro 
+  <xacro:macro
     name="depth_camera"
-    params="namespace 
+    params="namespace
             parent_link
             camera_suffix
             frame_rate
@@ -39,16 +39,16 @@
             pointcloud_topic
             *origin">
     <link name="${namespace}/camera_link">
-      <collision>
+      <!-- <collision>
         <xacro:insert_block name="origin" />
         <geometry>
           <cylinder length="0.01" radius="0.007" />
         </geometry>
-      </collision>
+      </collision> -->
       <inertial>
-        <mass value="1e-4" />
+        <mass value="1e-3" />
         <origin xyz="0 0 0" rpy="0 0 0" />
-        <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4" />
+        <inertia ixx="1e-3" ixy="0" ixz="0" iyy="1e-3" iyz="0" izz="1e-3" />
       </inertial>
     </link>
     <joint name="${namespace}/camera_joint" type="fixed">

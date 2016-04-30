@@ -1,4 +1,5 @@
 #include "attitude_controller/attitude_controller.h"
+#include <iostream>
 
 namespace attitude_controller
 {
@@ -8,61 +9,34 @@ attitudeController::attitudeController() :
   nh_private_(ros::NodeHandle("~")),
   multicopter_()
 {
-  // retrieve frame params
-  multicopter_.loadfromParam(nh_private_);
+  // get robot namespace
+  std::string robot_namespace;
+  nh_private_.param<std::string>("robot_namespace", robot_namespace, "/");
+  ROS_INFO_STREAM("robot namespace " << robot_namespace);
+  ros::NodeHandle robot_nh(("/" + robot_namespace).c_str());
+
+  // retrieve multirotor configuration
+  multicopter_.loadfromParam(robot_nh);
+  robot_nh.param<double>("max_roll", max_roll_, 50*M_PI/180.0);
+  robot_nh.param<double>("max_pitch", max_pitch_, 50*M_PI/180.0);
+  robot_nh.param<double>("max_yaw_rate", max_yaw_rate_, 200*M_PI/180.0);
+  robot_nh.param<double>("max_thrust", max_throttle_, 60.0);
 
   // dynamic reconfigure
   func_ = boost::bind(&attitudeController::gainCallback, this, _1, _2);
   server_.setCallback(func_);
 
-  // retrieve gain params for PID control
-//  double kp_roll, ki_roll, kd_roll, kp_pitch, ki_pitch, kd_pitch, kp_yaw, ki_yaw, kd_yaw;
-//  double w1, w2, w3, wu;
-//  nh_private_.param<double>("PID_gains/kp_roll", kp_roll, 0.55);
-//  nh_private_.param<double>("PID_gains/ki_roll", ki_roll, 0);
-//  nh_private_.param<double>("PID_gains/kd_roll", kd_roll, 0.35);
-//  nh_private_.param<double>("PID_gains/kp_pitch", kp_pitch, 0.55);
-//  nh_private_.param<double>("PID_gains/ki_pitch", ki_pitch, 0);
-//  nh_private_.param<double>("PID_gains/kd_pitch", kd_pitch, 0.35);
-//  nh_private_.param<double>("PID_gains/kp_yaw", kp_yaw, 0.1);
-//  nh_private_.param<double>("PID_gains/ki_yaw", ki_yaw, 0);
-//  nh_private_.param<double>("PID_gains/kd_yaw", kd_yaw, 0);
-//  nh_private_.param<double>("HInf_gains/w1", w1, 0.1);
-//  nh_private_.param<double>("HInf_gains/w2", w2, 3);
-//  nh_private_.param<double>("HInf_gains/w3", w3, 9);
-//  nh_private_.param<double>("HInf_gains/wu", wu, 1.5);
-//  nh_private_.param<int>("controller_type", controller_type_, PID_CONTROL);
-
   // retrieve topic names
-  nh_private_.param<std::string>("odometry_topic", odometry_topic_, "odometry");
+  nh_private_.param<std::string>("odometry_topic", odometry_topic_, "ground_truth/odometry");
   nh_private_.param<std::string>("command_topic", command_topic_, "command");
   nh_private_.param<std::string>("motor_speed_command_topic", motor_speed_command_topic_, "command/motor_speed");
 
-  nh_private_.param<double>("max_roll", max_roll_, 45*M_PI/180.0);
-  nh_private_.param<double>("max_pitch", max_pitch_, 45*M_PI/180.0);
-  nh_private_.param<double>("max_yaw_rate", max_yaw_rate_, 75*M_PI/180.0);
-  nh_private_.param<double>("max_thrust", max_throttle_, 15.0);
+
 
   // Setup publishers and subscribers
   odometry_subscriber_ = nh_.subscribe(odometry_topic_, 1, &attitudeController::odometryCallback, this);
   command_subscriber_ = nh_.subscribe(command_topic_, 1, &attitudeController::commandCallback, this);
   actuators_publisher_ = nh_.advertise<std_msgs::Float64MultiArray>(motor_speed_command_topic_, 1);
-
-  // intialize proper controller
-//  if(controller_type_ == PID_CONTROL){
-//    ROS_WARN("using PID Control");
-//    // set PID gains
-//    pid_roll_.setGains(kp_roll, ki_roll, kd_roll);
-//    pid_pitch_.setGains(kp_pitch, ki_pitch, kd_pitch);
-//    pid_yaw_rate_.setGains(kp_yaw, ki_yaw, kd_yaw);
-//  }else if(controller_type_ == HINF_CONTROL){
-//    ROS_WARN("using H-Inf Control");
-//    h_inf_.setOmega(w1,w2,w3,wu);
-//    h_inf_.setMassMatrix(multicopter_.inertia_matrix);
-//    h_inf_.resetIntegrator();
-//  }else{
-//    ROS_ERROR_STREAM("Improper controller type: " << controller_type_);
-//  }
 
   // set time and outputs to zero
   dt_ = 0;
@@ -87,6 +61,7 @@ void attitudeController::commandCallback(const fcu_common::CommandConstPtr& msg)
 
 
 void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg){
+  ROS_INFO("OCB");
   tf::Quaternion current_orientation;
   tf::quaternionMsgToTF(msg->pose.pose.orientation,current_orientation);
   tf::Matrix3x3(current_orientation).getRPY(phi_, theta_,psi_);
@@ -103,27 +78,36 @@ void attitudeController::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
   if (time_of_last_control_ != 0){
     dt_ = current_time - time_of_last_control_;
   }
-
-  // update control
-  if(controller_type_ == PID_CONTROL){
-    desired_forces_ = updatePIDControl();
-  }else if(controller_type_ == HINF_CONTROL){
-    desired_forces_ = updateHInfControl();
-  }
-
-  // save loop time
   time_of_last_control_ = ros::Time::now().toSec();
 
-  // mix output
-  multicopter_.mixOutput(&rotor_velocities_, &desired_forces_);
-  std_msgs::Float64MultiArray command;
-  for(int i=0; i<multicopter_.num_rotors; i++){
-    // saturate command
-    rotor_velocities_[i] = sqrt((rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i]);
-    rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.rotors[i].max_rotor_speed)?multicopter_.rotors[i].max_rotor_speed:rotor_velocities_[i];
-    command.data.push_back(rotor_velocities_[i]);
+  if(dt_ > 0.001){
+    // update control
+    if(controller_type_ == PID_CONTROL){
+      desired_forces_ = updatePIDControl();
+    }else if(controller_type_ == HINF_CONTROL){
+      desired_forces_ = updateHInfControl();
+    }
+
+    std::cout << "\ndesired forces: \n";
+    std::cout << desired_forces_(0) << ", " << roll_c_ << ", " << phi_ << std::endl;
+    std::cout << desired_forces_(1) << ", " << pitch_c_ << ", " <<  theta_ << std::endl;
+    std::cout << desired_forces_(2) <<  ", " << psidot_c_ << ", " <<  r_ << std::endl;
+
+    // mix output
+    multicopter_.mixOutput(&rotor_velocities_, &desired_forces_);
+    std_msgs::Float64MultiArray command;
+    for(int i=0; i<multicopter_.num_rotors; i++){
+      // saturate command
+      rotor_velocities_[i] = sqrt((rotor_velocities_[i]<0.0)?0.0:rotor_velocities_[i]);
+      rotor_velocities_[i] = (rotor_velocities_[i]>multicopter_.rotors[i].max_rotor_speed)?multicopter_.rotors[i].max_rotor_speed:rotor_velocities_[i];
+      command.data.push_back(rotor_velocities_[i]);
+      std::cout << rotor_velocities_[i] << ", ";
+    }
+    std::cout << "\n\n";
+    actuators_publisher_.publish(command);
+  }else{
+    ROS_INFO_STREAM("small dt " << dt_);
   }
-  actuators_publisher_.publish(command);
 }
 
 
@@ -152,7 +136,6 @@ Eigen::Vector4d attitudeController::updateHInfControl(){
   etaddot_r << phiddot_c_, thetaddot_c_, psiddot_c_;
   moments = h_inf_.computeHInfinityControl(eta, eta_r, etadot, etadot_r, etaddot_r,dt_);
   desired_forces << moments(0), moments(1), moments(2), thrust_c_;
-  ROS_INFO_STREAM("desired_forces " << desired_forces);
   return desired_forces;
 }
 

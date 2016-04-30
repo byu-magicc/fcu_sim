@@ -138,12 +138,9 @@ void GazeboMotorModel::WindSpeedCallback(const geometry_msgs::Vector3ConstPtr& w
 }
 
 void GazeboMotorModel::UpdateForcesAndMoments() {
-  motor_rot_vel_ = joint_->GetVelocity(0);
-  if (motor_rot_vel_ / (2 * M_PI) > 1 / (2 * sampling_time_)) {
-    gzerr << "Aliasing on motor [" << motor_number_ << "] might occur. Consider making smaller simulation time steps or raising the rotor_velocity_slowdown_sim_ param.\n";
-  }
-  double real_motor_velocity = motor_rot_vel_ * rotor_velocity_slowdown_sim_;
-  double force = real_motor_velocity * real_motor_velocity * motor_constant_;
+  // slow down response of motor
+  actual_motor_rot_vel_ = rotor_velocity_filter_->updateFilter(ref_motor_rot_vel_, sampling_time_);
+  double force = actual_motor_rot_vel_*actual_motor_rot_vel_ * motor_constant_;
   // Apply a force to the link.
   link_->AddRelativeForce(math::Vector3(0, 0, force));
 
@@ -155,26 +152,25 @@ void GazeboMotorModel::UpdateForcesAndMoments() {
   math::Vector3 body_velocity_W = link_->GetWorldLinearVel();
   math::Vector3 relative_wind_velocity_W = body_velocity_W - wind_speed_W_;
   math::Vector3 body_velocity_perpendicular = relative_wind_velocity_W - (relative_wind_velocity_W.Dot(joint_axis) * joint_axis);
-  math::Vector3 air_drag = -std::abs(real_motor_velocity) * rotor_drag_coefficient_ * body_velocity_perpendicular;
-  // Apply air_drag to link.
+  math::Vector3 air_drag = -std::abs(actual_motor_rot_vel_) * rotor_drag_coefficient_ * body_velocity_perpendicular;
   link_->AddForce(air_drag);
+
+
   // Moments
   // Getting the parent link, such that the resulting torques can be applied to it.
   physics::Link_V parent_links = link_->GetParentJointsLinks();
-  // The tansformation from the parent_link to the link_.
   math::Pose pose_difference = link_->GetWorldCoGPose() - parent_links.at(0)->GetWorldCoGPose();
   math::Vector3 drag_torque(0, 0, -turning_direction_ * force * moment_constant_);
-  // Transforming the drag torque into the parent frame to handle arbitrary rotor orientations.
   math::Vector3 drag_torque_parent_frame = pose_difference.rot.RotateVector(drag_torque);
   parent_links.at(0)->AddRelativeTorque(drag_torque_parent_frame);
 
   math::Vector3 rolling_moment;
   // - \omega * \mu_1 * V_A^{\perp}
-  rolling_moment = -std::abs(real_motor_velocity) * rolling_moment_coefficient_ * body_velocity_perpendicular;
+  rolling_moment = -std::abs(actual_motor_rot_vel_) * rolling_moment_coefficient_ * body_velocity_perpendicular;
   parent_links.at(0)->AddTorque(rolling_moment);
-  // Apply the filter on the motor's velocity.
-  ref_motor_rot_vel_ = rotor_velocity_filter_->updateFilter(ref_motor_rot_vel_, sampling_time_);
-  joint_->SetVelocity(0, turning_direction_ * ref_motor_rot_vel_ / rotor_velocity_slowdown_sim_);
+
+  // for animation, set the velocity of the rotor
+  joint_->SetVelocity(0, turning_direction_ * actual_motor_rot_vel_ / rotor_velocity_slowdown_sim_);
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMotorModel)
