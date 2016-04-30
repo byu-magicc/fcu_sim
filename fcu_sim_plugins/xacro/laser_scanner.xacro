@@ -3,9 +3,9 @@
   <xacro:property name="pi" value="3.14159265359" />
 
   <!-- Hokuyo UTM-30LX-->
-  <xacro:macro 
-    name="hokuyo_UTM-30LX" 
-    params="namespace 
+  <xacro:macro
+    name="hokuyo_UTM-30LX"
+    params="namespace
             parent_link
             visualize">
     <xacro:laser_scanner
@@ -24,7 +24,7 @@
   </xacro:macro>
 
   <!-- Macro to add a laser scanner. -->
-  <xacro:macro 
+  <xacro:macro
     name="laser_scanner"
     params="namespace
             parent_link
@@ -55,7 +55,7 @@
       <xacro:insert_block name="origin"/>
       <parent link="${parent_link}"/>
       <child link="${namespace}/laser_link"/>
-      <limit upper="0" lower="0" effort="0" velocity="0" /> 
+      <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
 
     <gazebo reference="${namespace}/laser_link">
