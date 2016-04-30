@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!--  
+<!--
 
 Gazebo Shredder Definition File
 Author: James Jackson
@@ -63,6 +63,10 @@ Author: James Jackson
       </geometry>
     </collision>
   </link>
+
+  <gazebo reference="${namespace}/base_link">
+    <material>Gazebo/$(arg color)</material>
+  </gazebo>
 
 
   <!-- ************************* ROTOR DYNAMICS ********************** -->
@@ -211,16 +215,14 @@ Author: James Jackson
 
   <!-- ***************** SENSORS ******************* -->
   <!-- Ground Truth -->
-  <xacro:if value="$(arg enable_ground_truth)">
-    <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
-    <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
-  </xacro:if>
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
+  <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
 
   <!-- Mount an IMU -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
-  <xacro:IMU_ADIS16448 
-    namespace="" 
-    parent_link="${namespace}/base_link" 
+  <xacro:IMU_ADIS16448
+    namespace=""
+    parent_link="${namespace}/base_link"
     imu_topic="imu"/>
 
   <!--Enable Wind -->
@@ -232,15 +234,15 @@ Author: James Jackson
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
-  <xacro:Sonar_MB1030 
-    namespace="" 
+  <xacro:Sonar_MB1030
+    namespace=""
     parent_link="${namespace}/base_link"
     altimeter_topic="altimeter"/>
 
   <!-- Mount an RGBD Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
-  <xacro:xtion 
-    namespace="" 
+  <xacro:xtion
+    namespace=""
     parent_link="${namespace}/base_link"/>
 
   <!-- Laser Scanner -->
