@@ -13,8 +13,8 @@ Author: James Jackson
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/firefly.dae" />
   <xacro:property name="mass" value="3.81" /> <!-- [kg] -->
-  <xacro:property name="body_width" value="0.1" /> <!-- [m] -->
-  <xacro:property name="body_height" value="0.16" /> <!-- [m] -->
+  <xacro:property name="body_width" value="0.505" /> <!-- [m] -->
+  <xacro:property name="body_height" value="0.1" /> <!-- [m] -->
   <xacro:property name="mass_rotor" value="0.005" /> <!-- [kg] -->
   <xacro:property name="arm_length" value="0.3429" /> <!-- [m] -->
   <xacro:property name="rotor_offset_top" value="0.06985" /> <!-- [m] -->
@@ -51,7 +51,7 @@ Author: James Jackson
           <mesh filename="${mesh_file}" scale="1 1 1" />
         </xacro:if>
         <xacro:unless value="${use_mesh_file}">
-          <box size="${body_width} ${body_width} ${body_height}"/> <!-- [m] [m] [m] -->
+          <cylinder length="${body_height}" radius="${body_width}"/>
         </xacro:unless>
       </geometry>
     </visual>
@@ -59,7 +59,7 @@ Author: James Jackson
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="${body_width} ${body_width} ${body_height}" /> <!-- [m] [m] [m] -->
+        <cylinder length="${body_height}" radius="${body_width}"/>
       </geometry>
     </collision>
   </link>
@@ -226,11 +226,11 @@ Author: James Jackson
     imu_topic="imu"/>
 
   <!--Enable Wind -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
     namespace="${namespace}"
     link_name="${namespace}/base_link"
-    wind_pub_topic="wind"/>
+    wind_pub_topic="wind"/> -->
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
@@ -251,5 +251,8 @@ Author: James Jackson
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     visualize="false"/>
+
+    <!-- Collision Sensor -->
+    <!-- TODO  http://gazebosim.org/tutorials?tut=contact_sensor-->
 
 </robot>
