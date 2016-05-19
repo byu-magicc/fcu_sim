@@ -19,7 +19,7 @@
   <node name="xbox"                pkg="joy"                 type="joy_node">
     <param name="dev" value="/dev/input/js1"/>
   </node>
-  <node name="joy_sim" pkg="joy_sim" type="joy_sim" >
+  <node name="rc_joy" pkg="rc_joy" type="joy_sim" >
     <rosparam command="load" file="$(find joy_sim)/param/ps2.yaml"/>
     <rosparam command="load" file="$(find joy_sim)/param/$(arg mav_name).yaml"/>
   </node>
@@ -37,5 +37,5 @@
   </node>
 
   <!-- High Level Controller -->
-  
+
 </launch>

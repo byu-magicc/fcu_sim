@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<!--  
+<!--
 
 Gazebo Hummingbird Definition File
 Author: James Jackson
@@ -10,7 +10,7 @@ Author: James Jackson
 <robot name="hummingbird" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Properties -->
-  <xacro:property name="namespace" value="$(arg mav_name)" />
+  <xacro:property name="namespace" value="" />
   <xacro:property name="rotor_velocity_slowdown_sim" value="10" />
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/hummingbird.dae" />
@@ -168,13 +168,34 @@ Author: James Jackson
   <!-- ***************** SENSORS ******************* -->
   <!-- Mount an ADIS16448 IMU. -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
-  <xacro:IMU_ADIS16448 
-    namespace="${namespace}" 
+  <xacro:IMU_ADIS16448
+    namespace="${namespace}"
     parent_link="${namespace}/base_link"
     imu_topic="/imu/data" />
 
   <!-- Enable Ground Truth -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
-  <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
+  <xacro:ground_truth
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link" />
+
+  <!-- Altimeter -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
+  <xacro:Sonar_HC-SR04
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    altimeter_topic="alt/data"/>
+
+    <!-- Downward Pointing Camera -->
+    <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
+    <xacro:simple_camera
+      namespace="${namespace}"
+      frame_rate="30"
+      rgb_range=""
+      parent_link="${namespace}/base_link"
+      image_topic="rgb"
+      image_camera_info_topic="camera_info">
+      <origin xyz="0.0 0.0 -0.2" rpy="0 1.516 0"/>
+    </xacro:simple_camera>
 
 </robot>
