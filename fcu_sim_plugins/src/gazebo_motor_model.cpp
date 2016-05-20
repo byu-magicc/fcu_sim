@@ -113,6 +113,7 @@ void GazeboMotorModel::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   // Create the first order filter.
   rotor_velocity_filter_.reset(new FirstOrderFilter<double>(time_constant_up_, time_constant_down_, ref_motor_rot_vel_));
+  joint_->SetMaxForce(0, 100);// the max force gazebo will use to set the velocity
 }
 
 // This gets called by the world update start event.

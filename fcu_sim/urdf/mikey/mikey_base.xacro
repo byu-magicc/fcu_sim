@@ -57,9 +57,9 @@ Author: James Jackson
     </visual>
 
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0 0 ${body_height/2.0}" rpy="0 0 0" />
       <geometry>
-        <cylinder length="${body_height}" radius="${body_width}"/>
+        <cylinder length="${0.1}" radius="${body_width}"/>
       </geometry>
     </collision>
   </link>
@@ -228,11 +228,11 @@ Author: James Jackson
     imu_topic="imu"/>
 
   <!--Enable Wind -->
-  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
     namespace="${namespace}"
     link_name="${namespace}/base_link"
-    wind_pub_topic="wind"/> -->
+    wind_pub_topic="wind"/>
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
