@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="pi" value="3.14159265359" />
+
+    <!-- Configure Airspeed -->
+    <xacro:macro
+      name="gimbal_ZENMUSE"
+      params="namespace parent_link camera_topic pose_topic control_topic *origin">
+    <xacro:gimbal_plugin_macro
+      namespace="${namespace}"
+      parent_link="${parent_link}"
+      camera_topic="${camera_topic}"
+      pose_topic="${camera_topic}"
+      control_topic="${camera_topic}"
+      mass="0.001"
+      x_rotation_range="4"
+      y_rotation_range="4"
+      z_rotation_range="100000000000000"
+      time_constant="0.25">
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <xacro:insert_block name="origin" />
+    </xacro:gimbal_plugin_macro>
+  </xacro:macro>
+
+    <!-- Macro to add a Gimbal -->
+  <xacro:macro name="gimbal_plugin_macro"
+    params="namespace parent_link camera_topic pose_topic control_topic
+      mass x_rotation_range y_rotation_range z_rotation_range time_constant
+      *inertia *origin">
+
+    <!-- Yaw Link -->
+    <link name="${namespace}/gimbal/yaw_link">
+      <inertial>
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <mass value="0.0001" />
+        <xacro:insert_block name="origin" />
+      </inertial>
+    </link>
+
+    <!-- Yaw joint -->
+    <joint name="${namespace}/gimbal_yaw_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/gimbal/yaw_link" />
+      <axis>
+        <xyz> 0 0 1</xyz>
+      </axis>
+      <limit upper="${z_rotation_range}" lower="-${z_rotation_range}" effort="1000" velocity="5000"/>
+    </joint>
+
+    <!-- Roll Link -->
+    <link name="${namespace}/gimbal/roll_link">
+      <inertial>
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <mass value="0.0001" />
+        <xacro:insert_block name="origin" />
+      </inertial>
+    </link>
+
+    <!-- Roll joint -->
+    <joint name="${namespace}/gimbal_roll_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${namespace}/gimbal/yaw_link" />
+      <child link="${namespace}/gimbal/roll_link" />
+      <axis>
+        <xyz> 1 0 0</xyz>
+      </axis>
+      <limit upper="${x_rotation_range}" lower="-${x_rotation_range}" effort="1000" velocity="5000"/>
+    </joint>
+
+    <!-- Pitch Link -->
+    <link name="${namespace}/gimbal/pitch_link">
+      <inertial>
+        <xacro:insert_block name="inertia" />
+        <mass value="${mass}" />
+        <xacro:insert_block name="origin" />
+      </inertial>
+    </link>
+
+    <!-- Pitch joint -->
+    <joint name="${namespace}/gimbal_pitch_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${namespace}/gimbal/yaw_link" />
+      <child link="${namespace}/gimbal/pitch_link" />
+      <axis>
+        <xyz> 0 1 0</xyz>
+      </axis>
+      <limit upper="${y_rotation_range}" lower="-${y_rotation_range}" effort="1000" velocity="5000"/>
+    </joint>
+
+    <!-- Attach a Camera -->
+    <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
+    <xacro:simple_camera
+      namespace="${namespace}"
+      frame_rate="30"
+      rgb_range="10000"
+      image_topic="${camera_topic}"
+      image_camera_info_topic="${camera_topic}/camera_info"
+      parent_link="${namespace}/gimbal/pitch_link">
+      <xacro:insert_block name="origin"/>
+    </xacro>
+
+    <!-- Load Gimbal Controller Plugin -->
+    <gazebo>
+      <plugin filename="libfcu_sim_gimbal_plugin.so" name="fcu_sim_gimbal_plugin">
+        <namespace>${namespace}</namespace>
+        <yawJoint>${namespace}/gimbal_yaw_joint</yawJoint>
+        <pitchJoint>${namespace}/gimbal_roll_joint</pitchJoint>
+        <rollJoint>${namespace}/gimbal_pitch_joint</rollJoint>
+        <timeConstant>${time_constant}</timeConstant>
+        <pressureNoiseSigma>${pressure_noise_sigma}</pressureNoiseSigma> <!-- [Pascals] -->
+        <airDensity>${air_density}</airDensity> <!-- [kg/m^3] -->
+        <maxPressure>${max_pressure}</maxPressure> <!-- [Pascals] -->
+        <minPressure>${min_pressure}</minPressure> <!-- [Pascals] -->
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+
+
+
+</robot>
