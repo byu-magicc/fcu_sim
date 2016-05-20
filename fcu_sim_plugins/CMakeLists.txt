@@ -100,6 +100,12 @@ add_library(fcu_sim_GPS_plugin
 target_link_libraries(fcu_sim_GPS_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_GPS_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_gimbal_plugin
+  src/gazebo_gimbal_plugin.cpp
+  include/fcu_sim_plugins/gazebo_gimbal_plugin.h)
+target_link_libraries(fcu_sim_gimbal_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_gimbal_plugin ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     fcu_sim_motor_model
