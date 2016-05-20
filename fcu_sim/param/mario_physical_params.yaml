@@ -1,0 +1,20 @@
+# Shredder vehicle parameters
+mass: 3.81
+inertia: {xx: 0.060224, xy: 0.0, xz: 0.0, yy: 0.122198, yz: 0.0, zz: 0.0977}
+
+# angle should be expressed in rad
+# direction 1 means counter clockwise, -1 clockwise
+# The order of the rotors should match those found in rotors_description/urdf/shredder.xacro
+rotor_configuration:
+  '0': {angle:  0.0,    arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction:  1.0, max_rotor_speed: 1500.0}
+  '1': {angle:  1.0472, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction: -1.0, max_rotor_speed: 1500.0}
+  '2': {angle:  2.0944, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction:  1.0, max_rotor_speed: 1500.0}
+  '3': {angle:  3.1415, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction: -1.0, max_rotor_speed: 1500.0}
+  '4': {angle: -2.0944, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction:  1.0, max_rotor_speed: 1500.0}
+  '5': {angle: -1.0472, arm_length: 0.3429, rotor_force_constant: 1.45e-5, rotor_moment_constant: 0.055, direction: -1.0, max_rotor_speed: 1500.0}
+
+
+
+
+
+
