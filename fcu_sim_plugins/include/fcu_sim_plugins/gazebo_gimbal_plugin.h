@@ -28,45 +28,62 @@ namespace gazebo {
 
 
 class GazeboGimbalPlugin : public ModelPlugin {
-  public:
-      GazeboGimbalPlugin();
-      ~GazeboGimbalPlugin();
+public:
+  GazeboGimbalPlugin();
+  ~GazeboGimbalPlugin();
+  void commandCallback(const geometry_msgs::Twist::ConstPtr& msg);
 
-      void commandCallback(const geometry_msgs::Twist::ConstPtr& msg);
+protected:
 
-  protected:
+  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+  void OnUpdate(const common::UpdateInfo & /*_info*/);
 
-      virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-      void OnUpdate(const common::UpdateInfo & /*_info*/);
 
-  // Pointer to the model
-  private:
-      physics::ModelPtr model;
-          // brief Pointer to the joint.
-      physics::JointPtr joint;
-      physics::JointPtr ball_joint;
-          // Pointer to the update event connection
-      event::ConnectionPtr updateConnection;
-          // Azimuth Angle
-      float kp;
-      float kd;
-      float previous_error;
-          // Elevation Angle
-      float ball_kp;
-      float ball_kd;
-      float ball_previous_error;
-          // Time
-      float previous_time;
-      float current_time;
+private:
+  // ROS variables
+  ros::NodeHandle* nh_;
+  ros::Subscriber command_sub_;
 
-      // ROS variables
-      ros::NodeHandle* nh;
-      ros::Subscriber command_sub;
+  // Pointer to the gazebo items.
+  physics::JointPtr yaw_joint_;
+  physics::JointPtr roll_joint_;
+  physics::JointPtr pitch_joint_;
+  physics::ModelPtr model_;
+  physics::WorldPtr world_;
 
-      float angle_desired;
-      float ball_angle_desired;
-      int direction; 		// 0: no direction, 1: up, 2: down, 3: CW, 4: CCW
-      float update_rate;
-  };
+  std::string namespace_;
+
+
+  // Pointer to the update event connection
+  event::ConnectionPtr updateConnection_;
+
+  // Azimuth Angle
+  double yaw_kp_;
+  double yaw_kd_;
+  double yaw_prev_error_;
+
+  // Elevation Angle
+  double pitch_kp_;
+  double pitch_kd_;
+  double pitch_previous_error_;
+
+  double roll_kp_;
+  double roll_kd_;
+  double roll_previous_error_;
+
+  // Time
+  double previous_time_;
+  double current_time_;
+
+  // Commands
+  double yaw_desired_;
+  double pitch_desired_;
+  double roll_desired_;
+
+  double time_constant_;
+
+  int direction_; 		// 0: no direction, 1: up, 2: down, 3: CW, 4: CCW
+  double update_rate_;
+};
 } // namespace gazebo
 #endif //fcu_sim_PLUGINS_GIMBAL_PLUGIN_H
