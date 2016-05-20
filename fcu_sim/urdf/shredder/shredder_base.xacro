@@ -8,7 +8,7 @@ Author: James Jackson
 
 <robot name="shredder" xmlns:xacro="http://ros.org/wiki/xacro">
 <!-- Properties -->
-<xacro:property name="namespace" value="mikey" />
+<xacro:property name="namespace" value="shredder" />
 <xacro:property name="rotor_velocity_slowdown_sim" value="10" />
 <xacro:property name="use_mesh_file" value="true" />
 <xacro:property name="mesh_file" value="package://fcu_sim/meshes/firefly.dae" />
@@ -57,9 +57,9 @@ Author: James Jackson
   </visual>
 
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 ${body_height/2.0}" rpy="0 0 0" />
     <geometry>
-      <cylinder length="${body_height}" radius="${body_width}"/>
+      <cylinder length="${0.1}" radius="${body_width}"/>
     </geometry>
   </collision>
 </link>
@@ -221,34 +221,34 @@ Author: James Jackson
   <!-- Mount an IMU -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
   <xacro:IMU_ADIS16448
-    namespace=""
+    namespace="${namespace}"
     parent_link="${namespace}/base_link"
     imu_topic="imu"/>
 
   <!--Enable Wind -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
-    namespace=""
+    namespace="${namespace}"
     link_name="${namespace}/base_link"
     wind_pub_topic="wind"/>
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
   <xacro:Sonar_MB1030
-    namespace=""
+    namespace="${namespace}"
     parent_link="${namespace}/base_link"
     altimeter_topic="altimeter"/>
 
   <!-- Mount an RGBD Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
   <xacro:xtion
-    namespace=""
+    namespace="${namespace}"
     parent_link="${namespace}/base_link"/>
 
   <!-- Laser Scanner -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
   <xacro:hokuyo_UTM-30LX
-    namespace=""
+    namespace="${namespace}"
     parent_link="${namespace}/base_link"
     visualize="false"/>
 
