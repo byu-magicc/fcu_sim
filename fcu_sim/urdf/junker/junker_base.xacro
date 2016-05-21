@@ -104,7 +104,7 @@
       <origin xyz=".5 0 -.5" rpy="0 0 -1.570796" />
       <geometry>
         <xacro:if value="${use_mesh_file}">
-          <mesh filename="${mesh_file}" scale="0.01 0.01 0.01" />
+          <mesh filename="${mesh_file}" scale="0.25 0.25 0.25" />
         </xacro:if>
         <xacro:unless value="${use_mesh_file}">
             <box size="${body_width} ${body_height} ${body_length}" />
@@ -250,7 +250,7 @@
     camera_topic="rgb"
     pose_topic="${namespace}/gimbal/pose"
     command_topic="${namespace}/gimbal/control">
-    <origin xyz="0 0 1" ryp="0 0 0"/>
+    <origin xyz="2 0 0" ryp="0 0 0"/>
   </xacro:gimbal_ZENMUSE>
 
   <!-- Airspeed -->

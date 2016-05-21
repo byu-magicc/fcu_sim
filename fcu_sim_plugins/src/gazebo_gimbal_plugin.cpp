@@ -83,6 +83,7 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
   }
 
+  // Connect Gazebo Update
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGimbalPlugin::OnUpdate, this, _1));
 
   // Connect ROS
@@ -90,11 +91,12 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   command_sub_ = nh_->subscribe(command_topic, 1, &GazeboGimbalPlugin::commandCallback, this);
   pose_pub_ = nh_->advertise<geometry_msgs::Vector3>(pose_topic, 10);
 
-  // Initialize
+  // Initialize Commands
   yaw_desired_ = 0.0;
   pitch_desired_ = 0.0;
   roll_desired_ = 0.0;
 
+  // Initialize Filtered Values
   yaw_actual_ = 0.0;
   pitch_actual_ = 0.0;
   roll_actual_ = 0.0;
@@ -110,19 +112,15 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   yaw_joint_->SetMaxForce(0, 10000);
   roll_joint_->SetMaxForce(0, 10000);
 
+  // Set the axes of the gimbal
   yaw_joint_->SetAxis(0, math::Vector3(0, 0, 1));
   pitch_joint_->SetAxis(0, math::Vector3(0, 1, 0));
   roll_joint_->SetAxis(0, math::Vector3(1, 0, 0));
 
-  // Figure out which axes it's rotating on
-  math::Vector3 yaw_axis = pitch_joint_->GetGlobalAxis(0);
-  gzmsg << "pitch axis = " << yaw_axis;
-
-
   // Initialize Time
   previous_time_ = 0.0;
 }
-
+// Return the Sign of the argument
 void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
   // Update time
@@ -149,10 +147,10 @@ void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 
 void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& msg)
 {
-  yaw_desired_ = msg->z;
-  pitch_desired_ = msg->y;
+  // Pull in command from message, convert to NED
+  yaw_desired_ = -1.0*msg->z;
+  pitch_desired_ = -1.0*msg->y;
   roll_desired_ = msg->x;
-
 
   // Wrap Commands between -PI and PI.  This may cause problems if someone wants to control
   // Across 2 PI, but I'm not dealing with this now.
