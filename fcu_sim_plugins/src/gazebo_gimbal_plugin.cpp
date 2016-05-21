@@ -21,11 +21,11 @@ namespace gazebo {
 GazeboGimbalPlugin::GazeboGimbalPlugin() : ModelPlugin() {}
 
 GazeboGimbalPlugin::~GazeboGimbalPlugin() {
-    event::Events::DisconnectWorldUpdateBegin(updateConnection_);
-    if (nh_) {
-      nh_->shutdown();
-      delete nh_;
-    }
+  event::Events::DisconnectWorldUpdateBegin(updateConnection_);
+  if (nh_) {
+    nh_->shutdown();
+    delete nh_;
+  }
 }
 
 void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
@@ -35,6 +35,8 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   world_ = model_->GetWorld();
   namespace_.clear();
 
+  std::string command_topic, pose_topic;
+
   // Load SDF parameters
   if (_sdf->HasElement("namespace")) {
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
@@ -42,163 +44,134 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzerr << "[gazeboGimbalPlugin] Please specify a namespace";
   }
 
+  if (_sdf->HasElement("commandTopic")) {
+    command_topic = _sdf->GetElement("commandTopic")->Get<std::string>();
+  } else {
+    gzerr << "[gazeboGimbalPlugin] Please specify a commandTopic";
+  }
+
+  if (_sdf->HasElement("poseTopic")) {
+    pose_topic = _sdf->GetElement("poseTopic")->Get<std::string>();
+  } else {
+    gzerr << "[gazeboGimbalPlugin] Please specify a poseTopic";
+  }
+
   if (_sdf->HasElement("yawJoint")) {
     std::string yaw_joint_name = _sdf->GetElement("yawJoint")->Get<std::string>();
-    yaw_joint_ = model_->GetLink(yaw_joint_name);
+    yaw_joint_ = model_->GetJoint(yaw_joint_name);
   } else{
     gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a yawJoint";
   }
 
   if (_sdf->HasElement("pitchJoint")) {
     std::string pitch_joint_name = _sdf->GetElement("pitchJoint")->Get<std::string>();
-    pitch_joint_ = model_->GetLink(pitch_joint_name);
+    pitch_joint_ = model_->GetJoint(pitch_joint_name);
   } else{
     gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a pitchJoint";
   }
 
   if (_sdf->HasElement("rollJoint")) {
     std::string roll_joint_name = _sdf->GetElement("rollJoint")->Get<std::string>();
-    roll_joint_ = model_->GetLink(roll_joint_name);
+    roll_joint_ = model_->GetJoint(roll_joint_name);
   } else{
     gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a rollJoint";
   }
 
-  if (_sdf->HasElement("rollJoint")) {
-    std::string roll_joint_name = _sdf->GetElement("rollJoint")->Get<std::string>();
-    time_constant_ = model_->GetLink(roll_joint_name);
+  if (_sdf->HasElement("timeConstant")) {
+    time_constant_ = _sdf->GetElement("timeConstant")->Get<double>();
   } else{
-    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a rollJoint";
+    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
   }
 
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGimbalPlugin::OnUpdate, this, _1));
 
-
-
-
-
-
-
-
+  // Connect ROS
   nh_ = new ros::NodeHandle();
-  command_sub_ = nh_->subscribe("cmd_vel", 1, &GazeboGimbalPlugin::commandCallback, this);
+  command_sub_ = nh_->subscribe(command_topic, 1, &GazeboGimbalPlugin::commandCallback, this);
+  pose_pub_ = nh_->advertise<geometry_msgs::Vector3>(pose_topic, 10);
 
-  _model->GetName() << "]\n";
-  // Listen to the update event. This event is broadcast every
-  // simulation iteration.
-  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(
-                              boost::bind(&GazeboGimbalPlugin::OnUpdate, this, _1));
+  // Initialize
+  yaw_desired_ = 0.0;
+  pitch_desired_ = 0.0;
+  roll_desired_ = 0.0;
 
-  // Store the model pointer for convenience.
-  this->model_ = _model;
+  yaw_actual_ = 0.0;
+  pitch_actual_ = 0.0;
+  roll_actual_ = 0.0;
 
-  // Get the first joint. We are making an assumption about the model
-  // having one joint that is the rotational joint.
-  this->yaw_joint_ = _model->GetJoints()[0];
-  this->pitch_joint_ = _model->GetJoints()[1];
-  // this->ball_joint->SetForce(0,0.1);
-  // cout <<	"Initial angle: " << this->joint->GetAngle(0).Degree() << endl;
-  math::Angle angle(0);
-  math::Angle ball_angle(0);
-  this->yaw_joint_->SetAngle(0,angle);
-  this->pitch_joint_->SetAngle(0,ball_angle);
-  // cout <<	this->joint->GetAngle(0).Degree() << endl;
-  // Azimuth Angle
-  yaw_desired_ = 0;
-  yaw_kp_ = 0.001;
-  yaw_kd_ = 0.0001;
-  // Elevation Angle
-  pitch_desired_ = 90;
-  pitch_kp_ = 0.001;
-  pitch_kd_ = 0.0001;
-  // Initialize Error
-  previous_time_ = clock()/(double) CLOCKS_PER_SEC;
-  yaw_prev_error_ = 0;
+  // Create the first order filters.
+  yaw_filter_.reset(new FirstOrderFilter<double>(time_constant_, time_constant_, yaw_actual_));
+  pitch_filter_.reset(new FirstOrderFilter<double>(time_constant_, time_constant_, pitch_actual_));
+  roll_filter_.reset(new FirstOrderFilter<double>(time_constant_, time_constant_, roll_actual_));
 
-  direction_ = -1;
-  update_rate_ = 0.5;
+  // Set the max force allowed to set the angle, they are really big because we are using the filter instead
+  // of controlling actual forces
+  pitch_joint_->SetMaxForce(0, 10000);
+  yaw_joint_->SetMaxForce(0, 10000);
+  roll_joint_->SetMaxForce(0, 10000);
+
+  yaw_joint_->SetAxis(0, math::Vector3(0, 0, 1));
+  pitch_joint_->SetAxis(0, math::Vector3(0, 1, 0));
+  roll_joint_->SetAxis(0, math::Vector3(1, 0, 0));
+
+  // Figure out which axes it's rotating on
+  math::Vector3 yaw_axis = pitch_joint_->GetGlobalAxis(0);
+  gzmsg << "pitch axis = " << yaw_axis;
+
+
+  // Initialize Time
+  previous_time_ = 0.0;
 }
 
-void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & /*_info*/)
+void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
-    // Update time
-    current_time_ = clock()/(double) CLOCKS_PER_SEC;
-    float time_step = current_time_ - previous_time_;
+  // Update time
+  double dt = _info.simTime.Double() - previous_time_;
+  previous_time_ = _info.simTime.Double();
 
-      // Azimuth Controller
-    float angle_current = this->yaw_joint_->GetAngle(0).Degree();
-    if(direction_ == 3){
-        yaw_desired_ = angle_current + update_rate_;
-        if(yaw_desired_ > 360){
-            yaw_desired_ = 360;
-        }
-    }
-    else if(direction_ == 4){
-        yaw_desired_ = angle_current - update_rate_;
-        if(yaw_desired_ < -360){
-            yaw_desired_ = -360;
-        }
-    }
-    float error = yaw_desired_ - angle_current;
-    float error_derivative = (error-yaw_prev_error_)/time_step;
-    float force_desired = yaw_kp_*error + yaw_kd_*error_derivative;
-    yaw_joint_->SetForce(0,force_desired);
-      // cout << "Azimuth angle: " << angle_current << endl;
+  // Use the Filters to figure out the actual angles
+  yaw_actual_ = yaw_filter_->updateFilter(yaw_desired_, dt);
+  pitch_actual_ = pitch_filter_->updateFilter(pitch_desired_, dt);
+  roll_actual_ = roll_filter_->updateFilter(roll_desired_, dt);
 
-      // Elevation Controller
-    float ball_angle_current = this->pitch_joint_->GetAngle(0).Degree();
-    if(direction_ == 1){
-        pitch_desired_ = ball_angle_current + update_rate_;
-        if(pitch_desired_ > 180){
-            pitch_desired_ = 180;
-        }
-    }
-    else if(direction_ == 2){
-        pitch_desired_ = ball_angle_current - update_rate_;
-        if(pitch_desired_ < 0){
-            pitch_desired_ = 0;
-        }
-    }
-    float ball_error = pitch_desired_ - ball_angle_current;
-    float ball_error_derivative = (ball_error-pitch_previous_error_)/time_step;
-    float ball_force_desired = pitch_kp_*ball_error + pitch_kd_*ball_error_derivative;
-    pitch_joint_->SetForce(0,ball_force_desired);
-      // cout << "Elevation angle: " <<  ball_angle_current << endl;
+  // Set the Joint Angles to the Filtered angles
+  yaw_joint_->SetAngle(0, math::Angle(yaw_actual_));
+  pitch_joint_->SetAngle(0, math::Angle(pitch_actual_));
+  roll_joint_->SetAngle(0, math::Angle(roll_actual_));
 
-      // Update error and time
-    yaw_prev_error_ = error;
-    pitch_previous_error_ = ball_error;
-    previous_time_ = current_time_;
-
-    //	cout << "I am updating" << endl;
-    //	joint->SetVelocity(0,1000);
-    //	joint->SetForce(0,0.0001);
-    //	cout << joint->GetVelocity(0) << endl;
+  // Publish ROS message of actual angles
+  geometry_msgs::Vector3 angles_msg;
+  angles_msg.x = roll_actual_;
+  angles_msg.y = pitch_actual_;
+  angles_msg.z = yaw_actual_;
+  pose_pub_.publish(angles_msg);
 }
 
-void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Twist::ConstPtr& msg){
+void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& msg)
+{
+  yaw_desired_ = msg->z;
+  pitch_desired_ = msg->y;
+  roll_desired_ = msg->x;
 
-     // cout << "desired azimuth: " << msg->linear.x << endl;
-     // cout << "desired elevation: " << msg->angular.z << endl;
-   if(msg->linear.x==0.5){
-       direction_ = 1;
-   }
-   else if(msg->linear.x==-0.5){
-       direction_ = 2;
-   }
 
-   if(msg->angular.z==0.5){
-       direction_ = 3;
-   }
-   else if(msg->angular.z==-0.5){
-       direction_ = 4;
-   }
-
-   if(msg->linear.x==0 && msg->angular.z==0){
-       direction_ = 0;
-   }
-
+  // Wrap Commands between -PI and PI.  This may cause problems if someone wants to control
+  // Across 2 PI, but I'm not dealing with this now.
+  while (fabs(yaw_desired_) > PI) {
+    yaw_desired_ -= sign(yaw_desired_)*2.0*PI;
+  }
+  while (fabs(pitch_desired_) > PI){
+    pitch_desired_ -= sign(pitch_desired_)*2.0*PI;
+  }
+  while (fabs(roll_desired_) > PI) {
+    roll_desired_ -= sign(roll_desired_)*2.0*PI;
+  }
 }
 
-// Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
+int GazeboGimbalPlugin::sign(double x){
+  return (0 < x) - (x < 0);
+}
+
 GZ_REGISTER_MODEL_PLUGIN(GazeboGimbalPlugin);
 
 } // namespace
+

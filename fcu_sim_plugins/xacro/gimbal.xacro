@@ -1,23 +1,21 @@
 <?xml version="1.0"?>
 
-
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:property name="pi" value="3.14159265359" />
 
-    <!-- Configure Airspeed -->
+    <!-- Configure ZENMUSE Gimbal -->
     <xacro:macro
       name="gimbal_ZENMUSE"
-      params="namespace parent_link camera_topic pose_topic control_topic *origin">
+      params="namespace parent_link camera_topic pose_topic command_topic *origin">
     <xacro:gimbal_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
       camera_topic="${camera_topic}"
-      pose_topic="${camera_topic}"
-      control_topic="${camera_topic}"
+      pose_topic="${pose_topic}"
+      command_topic="${command_topic}"
       mass="0.001"
-      x_rotation_range="4"
-      y_rotation_range="4"
-      z_rotation_range="100000000000000"
+      x_rotation_range="1000000000"
+      y_rotation_range="0000000000"
+      z_rotation_range="1000000000"
       time_constant="0.25">
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <xacro:insert_block name="origin" />
@@ -25,29 +23,66 @@
   </xacro:macro>
 
     <!-- Macro to add a Gimbal -->
-  <xacro:macro name="gimbal_plugin_macro"
-    params="namespace parent_link camera_topic pose_topic control_topic
+  <xacro:macro
+    name="gimbal_plugin_macro"
+    params="namespace parent_link camera_topic pose_topic command_topic
       mass x_rotation_range y_rotation_range z_rotation_range time_constant
       *inertia *origin">
+
+    <!-- Base Link  -->
+    <link name="${namespace}/gimbal/base_link">
+      <inertial>
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <mass value="${mass}" />
+        <xacro:insert_block name="origin" />
+      </inertial>
+      <visual name="${namespace}/gimbal_base_visual">
+        <!-- <xacro:insert_block name="origin"/> -->
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <gazebo reference="${namespace}/gimbal/base_link">
+      <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+    <!-- Base Joint -->
+    <joint name="${namespace}/gimbal_base_joint" type="revolute">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${namespace}/gimbal/base_link" />
+      <limit upper="0" lower="0" effort="0" velocity="0"/>
+    </joint>
 
     <!-- Yaw Link -->
     <link name="${namespace}/gimbal/yaw_link">
       <inertial>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
         <mass value="0.0001" />
-        <xacro:insert_block name="origin" />
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
+      <visual name="${namespace}/gimbal_yaw_visual">
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </visual>
     </link>
+
+    <gazebo reference="${namespace}/gimbal/yaw_link">
+      <material>Gazebo/Red</material>
+    </gazebo>
 
     <!-- Yaw joint -->
     <joint name="${namespace}/gimbal_yaw_joint" type="revolute">
-      <xacro:insert_block name="origin" />
-      <parent link="${parent_link}" />
+      <pose xyz="0 0 0" rpy = "0 0 0"/>
+      <parent link="${namespace}/gimbal/base_link" />
       <child link="${namespace}/gimbal/yaw_link" />
-      <axis>
-        <xyz> 0 0 1</xyz>
-      </axis>
-      <limit upper="${z_rotation_range}" lower="-${z_rotation_range}" effort="1000" velocity="5000"/>
+      <limit upper="${z_rotation_range}" lower="${-1.0*z_rotation_range}" effort="1000" velocity="5000"/>
     </joint>
 
     <!-- Roll Link -->
@@ -55,70 +90,100 @@
       <inertial>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
         <mass value="0.0001" />
-        <xacro:insert_block name="origin" />
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
+      <visual name="${namespace}/gimbal_roll_visual">
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </visual>
     </link>
+
+    <gazebo reference="${namespace}/gimbal/roll_link">
+      <material>Gazebo/Green</material>
+    </gazebo>
 
     <!-- Roll joint -->
     <joint name="${namespace}/gimbal_roll_joint" type="revolute">
-      <xacro:insert_block name="origin" />
+      <origin xyz="0 0 0" rpy = "0 0 0"/>
       <parent link="${namespace}/gimbal/yaw_link" />
       <child link="${namespace}/gimbal/roll_link" />
-      <axis>
-        <xyz> 1 0 0</xyz>
-      </axis>
-      <limit upper="${x_rotation_range}" lower="-${x_rotation_range}" effort="1000" velocity="5000"/>
+      <limit upper="${x_rotation_range}" lower="${-1.0*x_rotation_range}" effort="1000" velocity="5000"/>
     </joint>
 
     <!-- Pitch Link -->
     <link name="${namespace}/gimbal/pitch_link">
       <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="${mass}" />
-        <xacro:insert_block name="origin" />
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <mass value="0.0001" />
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
+      <visual name="${namespace}/gimbal_pitch_visual">
+        <origin xyz="0 0 0" rpy = "0 0 0"/>
+        <geometry>
+          <box size="0.1 0.1 0.1"/>
+        </geometry>
+      </visual>
     </link>
+
+    <gazebo reference="${namespace}/gimbal/pitch_link">
+      <material>Gazebo/Yellow</material>
+    </gazebo>
 
     <!-- Pitch joint -->
     <joint name="${namespace}/gimbal_pitch_joint" type="revolute">
-      <xacro:insert_block name="origin" />
-      <parent link="${namespace}/gimbal/yaw_link" />
+      <origin xyz="0 0 0" rpy = "0 0 0"/>
+      <parent link="${namespace}/gimbal/roll_link" />
       <child link="${namespace}/gimbal/pitch_link" />
-      <axis>
-        <xyz> 0 1 0</xyz>
-      </axis>
-      <limit upper="${y_rotation_range}" lower="-${y_rotation_range}" effort="1000" velocity="5000"/>
+      <limit upper="${x_rotation_range}" lower="${-1.0*x_rotation_range}" effort="1000" velocity="5000"/>
     </joint>
 
     <!-- Attach a Camera -->
-    <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
-    <xacro:simple_camera
-      namespace="${namespace}"
-      frame_rate="30"
-      rgb_range="10000"
-      image_topic="${camera_topic}"
-      image_camera_info_topic="${camera_topic}/camera_info"
-      parent_link="${namespace}/gimbal/pitch_link">
-      <xacro:insert_block name="origin"/>
-    </xacro>
+    <gazebo reference="${namespace}/gimbal/pitch_link">
+      <sensor type="camera" name="gimbal/camera">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <camera>
+          <horizontal_fov>2</horizontal_fov>
+          <image>
+            <format>R8G8B8</format>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.01</near>
+            <far>1000</far>
+          </clip>
+        </camera>
+        <plugin name="${namespace}/gimbal_camera" filename="libgazebo_ros_camera.so">
+          <robotNamespace>${namespace}</robotNamespace>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>30</updateRate>
+          <cameraName>gimbal/camera</cameraName>
+          <imageTopicName>${camera_topic}</imageTopicName>
+          <cameraInfoTopicName>${camera_topic}/camera_info</cameraInfoTopicName>
+          <frameName>gimbal_camera</frameName>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    </gazebo>
 
     <!-- Load Gimbal Controller Plugin -->
     <gazebo>
       <plugin filename="libfcu_sim_gimbal_plugin.so" name="fcu_sim_gimbal_plugin">
         <namespace>${namespace}</namespace>
         <yawJoint>${namespace}/gimbal_yaw_joint</yawJoint>
-        <pitchJoint>${namespace}/gimbal_roll_joint</pitchJoint>
-        <rollJoint>${namespace}/gimbal_pitch_joint</rollJoint>
+        <pitchJoint>${namespace}/gimbal_pitch_joint</pitchJoint>
+        <rollJoint>${namespace}/gimbal_roll_joint</rollJoint>
         <timeConstant>${time_constant}</timeConstant>
-        <pressureNoiseSigma>${pressure_noise_sigma}</pressureNoiseSigma> <!-- [Pascals] -->
-        <airDensity>${air_density}</airDensity> <!-- [kg/m^3] -->
-        <maxPressure>${max_pressure}</maxPressure> <!-- [Pascals] -->
-        <minPressure>${min_pressure}</minPressure> <!-- [Pascals] -->
+        <commandTopic>${command_topic}</commandTopic>
+        <poseTopic>${pose_topic}</poseTopic>
       </plugin>
     </gazebo>
   </xacro:macro>
-
-
-
-
 </robot>

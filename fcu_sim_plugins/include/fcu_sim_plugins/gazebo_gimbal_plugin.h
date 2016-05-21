@@ -13,7 +13,7 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include "geometry_msgs/Vector3.h"
-#include "geometry_msgs/Twist.h"
+#include <fcu_sim_plugins/common.h>
 
 #include <chrono>
 #include <cmath>
@@ -31,20 +31,22 @@ class GazeboGimbalPlugin : public ModelPlugin {
 public:
   GazeboGimbalPlugin();
   ~GazeboGimbalPlugin();
-  void commandCallback(const geometry_msgs::Twist::ConstPtr& msg);
+  void commandCallback(const geometry_msgs::Vector3ConstPtr &msg);
 
 protected:
 
   virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-  void OnUpdate(const common::UpdateInfo & /*_info*/);
-
+  void OnUpdate(const common::UpdateInfo & _info);
+  int sign(double x);
 
 private:
   // ROS variables
   ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
+  ros::Publisher pose_pub_;
 
   // Pointer to the gazebo items.
+  physics::JointControllerPtr joint_controller_;
   physics::JointPtr yaw_joint_;
   physics::JointPtr roll_joint_;
   physics::JointPtr pitch_joint_;
@@ -57,20 +59,6 @@ private:
   // Pointer to the update event connection
   event::ConnectionPtr updateConnection_;
 
-  // Azimuth Angle
-  double yaw_kp_;
-  double yaw_kd_;
-  double yaw_prev_error_;
-
-  // Elevation Angle
-  double pitch_kp_;
-  double pitch_kd_;
-  double pitch_previous_error_;
-
-  double roll_kp_;
-  double roll_kd_;
-  double roll_previous_error_;
-
   // Time
   double previous_time_;
   double current_time_;
@@ -79,11 +67,16 @@ private:
   double yaw_desired_;
   double pitch_desired_;
   double roll_desired_;
+  double yaw_actual_;
+  double pitch_actual_;
+  double roll_actual_;
+
+  // Filters on Axes
+  std::unique_ptr<FirstOrderFilter<double>> yaw_filter_;
+  std::unique_ptr<FirstOrderFilter<double>> pitch_filter_;
+  std::unique_ptr<FirstOrderFilter<double>> roll_filter_;
 
   double time_constant_;
-
-  int direction_; 		// 0: no direction, 1: up, 2: down, 3: CW, 4: CCW
-  double update_rate_;
 };
 } // namespace gazebo
 #endif //fcu_sim_PLUGINS_GIMBAL_PLUGIN_H
