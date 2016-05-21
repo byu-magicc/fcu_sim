@@ -101,10 +101,10 @@
       <xacro:insert_block name="inertia" />
     </inertial>
     <visual name="plane_visual">
-      <origin xyz="0 0 -1" rpy="0 0 1.570796" />
+      <origin xyz=".5 0 -.5" rpy="0 0 -1.570796" />
       <geometry>
         <xacro:if value="${use_mesh_file}">
-          <mesh filename="${mesh_file}" scale="0.1 0.1 0.1" />
+          <mesh filename="${mesh_file}" scale="0.01 0.01 0.01" />
         </xacro:if>
         <xacro:unless value="${use_mesh_file}">
             <box size="${body_width} ${body_height} ${body_length}" />
@@ -133,16 +133,15 @@
     </xacro:caster>
   </link>
 
-
   <!-- Chase Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
   <xacro:simple_camera
-    namespace="${namespace}"
+    namespace="${namespace}/chase"
     frame_rate="30"
     rgb_range="1000"
     parent_link="${namespace}/base_link"
-    image_topic="chase/rgb"
-    image_camera_info_topic="chase/camera_info">
+    image_topic="rgb"
+    image_camera_info_topic="camera_info">
     <origin xyz="-${1.1*body_length} 0 ${0.8*body_height}"/>
   </xacro:simple_camera>
 
@@ -242,6 +241,17 @@
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
     </plugin>
   </gazebo>
+
+  <!-- Gimbal -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/gimbal.xacro"/>
+  <xacro:gimbal_ZENMUSE
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    camera_topic="rgb"
+    pose_topic="${namespace}/gimbal/pose"
+    command_topic="${namespace}/gimbal/control">
+    <origin xyz="0 0 1" ryp="0 0 0"/>
+  </xacro:gimbal_ZENMUSE>
 
   <!-- Airspeed -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/airspeed.xacro"/>
