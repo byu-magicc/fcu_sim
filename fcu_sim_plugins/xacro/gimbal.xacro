@@ -36,18 +36,7 @@
         <mass value="${mass}" />
         <xacro:insert_block name="origin" />
       </inertial>
-      <visual name="${namespace}/gimbal_base_visual">
-        <!-- <xacro:insert_block name="origin"/> -->
-        <origin xyz="0 0 0" rpy = "0 0 0"/>
-        <geometry>
-          <box size="0.1 0.1 0.1"/>
-        </geometry>
-      </visual>
     </link>
-
-    <gazebo reference="${namespace}/gimbal/base_link">
-      <material>Gazebo/Blue</material>
-    </gazebo>
 
 
     <!-- Base Joint -->
@@ -65,17 +54,7 @@
         <mass value="0.0001" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
-      <visual name="${namespace}/gimbal_yaw_visual">
-        <origin xyz="0 0 0" rpy = "0 0 0"/>
-        <geometry>
-          <box size="0.1 0.1 0.1"/>
-        </geometry>
-      </visual>
     </link>
-
-    <gazebo reference="${namespace}/gimbal/yaw_link">
-      <material>Gazebo/Red</material>
-    </gazebo>
 
     <!-- Yaw joint -->
     <joint name="${namespace}/gimbal_yaw_joint" type="revolute">
@@ -92,17 +71,7 @@
         <mass value="0.0001" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
-      <visual name="${namespace}/gimbal_roll_visual">
-        <origin xyz="0 0 0" rpy = "0 0 0"/>
-        <geometry>
-          <box size="0.1 0.1 0.1"/>
-        </geometry>
-      </visual>
     </link>
-
-    <gazebo reference="${namespace}/gimbal/roll_link">
-      <material>Gazebo/Green</material>
-    </gazebo>
 
     <!-- Roll joint -->
     <joint name="${namespace}/gimbal_roll_joint" type="revolute">
@@ -119,17 +88,7 @@
         <mass value="0.0001" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
-      <visual name="${namespace}/gimbal_pitch_visual">
-        <origin xyz="0 0 0" rpy = "0 0 0"/>
-        <geometry>
-          <box size="0.1 0.1 0.1"/>
-        </geometry>
-      </visual>
     </link>
-
-    <gazebo reference="${namespace}/gimbal/pitch_link">
-      <material>Gazebo/Yellow</material>
-    </gazebo>
 
     <!-- Pitch joint -->
     <joint name="${namespace}/gimbal_pitch_joint" type="revolute">
