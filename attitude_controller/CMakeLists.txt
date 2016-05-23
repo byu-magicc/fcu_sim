@@ -16,7 +16,7 @@ find_package(Eigen REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++0x")
 
 generate_dynamic_reconfigure_options(
-  cfg/gains.cfg
+  cfg/Gain.cfg
 )
 
 catkin_package(
