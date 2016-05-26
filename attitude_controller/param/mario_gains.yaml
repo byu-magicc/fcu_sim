@@ -1,9 +1,0 @@
-attitude_controller: {
-  roll_P: 0.24, roll_I: 0.0, roll_D: 0.3,
-  pitch_P: 0.24, pitch_I: 0.0, pitch_D: 0.3,
-  yaw_rate_P: 0.5, yaw_rate_I: 0.0, yaw_rate_D: 0.05,
-  w1: 10.0,
-  w2: 3.0,
-  w3: 9.0,
-  wu: 1.5,
-  controller_type: 0}
