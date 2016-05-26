@@ -37,11 +37,11 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
 
 add_library(fcu_sim_motor_model
-  src/gazebo_motor_model.cpp  
+  src/gazebo_motor_model.cpp
   include/fcu_sim_plugins/motor_model.hpp
   include/fcu_sim_plugins/gazebo_motor_model.h
-  include/fcu_sim_plugins/common.h   
-  include/fcu_sim_plugins/motor_controller.hpp  
+  include/fcu_sim_plugins/common.h
+  include/fcu_sim_plugins/motor_controller.hpp
   include/fcu_sim_plugins/multi_copter.hpp)
 target_link_libraries(fcu_sim_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_motor_model ${catkin_EXPORTED_TARGETS})
@@ -114,6 +114,9 @@ install(
     fcu_sim_altimeter_plugin
     fcu_sim_wind_plugin
     fcu_sim_multirotor_base_plugin
+    fcu_sim_gimbal_plugin
+    fcu_sim_GPS_plugin
+    fcu_sim_airspeed_plugin
 #    fcu_sim_controller_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

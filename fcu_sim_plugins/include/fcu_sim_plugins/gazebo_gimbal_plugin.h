@@ -13,7 +13,7 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include "geometry_msgs/Vector3.h"
-#include "geometry_msgs/Twist.h"
+#include <fcu_sim_plugins/common.h>
 
 #include <chrono>
 #include <cmath>
@@ -28,45 +28,55 @@ namespace gazebo {
 
 
 class GazeboGimbalPlugin : public ModelPlugin {
-  public:
-      GazeboGimbalPlugin();
-      ~GazeboGimbalPlugin();
+public:
+  GazeboGimbalPlugin();
+  ~GazeboGimbalPlugin();
+  void commandCallback(const geometry_msgs::Vector3ConstPtr &msg);
 
-      void commandCallback(const geometry_msgs::Twist::ConstPtr& msg);
+protected:
 
-  protected:
+  virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
+  void OnUpdate(const common::UpdateInfo & _info);
+  int sign(double x);
 
-      virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
-      void OnUpdate(const common::UpdateInfo & /*_info*/);
+private:
+  // ROS variables
+  ros::NodeHandle* nh_;
+  ros::Subscriber command_sub_;
+  ros::Publisher pose_pub_;
 
-  // Pointer to the model
-  private:
-      physics::ModelPtr model;
-          // brief Pointer to the joint.
-      physics::JointPtr joint;
-      physics::JointPtr ball_joint;
-          // Pointer to the update event connection
-      event::ConnectionPtr updateConnection;
-          // Azimuth Angle
-      float kp;
-      float kd;
-      float previous_error;
-          // Elevation Angle
-      float ball_kp;
-      float ball_kd;
-      float ball_previous_error;
-          // Time
-      float previous_time;
-      float current_time;
+  // Pointer to the gazebo items.
+  physics::JointControllerPtr joint_controller_;
+  physics::JointPtr yaw_joint_;
+  physics::JointPtr roll_joint_;
+  physics::JointPtr pitch_joint_;
+  physics::ModelPtr model_;
+  physics::WorldPtr world_;
 
-      // ROS variables
-      ros::NodeHandle* nh;
-      ros::Subscriber command_sub;
+  std::string namespace_;
 
-      float angle_desired;
-      float ball_angle_desired;
-      int direction; 		// 0: no direction, 1: up, 2: down, 3: CW, 4: CCW
-      float update_rate;
-  };
+
+  // Pointer to the update event connection
+  event::ConnectionPtr updateConnection_;
+
+  // Time
+  double previous_time_;
+  double current_time_;
+
+  // Commands
+  double yaw_desired_;
+  double pitch_desired_;
+  double roll_desired_;
+  double yaw_actual_;
+  double pitch_actual_;
+  double roll_actual_;
+
+  // Filters on Axes
+  std::unique_ptr<FirstOrderFilter<double>> yaw_filter_;
+  std::unique_ptr<FirstOrderFilter<double>> pitch_filter_;
+  std::unique_ptr<FirstOrderFilter<double>> roll_filter_;
+
+  double time_constant_;
+};
 } // namespace gazebo
 #endif //fcu_sim_PLUGINS_GIMBAL_PLUGIN_H

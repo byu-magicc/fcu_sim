@@ -91,7 +91,7 @@
     <xacro:property name="empty_inertia">
     <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.001" />
   </xacro:property>
-    
+
   <!-- Instantiate Link and Visual -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/wheel.xacro"/>
   <link name="${namespace}/base_link">
@@ -116,7 +116,7 @@
       <geometry>
         <box size="${body_width} ${body_height} ${body_length}" />
       </geometry>
-    </collision>    
+    </collision>
 
     <!-- Wheels -->
     <xacro:caster
@@ -133,22 +133,21 @@
     </xacro:caster>
   </link>
 
-
   <!-- Chase Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
   <xacro:simple_camera
-    namespace="${namespace}"
+    namespace="${namespace}/chase"
     frame_rate="30"
     rgb_range="1000"
     parent_link="${namespace}/base_link"
-    image_topic="chase/rgb"
-    image_camera_info_topic="chase/camera_info">
+    image_topic="rgb"
+    image_camera_info_topic="camera_info">
     <origin xyz="-${1.1*body_length} 0 ${0.8*body_height}"/>
   </xacro:simple_camera>
 
   <!-- Color -->
   <gazebo reference="${namespace}/base_link">
-    <material>Gazebo/Red</material>
+    <material>Gazebo/Blue</material>
   </gazebo>
 
   <!-- Add Aerodynamics -->
@@ -231,7 +230,7 @@
       <C_Y_delta_a>${C_Y_delta_a}</C_Y_delta_a>
       <C_Y_delta_e>${C_Y_delta_e}</C_Y_delta_e>
       <C_Y_delta_r>${C_Y_delta_r}</C_Y_delta_r>
-    </plugin> 
+    </plugin>
   </gazebo>
 
   <!-- Sensors -->
@@ -242,6 +241,17 @@
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
     </plugin>
   </gazebo>
+
+  <!-- Gimbal -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/gimbal.xacro"/>
+  <xacro:gimbal_ZENMUSE
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    camera_topic="rgb"
+    pose_topic="${namespace}/gimbal/pose"
+    command_topic="${namespace}/gimbal/control">
+    <origin xyz="2 0 0" ryp="0 0 0"/>
+  </xacro:gimbal_ZENMUSE>
 
   <!-- Airspeed -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/airspeed.xacro"/>
