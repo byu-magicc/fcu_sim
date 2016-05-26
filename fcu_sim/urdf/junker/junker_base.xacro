@@ -6,7 +6,7 @@
   <xacro:property name="wind_speed_topic" value="gazebo/wind_speed"/>
   <xacro:property name="command_topic" value="/command"/>
   <xacro:property name="use_mesh_file" value="true" />
-  <xacro:property name="mesh_file" value="package://fcu_sim/meshes/c130.dae"/>
+  <xacro:property name="mesh_file" value="package://fcu_sim/meshes/ju-87.dae"/>
   <xacro:property name="body_width" value="1.4"/>
   <xacro:property name="body_height" value="1.0" />
   <xacro:property name="body_length" value="1.6"/>
@@ -101,10 +101,10 @@
       <xacro:insert_block name="inertia" />
     </inertial>
     <visual name="plane_visual">
-      <origin xyz=".5 0 -.5" rpy="0 0 -1.570796" />
+      <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
       <geometry>
         <xacro:if value="${use_mesh_file}">
-          <mesh filename="${mesh_file}" scale="0.25 0.25 0.25" />
+          <mesh filename="${mesh_file}" scale="0.002 0.002 0.002" />
         </xacro:if>
         <xacro:unless value="${use_mesh_file}">
             <box size="${body_width} ${body_height} ${body_length}" />
