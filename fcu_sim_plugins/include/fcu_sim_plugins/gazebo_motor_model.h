@@ -76,6 +76,7 @@ class GazeboMotorModel : public MotorModel, public ModelPlugin {
   double moment_constant_;
   double motor_constant_;
   double ref_motor_rot_vel_;
+  double actual_motor_rot_vel_;
   double rolling_moment_coefficient_;
   double rotor_drag_coefficient_;
   double rotor_velocity_slowdown_sim_;

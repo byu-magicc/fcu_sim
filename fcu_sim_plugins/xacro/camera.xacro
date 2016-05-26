@@ -14,13 +14,13 @@
             image_camera_info_topic
             parent_link
             *origin">
-    <link name="${namespace}/chase_camera_base_link">
+    <link name="${namespace}/camera_base_link">
       <inertial>
         <mass value="0.001"/>
         <xacro:insert_block name="origin"/>
         <xacro:insert_block name="empty_inertia"/>
       </inertial>
-      <visual name="chase_camera_visual">
+      <visual name="${namespace}/camera_visual">
         <xacro:insert_block name="origin"/>
         <geometry>
           <sphere radius="0.05"/>
@@ -28,14 +28,14 @@
       </visual>
     </link>
 
-    <joint name="${namespace}/chase_camera_joint" type="fixed">
+    <joint name="${namespace}/camera_joint" type="fixed">
       <xacro:insert_block name="origin"/>
       <parent link="${parent_link}"/>
-      <child link="${namespace}/chase_camera_base_link"/>
+      <child link="${namespace}/camera_base_link"/>
       <limit upper="0" lower="0" effort="0" velocity="0"/>
     </joint>
 
-    <gazebo reference="${namespace}/chase_camera_base_link">
+    <gazebo reference="${namespace}/camera_base_link">
       <sensor type="camera" name="${namespace}/camera">
         <always_on>true</always_on>
         <update_rate>${frame_rate}</update_rate>

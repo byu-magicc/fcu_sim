@@ -41,7 +41,7 @@
 
   <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
     <!-- <remap from="command" to="autopilot_command"/> -->
-    <!-- <remap from="state" to="/junker/truth"/> -->
+    <remap from="state" to="/junker/truth"/>
   </node>
 
   <node name="estimator" pkg="ros_plane" type="ros_plane_estimator" output="screen">
@@ -51,13 +51,15 @@
   </node>
 
   <node name="pathfollower" pkg="ros_plane" type="ros_plane_path_follower">
-     <!-- <remap from="state" to="/junker/truth"/> -->
-  </node> 
+     <remap from="state" to="/junker/truth"/>
+  </node>
 
   <node name="chase" pkg="image_view" type="image_view">
-    <remap from="image" to="/junker/camera/chase/rgb"/>
+    <remap from="image" to="/junker/chase/camera/rgb"/>
   </node>
 
   <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
+
+  <node name="current_path_publisher" pkg="rostopic" type="rostopic" args="pub /current_path fcu_common/FW_Current_Path 'false' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/>
 
 </launch>
