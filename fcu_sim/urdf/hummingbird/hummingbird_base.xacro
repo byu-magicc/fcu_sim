@@ -10,7 +10,7 @@ Author: James Jackson
 <robot name="hummingbird" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Properties -->
-  <xacro:property name="namespace" value="" />
+  <xacro:property name="namespace" value="hummingbird" />
   <xacro:property name="rotor_velocity_slowdown_sim" value="10" />
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/hummingbird.dae" />
@@ -178,6 +178,13 @@ Author: James Jackson
   <xacro:ground_truth
     namespace="${namespace}"
     parent_link="${namespace}/base_link" />
+
+  <!-- Add Laser Scanner -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
+  <xacro:hokuyo_UTM-30LX
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    visualize="true"/>
 
   <!-- Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
