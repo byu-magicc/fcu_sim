@@ -60,6 +60,7 @@
 
   <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
 
-  <!-- <node name="current_path_publisher" pkg="rostopic" type="rostopic" args="pub /current_path fcu_common/FW_Current_Path 'false' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/> -->
+  <!-- <node name="current_path_publisher" pkg="rostopic" type="rostopic"  -->
+    <!-- args="pub /current_path fcu_common/FW_Current_Path 'false' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/> -->
 
 </launch>
