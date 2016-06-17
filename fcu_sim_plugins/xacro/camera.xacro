@@ -20,12 +20,12 @@
         <xacro:insert_block name="origin"/>
         <xacro:insert_block name="empty_inertia"/>
       </inertial>
-      <visual name="${namespace}/camera_visual">
+      <!-- <visual name="${namespace}/camera_visual">
         <xacro:insert_block name="origin"/>
         <geometry>
           <sphere radius="0.05"/>
         </geometry>
-      </visual>
+      </visual> -->
     </link>
 
     <joint name="${namespace}/camera_joint" type="fixed">
