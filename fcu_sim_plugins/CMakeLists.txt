@@ -52,6 +52,12 @@ add_library(fcu_sim_aircraft_forces_and_moments_plugin
 target_link_libraries(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_multirotor_forces_and_moments_plugin
+  src/gazebo_multirotor_forces_and_moments.cpp
+  include/fcu_sim_plugins/gazebo_multirotor_forces_and_moments.h)
+target_link_libraries(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
+
 add_library(fcu_sim_aircraft_truth_plugin
   src/gazebo_aircraft_truth.cpp
   include/fcu_sim_plugins/gazebo_aircraft_truth.h)
