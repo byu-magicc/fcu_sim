@@ -30,7 +30,7 @@ catkin_package(
   LIBRARIES fcu_sim_motor_model fcu_sim_controller_interface
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
                  fcu_sim std_srvs tf relative_nav relative_nav
-  DEPENDS eigen gazebo opencv
+  DEPENDS eigen gazebo opencv fcu_common
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -55,8 +55,8 @@ add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TA
 add_library(fcu_sim_multirotor_forces_and_moments_plugin
   src/gazebo_multirotor_forces_and_moments.cpp
   include/fcu_sim_plugins/gazebo_multirotor_forces_and_moments.h)
-target_link_libraries(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(fcu_sim_aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
+target_link_libraries(fcu_sim_multirotor_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_multirotor_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(fcu_sim_aircraft_truth_plugin
   src/gazebo_aircraft_truth.cpp
@@ -123,6 +123,8 @@ install(
     fcu_sim_gimbal_plugin
     fcu_sim_GPS_plugin
     fcu_sim_airspeed_plugin
+    fcu_sim_multirotor_forces_and_moments_plugin
+    fcu_sim_aircraft_forces_and_moments_plugin
 #    fcu_sim_controller_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

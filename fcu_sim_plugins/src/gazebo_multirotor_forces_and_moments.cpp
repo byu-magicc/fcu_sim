@@ -41,7 +41,7 @@ void GazeboMultiRotorForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   // Gazebo is in NWU, while we calculate forces in NED, hence the negatives
-  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, -actual_forces_.Fy, -actual_forces_.Fz));
+  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, -actual_forces_.Fy, actual_forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(actual_forces_.l, -actual_forces_.m, -actual_forces_.n));
 }
 
@@ -59,35 +59,30 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   if (_sdf->HasElement("namespace"))
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a namespace.\n";
+    gzerr << "[gazebo_multirotor_forces_and_moments] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
-    gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
+    gzerr << "[gazebo_multirotor_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
-    gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
+    gzthrow("[gazebo_multirotor_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
 
-  // physical parameters
-  getSdfParam<double>(_sdf, "mass", mass_, 13.5);
-  getSdfParam<double>(_sdf, "Jx", Jx_, 0.8244);
-  getSdfParam<double>(_sdf, "Jy", Jy_, 1.135);
-  getSdfParam<double>(_sdf, "Jz", Jz_, 1.759);
-  getSdfParam<double>(_sdf, "Jxz", Jxz_, .1204);
-  getSdfParam<double>(_sdf, "Jxy", Jxy_, .1204);
-  getSdfParam<double>(_sdf, "Jyz", Jyz_, .1204);
+  // Drag Constant
+  getSdfParam<double>(_sdf, "mu", mu_, .1); // Ns^2/m
+  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
 
   // Build Actuators Container
   getSdfParam<double>(_sdf, "max_l", actuators_.l.max, .2); // N-m
   getSdfParam<double>(_sdf, "max_m", actuators_.m.max, .2); // N-m
   getSdfParam<double>(_sdf, "max_n", actuators_.n.max, .2); // N-m
-  getSdfParam<double>(_sdf, "max-F", actuators_.F.max, 100); // N
+  getSdfParam<double>(_sdf, "max_F", actuators_.F.max, 100); // N
   getSdfParam<double>(_sdf, "tau_up_l", actuators_.l.tau_up, .25);
   getSdfParam<double>(_sdf, "tau_up_m", actuators_.m.tau_up, .25);
   getSdfParam<double>(_sdf, "tau_up_n", actuators_.n.tau_up, .25);
@@ -119,7 +114,6 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   yaw_controller_.setGains(yawP, yawI, yawD);
   alt_controller_.setGains(altP, altI, altD);
 
-
   // start time clock for controller
   prev_control_time_ = ros::Time::now().toSec();
 
@@ -129,6 +123,8 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   // Connect Subscribers
   command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboMultiRotorForcesAndMoments::CommandCallback, this);
   wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboMultiRotorForcesAndMoments::WindSpeedCallback, this);
+
+  debug_ = node_handle_->advertise<std_msgs::Float32>("debug", 1);
 }
 
 // This gets called by the world update event.
@@ -157,8 +153,9 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   /* Get state information from Gazebo                          *
    * C denotes child frame, P parent frame, and W world frame.  *
    * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
+  // all coordinates are in standard aeronatical frame NED
   math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
+  double pn = W_pose_W_C.pos.x;
   double pe = -W_pose_W_C.pos.y;
   double pd = -W_pose_W_C.pos.z;
   math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
@@ -175,10 +172,10 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double r = -C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
+  /// THIS IS WRONG WIND NEEDS TO BE IN BODY FRAME
   double ur = u - wind_.N;
   double vr = v - wind_.E;
   double wr = w - wind_.D;
-
 
   // calculate the appropriate control <- Depends on Control type (which block is being controlled)
   if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
@@ -200,7 +197,9 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
     desired_forces_.l = roll_controller_.computePIDDirect(command_.value1, phi, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePIDDirect(command_.value2, theta, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-    desired_forces_.Fz = alt_controller_.computePIDDirect(command_.value4, -1.0*pd, w, sampling_time_);
+    double hdot = sin(theta)*u - sin(phi)*cos(theta)*v - cos(phi)*cos(theta)*w;
+    double p1 = alt_controller_.computePIDDirect(command_.value4, -pd, hdot, sampling_time_);
+    desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.value1)*cos(command_.value2));
   }
 
   // calculate the actual output force using low-pass-filters to introduce a first-order
@@ -227,12 +226,16 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
 
   // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
   // By Rob Leishman et al.
-  actual_forces_.Fx = -1.0*mu_*u;
-  actual_forces_.Fy = -1.0*mu_*v;
-  actual_forces_.Fz = -1.0*mu_*w + applied_forces_.Fz;
+  actual_forces_.Fx = -1.0*mu_*ur;
+  actual_forces_.Fy = -1.0*mu_*vr;
+  actual_forces_.Fz = -1.0*mu_*wr + applied_forces_.Fz;
   actual_forces_.l = applied_forces_.l;
   actual_forces_.m = applied_forces_.m;
   actual_forces_.n = applied_forces_.n;
+
+  std_msgs::Float32 debug_msg;
+  debug_msg.data = command_.value4 +pd;
+  debug_.publish(debug_msg);
 }
 
 double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
