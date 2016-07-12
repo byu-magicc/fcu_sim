@@ -77,14 +77,8 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
   event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
   // physical parameters
-  double mass_;
-  double Jx_;
-  double Jy_;
-  double Jz_;
-  double Jxz_;
-  double Jxy_;
-  double Jyz_;
   double mu_; // drag coefficient (approx 0.1)
+  double mass_; // for static thrust offset when in altitude mode (kg)
 
   // Container for an Actuator
   struct Actuator{
@@ -137,6 +131,7 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
   ros::NodeHandle* node_handle_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
+  ros::Publisher debug_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();
