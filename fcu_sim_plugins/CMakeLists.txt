@@ -46,6 +46,12 @@ add_library(fcu_sim_motor_model
 target_link_libraries(fcu_sim_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_motor_model ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_naze_hil_multirotor_plugin
+  src/gazebo_naze_hil_multirotor.cpp
+  include/fcu_sim_plugins/gazebo_naze_hil_multirotor.h)
+target_link_libraries(fcu_sim_naze_hil_multirotor_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_naze_hil_multirotor_plugin ${catkin_EXPORTED_TARGETS})
+
 add_library(fcu_sim_aircraft_forces_and_moments_plugin
   src/gazebo_aircraft_forces_and_moments.cpp
   include/fcu_sim_plugins/gazebo_aircraft_forces_and_moments.h)
@@ -117,6 +123,7 @@ install(
     fcu_sim_gimbal_plugin
     fcu_sim_GPS_plugin
     fcu_sim_airspeed_plugin
+    fcu_sim_naze_hil_multirotor_plugin
 #    fcu_sim_controller_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
