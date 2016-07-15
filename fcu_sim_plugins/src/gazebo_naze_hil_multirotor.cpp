@@ -206,13 +206,13 @@ void GazeboMultirotorHIL::UpdateForcesAndMoments()
     actual_forces_(i,0) = sat((1-alpha)*actual_forces_(i) + alpha*desired_forces_(i), motors_[i].rotor.max, 0.0);
     actual_torques_(i,0) = sat((1-alpha)*actual_torques_(i) + alpha*desired_torques_(i), motors_[i].rotor.max, 0.0);
   }
-  gzerr << "\nsignals = \n" << motor_signals_;
-  gzmsg << "\ndesired_forces = \n" << desired_forces_ << "\ndesired torques = " << desired_torques_ << "\n";
-  gzmsg << "\nactual_forces = \n" << actual_forces_ << "\nactual_torques = " << actual_torques_ << "\n";
+//  gzerr << "\nsignals = \n" << motor_signals_;
+//  gzmsg << "\ndesired_forces = \n" << desired_forces_ << "\ndesired torques = " << desired_torques_ << "\n";
+//  gzmsg << "\nactual_forces = \n" << actual_forces_ << "\nactual_torques = " << actual_torques_ << "\n";
 
   Eigen::Vector4d output_forces_and_torques = force_allocation_matrix_*actual_forces_ + torque_allocation_matrix_*actual_torques_;
 
-  gzmsg << "\noutput_forces and torques\n" << output_forces_and_torques;
+//  gzmsg << "\noutput_forces and torques\n" << output_forces_and_torques;
 
   forces_.Fx = -mu_*ur;
   forces_.Fy = -mu_*vr;
