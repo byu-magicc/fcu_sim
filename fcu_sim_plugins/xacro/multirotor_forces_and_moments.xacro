@@ -36,7 +36,7 @@
         yaw_I="0.0"
         yaw_D="0.0"
         alt_P="16.0"
-        alt_I="5"
+        alt_I="5.0"
         alt_D="32.0">
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
         <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
