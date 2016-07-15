@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fcu_sim_plugins)
 
 add_definitions(-std=c++11)
+add_definitions(-std=c99)
 
 # To enable assertions when compiled in release mode.
 add_definitions(-DROS_ASSERT_ENABLED)
@@ -24,6 +25,7 @@ find_package(OpenCV REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(${GAZEBO_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(include/ROSflight_SIL)
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
@@ -46,11 +48,34 @@ add_library(fcu_sim_motor_model
 target_link_libraries(fcu_sim_motor_model ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_motor_model ${catkin_EXPORTED_TARGETS})
 
-add_library(fcu_sim_naze_hil_multirotor_plugin
-  src/gazebo_naze_hil_multirotor.cpp
-  include/fcu_sim_plugins/gazebo_naze_hil_multirotor.h)
-target_link_libraries(fcu_sim_naze_hil_multirotor_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(fcu_sim_naze_hil_multirotor_plugin ${catkin_EXPORTED_TARGETS})
+add_library(fcu_sim_ROSflight_sil_plugin
+  src/gazebo_ROSflight_sil.cpp
+  include/fcu_sim_plugins/gazebo_ROSflight_sil.h
+
+  include/ROSflight2/src/estimator.c
+  include/ROSflight2/src/mixer.c
+  include/ROSflight2/src/controller.c
+
+  include/ROSflight_SIL/controller.h
+  include/ROSflight_SIL/estimator.h
+  include/ROSflight_SIL/mixer.h
+  include/ROSflight_SIL/sensors.h
+  include/ROSflight_SIL/sensors.c
+  include/ROSflight_SIL/param.h
+  include/ROSflight_SIL/param.c
+  include/ROSflight_SIL/mode.h
+  include/ROSflight_SIL/mode.c
+  include/ROSflight_SIL/mux.h
+  include/ROSflight_SIL/mux.c
+
+  include/ROSflight_SIL/breezystm32/breezystm32.h
+  include/ROSflight_SIL/breezystm32/breezystm32.c
+  include/ROSflight_SIL/turbotrig/turbotrig.h
+  include/ROSflight_SIL/turbotrig/turbotrig.c
+  include/ROSflight_SIL/turbotrig/turbovec.h
+  include/ROSflight_SIL/turbotrig/turbovec.c)
+target_link_libraries(fcu_sim_ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(fcu_sim_aircraft_forces_and_moments_plugin
   src/gazebo_aircraft_forces_and_moments.cpp
@@ -124,6 +149,7 @@ install(
     fcu_sim_GPS_plugin
     fcu_sim_airspeed_plugin
     fcu_sim_naze_hil_multirotor_plugin
+    fcu_sim_ROSflight_sil_plugin
 #    fcu_sim_controller_interface
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

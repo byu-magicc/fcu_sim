@@ -34,36 +34,46 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
+#include <fcu_common/ExtendedCommand.h>
 #include <fcu_common/ServoOutputRaw.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <fcu_common/Attitude.h>
 #include "fcu_sim_plugins/common.h"
 #include <geometry_msgs/Vector3.h>
+#include <sensor_msgs/Imu.h>
+#include <fcu_common/simple_pid.h>
+
+#include "param.h"
 
 namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
-class GazeboMultirotorHIL : public ModelPlugin {
- public:
-  GazeboMultirotorHIL();
+class GazeboROSflightSIL : public ModelPlugin {
+public:
+  GazeboROSflightSIL();
 
-  ~GazeboMultirotorHIL();
+  ~GazeboROSflightSIL();
 
   void InitializeParams();
   void SendForces();
-  
 
- protected:
+
+protected:
   void UpdateForcesAndMoments();
+  void UpdateEstimator();
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
- private:
+private:
   std::string command_topic_;
   std::string wind_speed_topic_;
+  std::string imu_topic_;
+  std::string estimate_topic_;
   std::string joint_name_;
   std::string link_name_;
   std::string parent_frame_id_;
+  std::string signals_topic_;
   std::string motor_speed_pub_topic_;
   std::string namespace_;
 
@@ -97,6 +107,29 @@ class GazeboMultirotorHIL : public ModelPlugin {
   std::vector<Motor> motors_;
 
   double mu_;
+  double mass_;
+
+  // Container for an Actuator
+  struct Actuator{
+    double max;
+    double tau_up;
+    double tau_down;
+  };
+
+  // Struct of Actuators
+  // This organizes the physical limitations of the abstract torques and Force
+  struct Actuators{
+    Actuator l;
+    Actuator m;
+    Actuator n;
+    Actuator F;
+  } actuators_;
+
+  // container for PID controller
+  fcu_common::SimplePID roll_controller_;
+  fcu_common::SimplePID pitch_controller_;
+  fcu_common::SimplePID yaw_controller_;
+  fcu_common::SimplePID alt_controller_;
 
   // container for forces
   struct ForcesAndTorques{
@@ -106,7 +139,7 @@ class GazeboMultirotorHIL : public ModelPlugin {
     double l;
     double m;
     double n;
-  } forces_;
+  } forces_, applied_forces_;
 
   // Time Counters
   double sampling_time_;
@@ -115,12 +148,22 @@ class GazeboMultirotorHIL : public ModelPlugin {
   ros::NodeHandle* node_handle_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
+  ros::Subscriber imu_sub_;
+  ros::Publisher estimate_pub_;
+  ros::Publisher signals_pub_;
+  ros::Publisher alt_pub_, angle_pub_, rate_pub_, passthrough_pub_;
+
+  fcu_common::ExtendedCommand command_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_common::ServoOutputRaw& msg);
+  void CommandCallback(const fcu_common::ExtendedCommand& msg);
+  void imuCallback(const sensor_msgs::Imu& msg);
   double sat(double x, double max, double min);
+  void initialize_params();
+  void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value);
+  void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value);
   math::Vector3 W_wind_speed_;
 
   Eigen::MatrixXd force_allocation_matrix_;
