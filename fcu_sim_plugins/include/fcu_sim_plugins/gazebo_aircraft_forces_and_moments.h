@@ -52,7 +52,7 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
 
   void InitializeParams();
   void SendForces();
-  
+
 
  protected:
   void UpdateForcesAndMoments();
