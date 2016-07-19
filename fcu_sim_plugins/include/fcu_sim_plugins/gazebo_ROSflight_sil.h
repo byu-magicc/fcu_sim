@@ -106,7 +106,16 @@ private:
   int num_rotors_;
   std::vector<Motor> motors_;
 
-  double mu_;
+  double linear_mu_;
+  double angular_mu_;
+  struct GE_constants{
+    double a;
+    double b;
+    double c;
+    double d;
+    double e;
+  } ground_effect_;
+
   double mass_;
 
   // Container for an Actuator
@@ -161,6 +170,7 @@ private:
   void CommandCallback(const fcu_common::ExtendedCommand& msg);
   void imuCallback(const sensor_msgs::Imu& msg);
   double sat(double x, double max, double min);
+  double max(double x, double y);
   void initialize_params();
   void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value);
   void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value);
