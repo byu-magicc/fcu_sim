@@ -24,11 +24,6 @@
     <arg name="gui" value="true"/>
   </include>
 
-  <!-- Naze Hardware Testing -->
-  <!-- <node name="naze" pkg="fcu_io" type="fcu_io_node" output="screen">
-    <remap from="imu/data" to="mikey/imu/data"/>
-  </node> -->
-
   <!-- Spawn in Gazebo -->
   <include file="$(find fcu_sim)/launch/spawn_mav.launch">
     <arg name="mav_name"            value="$(arg mav_name)" />

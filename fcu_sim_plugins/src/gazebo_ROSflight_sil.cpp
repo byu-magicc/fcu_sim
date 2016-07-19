@@ -238,7 +238,7 @@ void GazeboROSflightSIL::initialize_params()
 
   init_param_int(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL", 786); // 45 deg
   init_param_int(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH", 786);
-  init_param_int(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12566); // 720 deg/s
+  init_param_int(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12566); // 720 deg/s in mrad/s
   init_param_int(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12566); // 720 deg/s
   init_param_int(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6283); // 360 deg/s
 
@@ -304,6 +304,9 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.type = PASSTHROUGH;
     _combined_control.z.type = PASSTHROUGH;
     _combined_control.F.type = PASSTHROUGH;
+    _combined_control.x.value = msg.x;
+    _combined_control.y.value = msg.y;
+    _combined_control.z.value = msg.z;
   }
   else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
@@ -311,6 +314,11 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.type = RATE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
+    _combined_control.x.value = msg.x*2*_params.values[PARAM_RC_MAX_ROLLRATE_MRAD_S];
+    _combined_control.y.value = msg.y*2*_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S];
+    _combined_control.z.value = msg.z*2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S];
+    _combined_control.F.value = msg.F;
+
   }
   else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
@@ -318,6 +326,10 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.type = ANGLE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
+    _combined_control.x.value = msg.x*2*_params.values[PARAM_RC_MAX_ROLL_MRAD];
+    _combined_control.y.value = msg.y*2*_params.values[PARAM_RC_MAX_PITCH_MRAD];
+    _combined_control.z.value = msg.z*2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S];
+    _combined_control.F.value = msg.F*1000;
   }
   else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
@@ -326,10 +338,7 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.z.type = RATE;
     _combined_control.F.type = ALTITUDE;
   }
-  _combined_control.x.value = (int32_t)(msg.value1*1000);
-  _combined_control.y.value = (int32_t)(msg.value2*1000);
-  _combined_control.z.value = (int32_t)(msg.value3*1000);
-  _combined_control.F.value = (int32_t)(msg.value4*1000);
+  _combined_control.F.value = msg.F*1000;
 }
 
 void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
@@ -368,15 +377,15 @@ void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   rate_msg.mode = fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
   pt_msg.mode = fcu_common::ExtendedCommand::MODE_PASS_THROUGH;
 
-  rate_msg.value1 = _combined_control.x.value;
-  rate_msg.value2 = _combined_control.y.value;
-  rate_msg.value3 = _combined_control.z.value;
-  rate_msg.value4 = _combined_control.F.value;
+  rate_msg.x = _combined_control.x.value;
+  rate_msg.y = _combined_control.y.value;
+  rate_msg.z = _combined_control.z.value;
+  rate_msg.F = _combined_control.F.value;
 
-  pt_msg.value1 = _command.x;
-  pt_msg.value2 = _command.y;
-  pt_msg.value3 = _command.z;
-  pt_msg.value4 = _command.F;
+  pt_msg.x = _command.x;
+  pt_msg.y = _command.y;
+  pt_msg.z = _command.z;
+  pt_msg.F = _command.F;
 
   rate_pub_.publish(rate_msg);
   passthrough_pub_.publish(pt_msg);
