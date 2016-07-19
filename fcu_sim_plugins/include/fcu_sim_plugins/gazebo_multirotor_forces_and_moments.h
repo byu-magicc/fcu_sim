@@ -19,11 +19,12 @@
  */
 
 
-#ifndef fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
-#define fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#ifndef fcu_sim_PLUGINS_MULTIROTOR_FORCES_AND_MOMENTS_H
+#define fcu_sim_PLUGINS_MULTIROTOR_FORCES_AND_MOMENTS_H
 
 #include <stdio.h>
 
+#include <vector>
 #include <boost/bind.hpp>
 #include <Eigen/Eigen>
 
@@ -34,7 +35,8 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
-#include <fcu_common/Command.h>
+#include <fcu_common/ExtendedCommand.h>
+#include <fcu_common/simple_pid.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
 
@@ -44,15 +46,14 @@ namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
-class GazeboAircraftForcesAndMoments : public ModelPlugin {
+class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
  public:
-  GazeboAircraftForcesAndMoments();
+  GazeboMultiRotorForcesAndMoments();
 
-  ~GazeboAircraftForcesAndMoments();
+  ~GazeboMultiRotorForcesAndMoments();
 
   void InitializeParams();
   void SendForces();
-
 
  protected:
   void UpdateForcesAndMoments();
@@ -76,63 +77,28 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
   event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
   // physical parameters
-  double mass_;
-  double Jx_;
-  double Jy_;
-  double Jz_;
-  double Jxz_;
-  double rho_;
+  double mu_; // drag coefficient (approx 0.1)
+  double mass_; // for static thrust offset when in altitude mode (kg)
 
-  // aerodynamic coefficients
-  struct WingCoeff{
-    double S;
-    double b;
-    double c;
-    double M;
-    double epsilon;
-    double alpha0;
-  } wing_;
-
-  // Propeller Coefficients
-  struct PropCoeff{
-    double k_motor;
-    double k_T_P;
-    double k_Omega;
-    double e;
-    double S;
-    double C;
-  } prop_;
-
-  // Lift Coefficients
-  struct LiftCoeff{
-    double O;
-    double alpha;
-    double beta;
-    double p;
-    double q;
-    double r;
-    double delta_a;
-    double delta_e;
-    double delta_r;
+  // Container for an Actuator
+  struct Actuator{
+    double max;
+    double tau_up;
+    double tau_down;
   };
 
-  LiftCoeff CL_;
-  LiftCoeff CD_;
-  LiftCoeff Cm_;
-  LiftCoeff CY_;
-  LiftCoeff Cell_;
-  LiftCoeff Cn_;
+  bool stabilized_; // flag of whether to use an inner PID controller for states
 
-  // not constants
-  // actuators
+  // Struct of Actuators
+  // This organizes the physical limitations of the abstract torques and Force
   struct Actuators{
-    double e;
-    double a;
-    double r;
-    double t;
-  } delta_;
+    Actuator l;
+    Actuator m;
+    Actuator n;
+    Actuator F;
+  } actuators_;
 
-    // wind
+  // wind
   struct Wind{
     double N;
     double E;
@@ -147,24 +113,36 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
     double l;
     double m;
     double n;
-  } forces_;
+  } applied_forces_, actual_forces_, desired_forces_;
+
+  // container for PID controller
+  fcu_common::SimplePID roll_controller_;
+  fcu_common::SimplePID pitch_controller_;
+  fcu_common::SimplePID yaw_controller_;
+  fcu_common::SimplePID alt_controller_;
+
+  fcu_common::ExtendedCommand command_;
 
   // Time Counters
   double sampling_time_;
   double prev_sim_time_;
+  double prev_control_time_;
 
   ros::NodeHandle* node_handle_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
+  ros::Publisher debug_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_common::CommandConstPtr& msg);
+  void CommandCallback(const fcu_common::ExtendedCommand msg);
+  void ComputeControl(void);
+  double sat(double x, double max, double min);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;
 };
 }
 
-#endif // fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#endif // fcu_sim_PLUGINS_MULTIROTOR_FORCES_AND_MOMENTS_H
