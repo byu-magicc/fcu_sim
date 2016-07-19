@@ -180,26 +180,26 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   // calculate the appropriate control <- Depends on Control type (which block is being controlled)
   if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
-    desired_forces_.l = roll_controller_.computePID(command_.value1, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePID(command_.value2, q, sampling_time_);
-    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-    desired_forces_.Fz = command_.value4*actuators_.F.max; // this comes in normalized between 0 and 1
+    desired_forces_.l = roll_controller_.computePID(command_.x, p, sampling_time_);
+    desired_forces_.m = pitch_controller_.computePID(command_.y, q, sampling_time_);
+    desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
+    desired_forces_.Fz = command_.F*actuators_.F.max; // this comes in normalized between 0 and 1
   }
   else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
-    desired_forces_.l = roll_controller_.computePIDDirect(command_.value1, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePIDDirect(command_.value2, theta, q, sampling_time_);
-    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-    desired_forces_.Fz = command_.value4*actuators_.F.max;
+    desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
+    desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);
+    desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
+    desired_forces_.Fz = command_.F*actuators_.F.max;
   }
   else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
-    desired_forces_.l = roll_controller_.computePIDDirect(command_.value1, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePIDDirect(command_.value2, theta, q, sampling_time_);
-    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
+    desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
+    desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);
+    desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     double hdot = sin(theta)*u - sin(phi)*cos(theta)*v - cos(phi)*cos(theta)*w;
-    double p1 = alt_controller_.computePIDDirect(command_.value4, -pd, hdot, sampling_time_);
-    desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.value1)*cos(command_.value2));
+    double p1 = alt_controller_.computePIDDirect(command_.F, -pd, hdot, sampling_time_);
+    desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
   }
 
   // calculate the actual output force using low-pass-filters to introduce a first-order
@@ -234,7 +234,7 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   actual_forces_.n = applied_forces_.n;
 
   std_msgs::Float32 debug_msg;
-  debug_msg.data = command_.value4 +pd;
+  debug_msg.data = command_.F +pd;
   debug_.publish(debug_msg);
 }
 
