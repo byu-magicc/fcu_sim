@@ -13,7 +13,7 @@
       camera_suffix=""
       frame_rate="30"
       depth_range="6.5"
-      rgb_range=""
+      rgb_range="100000"
       image_topic="rgb/image_raw"
       depth_topic="depth/image_raw"
       image_camera_info_topic="rgb/camera_info"

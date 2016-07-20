@@ -4,7 +4,7 @@
 
     <!-- Forces And Moments Plugin -->
     <xacro:macro
-      name="mikey_ROSflight_SIL"
+      name="square_quad"
       params="namespace parent_link">
       <xacro:fcu_sim_ROSflight_sil_plugin
         namespace="${namespace}/hil"
@@ -13,6 +13,61 @@
         command_topic="extended_command"
         parent_frame_id="${parent_link}"
         mu="1"
+        rotor_max_thrust="14.961"
+        rotor_F1="1.5e-5"
+        rotor_F2="-0.024451"
+        rotor_F3="9.00225"
+        rotor_T1="-2.22e-7"
+        rotor_T2="3.51e-4"
+        rotor_T3="-0.12531"
+        rotor_tau_down="0.1644"
+        rotor_tau_up="0.2164"
+        num_rotors="4"
+        rotor1_distance="0.30"
+        rotor1_angle="2.35619449019"
+        rotor1_direction="1"
+        rotor2_distance="0.30"
+        rotor2_angle="0.78539816339"
+        rotor2_direction="-1"
+        rotor3_distance="0.30"
+        rotor3_angle="-2.35619449019"
+        rotor3_direction="-1"
+        rotor4_distance="0.30"
+        rotor4_angle="-0.78539816339"
+        rotor4_direction="1"
+        rotor5_distance="0"
+        rotor5_angle="0"
+        rotor5_direction="1"
+        rotor6_distance="0"
+        rotor6_angle="0"
+        rotor6_direction="1"
+        rotor7_distance="0"
+        rotor7_angle="0"
+        rotor7_direction="1"
+        rotor8_distance="0"
+        rotor8_angle="0"
+        rotor8_direction="1">
+        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+      </xacro:fcu_sim_ROSflight_sil_plugin>
+    </xacro:macro>
+
+    <xacro:macro
+      name="mikey_ROSflight_SIL"
+      params="namespace parent_link">
+      <xacro:fcu_sim_ROSflight_sil_plugin
+        namespace="${namespace}/hil"
+        parent_link="${namespace}/base_link"
+        wind_speed_topic="gazebo/wind_speed"
+        command_topic="extended_command"
+        parent_frame_id="${parent_link}"
+        linear_mu="1"
+        angular_mu="0.3"
+        ground_effect_a="-55.3516"
+        ground_effect_b="181.8265"
+        ground_effect_c="-203.9874"
+        ground_effect_d="85.3735"
+        ground_effect_e="-7.6619"
         rotor_max_thrust="14.961"
         rotor_F1="1.5e-5"
         rotor_F2="-0.024451"
@@ -57,13 +112,13 @@
   <xacro:macro name="fcu_sim_ROSflight_sil_plugin"
     params="
         namespace parent_link wind_speed_topic command_topic parent_frame_id
-        mu num_rotors rotor_max_thrust rotor_F1 rotor_F2 rotor_F3 rotor_T1 rotor_T2 rotor_T3
-        rotor_tau_down rotor_tau_up  rotor1_distance rotor1_angle rotor1_direction
-        rotor2_distance rotor2_angle rotor2_direction rotor3_distance rotor3_angle
-        rotor3_direction rotor4_distance rotor4_angle rotor4_direction
-        rotor5_distance rotor5_angle rotor5_direction rotor6_distance rotor6_angle
-        rotor6_direction rotor7_distance rotor7_angle  rotor7_direction rotor8_distance
-        rotor8_angle  rotor8_direction
+        linear_mu angular_mu 
+        ground_effect_a ground_effect_b ground_effect_c ground_effect_d ground_effect_e 
+        num_rotors rotor_max_thrust rotor_F1 rotor_F2 rotor_F3 rotor_T1 rotor_T2 rotor_T3 
+        rotor_tau_down rotor_tau_up  rotor1_distance rotor1_angle rotor1_direction rotor2_distance rotor2_angle rotor2_direction rotor3_distance rotor3_angle rotor3_direction rotor4_distance rotor4_angle 
+        rotor4_direction rotor5_distance rotor5_angle rotor5_direction rotor6_distance 
+        rotor6_angle rotor6_direction rotor7_distance rotor7_angle  rotor7_direction 
+        rotor8_distance rotor8_angle  rotor8_direction
         *inertia *origin">
 
     <!-- link -->
@@ -91,7 +146,14 @@
         <commandTopic>${command_topic}</commandTopic>
         <parentFrameId>${parent_frame_id}</parentFrameId>
         <mass>${mass}</mass>
-        <mu>${mu}</mu>
+        <linear_mu>${linear_mu}</linear_mu>
+        <angular_mu>${angular_mu}</angular_mu>
+        <ground_effect_a>${ground_effect_a}</ground_effect_a>
+        <ground_effect_b>${ground_effect_b}</ground_effect_b>
+        <ground_effect_c>${ground_effect_c}</ground_effect_c>
+        <ground_effect_d>${ground_effect_d}</ground_effect_d>
+        <ground_effect_e>${ground_effect_e}</ground_effect_e>
+
         <numRotors>${num_rotors}</numRotors>
         <rotorMaxThrust>${rotor_max_thrust}</rotorMaxThrust>
         <rotorF1>${rotor_F1}</rotorF1>
@@ -140,3 +202,4 @@
 
 
 </robot>
+

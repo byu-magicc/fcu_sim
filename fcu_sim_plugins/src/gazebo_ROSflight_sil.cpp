@@ -83,44 +83,15 @@ void GazeboROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzthrow("[gazebo_multirotor_hil] Couldn't find specified link \"" << link_name_ << "\".");
 
   //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
-  getSdfParam<double> (_sdf, "mu", mu_, 1);
+  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
+  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
 
-  // Build Actuators Container
-  //  getSdfParam<double>(_sdf, "max_l", actuators_.l.max, 6.5080); // N-m
-  //  getSdfParam<double>(_sdf, "max_m", actuators_.m.max, 5.087); // N-m
-  //  getSdfParam<double>(_sdf, "max_n", actuators_.n.max, 0.099828); // N-m
-  //  getSdfParam<double>(_sdf, "max_F", actuators_.F.max, 59.844); // N
-  //  getSdfParam<double>(_sdf, "tau_up_l", actuators_.l.tau_up, 0.1904);
-  //  getSdfParam<double>(_sdf, "tau_up_m", actuators_.m.tau_up, 0.1904);
-  //  getSdfParam<double>(_sdf, "tau_up_n", actuators_.n.tau_up, 0.1644);
-  //  getSdfParam<double>(_sdf, "tau_up_F", actuators_.F.tau_up, 0.1644);
-  //  getSdfParam<double>(_sdf, "tau_down_l", actuators_.l.tau_down, 0.1904);
-  //  getSdfParam<double>(_sdf, "tau_down_m", actuators_.m.tau_down, 0.1904);
-  //  getSdfParam<double>(_sdf, "tau_down_n", actuators_.n.tau_down, 0.2164);
-  //  getSdfParam<double>(_sdf, "tau_down_F", actuators_.F.tau_down, 0.2164);
-
-  // Get PID Gains
-  //  double rollP, rollI, rollD;
-  //  double pitchP, pitchI, pitchD;
-  //  double yawP, yawI, yawD;
-  //  double altP, altI, altD;
-  //  getSdfParam<double>(_sdf, "roll_P", rollP, 25.0);
-  //  getSdfParam<double>(_sdf, "roll_I", rollI, 0.0);
-  //  getSdfParam<double>(_sdf, "roll_D", rollD, 8.0);
-  //  getSdfParam<double>(_sdf, "pitch_P", pitchP, 25.0);
-  //  getSdfParam<double>(_sdf, "pitch_I", pitchI, 0.0);
-  //  getSdfParam<double>(_sdf, "pitch_D", pitchD, 8.0);
-  //  getSdfParam<double>(_sdf, "yaw_P", yawP, 10.0);
-  //  getSdfParam<double>(_sdf, "yaw_I", yawI, 0.0);
-  //  getSdfParam<double>(_sdf, "yaw_D", yawD, 0.0);
-  //  getSdfParam<double>(_sdf, "alt_P", altP, 16.0);
-  //  getSdfParam<double>(_sdf, "alt_I", altI, 5.0);
-  //  getSdfParam<double>(_sdf, "alt_D", altD, 32.0);
-  //  roll_controller_.setGains(rollP, rollI, rollD);
-  //  pitch_controller_.setGains(pitchP, pitchI, pitchD);
-  //  yaw_controller_.setGains(yawP, yawI, yawD);
-  //  alt_controller_.setGains(altP, altI, altD);
-
+  /* Ground Effect Coefficients */
+  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
+  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
+  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
+  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
+  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
@@ -236,40 +207,41 @@ void GazeboROSflightSIL::initialize_params()
   init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
   init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
 
-  init_param_int(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL", 786); // 45 deg
-  init_param_int(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH", 786);
-  init_param_int(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12566); // 720 deg/s in mrad/s
-  init_param_int(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12566); // 720 deg/s
-  init_param_int(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6283); // 360 deg/s
+  init_param_float(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL", 0.786f); // 45 deg
+  init_param_float(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH", 0.786f);
+  init_param_float(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12.566f);
+  init_param_float(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12.566f);
+  init_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6.28f);
+
+  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 10.0f);
+  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
+  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
+
+  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 30.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
+  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 25.0f);
+  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
+
+  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 30.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
+  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 15.0f);
+  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
+
+  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 10.00f);
+  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.00f);
+  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12.566f);
+
+  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 10.00f);
+  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.30f);
+  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12.566f);
+
+  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 25.0f);
+  init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
+  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
 
   init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
 
-  init_param_int(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 50);
-  init_param_int(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12566);
-
-  init_param_int(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 50);
-  init_param_int(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12566);
-
-  init_param_int(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 50);
-  init_param_int(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0);
-  init_param_int(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6283);
-
-  init_param_int(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 2000);
-  init_param_int(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0);
-  init_param_int(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 0);
-  init_param_int(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 786);
-
-  init_param_int(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 2000);
-  init_param_int(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0);
-  init_param_int(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 0);
-  init_param_int(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 786);
-
-  init_param_int(PARAM_PID_ALT_P, "PID_ALT_P", 10);
-  init_param_int(PARAM_PID_ALT_I, "PID_ALT_I", 0);
-  init_param_int(PARAM_PID_ALT_D, "PID_ALT_D", 0);
-
-
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_X);
+  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_H);
   init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
   init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
   init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
@@ -314,10 +286,9 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.type = RATE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x*2*_params.values[PARAM_RC_MAX_ROLLRATE_MRAD_S];
-    _combined_control.y.value = msg.y*2*_params.values[PARAM_RC_MAX_PITCHRATE_MRAD_S];
-    _combined_control.z.value = msg.z*2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S];
-    _combined_control.F.value = msg.F;
+    _combined_control.x.value = msg.x*2*get_param_float(PARAM_RC_MAX_ROLLRATE_MRAD_S);
+    _combined_control.y.value = msg.y*2*get_param_float(PARAM_RC_MAX_PITCHRATE_MRAD_S);
+    _combined_control.z.value = msg.z*2*get_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S);
 
   }
   else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
@@ -326,10 +297,9 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.type = ANGLE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x*2*_params.values[PARAM_RC_MAX_ROLL_MRAD];
-    _combined_control.y.value = msg.y*2*_params.values[PARAM_RC_MAX_PITCH_MRAD];
-    _combined_control.z.value = msg.z*2*_params.values[PARAM_RC_MAX_YAWRATE_MRAD_S];
-    _combined_control.F.value = msg.F*1000;
+    _combined_control.x.value = msg.x*2*get_param_float(PARAM_RC_MAX_ROLL_MRAD);
+    _combined_control.y.value = msg.y*2*get_param_float(PARAM_RC_MAX_PITCH_MRAD);
+    _combined_control.z.value = msg.z*2*get_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S);
   }
   else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
@@ -338,7 +308,7 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.z.type = RATE;
     _combined_control.F.type = ALTITUDE;
   }
-  _combined_control.F.value = msg.F*1000;
+  _combined_control.F.value = msg.F*1000.0;
 }
 
 void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
@@ -361,12 +331,12 @@ void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   // publish estimate
   fcu_common::Attitude attitude_msg;
   attitude_msg.header.stamp = ros::Time::now();
-  attitude_msg.roll = (double)_current_state.phi/1000.0f;
-  attitude_msg.pitch = (double)_current_state.theta/1000.0f;
-  attitude_msg.yaw = (double)_current_state.psi/1000.0f;
-  attitude_msg.p = (double)_current_state.p/1000.0f;
-  attitude_msg.q = (double)_current_state.q/1000.0f;
-  attitude_msg.r = (double)_current_state.r/1000.0f;
+  attitude_msg.roll = _current_state.phi;
+  attitude_msg.pitch = _current_state.theta;
+  attitude_msg.yaw = _current_state.psi;
+  attitude_msg.p = _current_state.p;
+  attitude_msg.q = _current_state.q;
+  attitude_msg.r = _current_state.r;
   estimate_pub_.publish(attitude_msg);
 
   // Run Controller
@@ -450,79 +420,22 @@ void GazeboROSflightSIL::UpdateForcesAndMoments()
     actual_forces_(i,0) = sat((1-alpha)*actual_forces_(i) + alpha*desired_forces_(i), motors_[i].rotor.max, 0.0);
     actual_torques_(i,0) = sat((1-alpha)*actual_torques_(i) + alpha*desired_torques_(i), motors_[i].rotor.max, 0.0);
   }
+
+  // Use the allocation matrix to calculate the body-fixed force and torques
   Eigen::Vector4d output_forces_and_torques = force_allocation_matrix_*actual_forces_ + torque_allocation_matrix_*actual_torques_;
 
+  // Calculate Ground Effect
+  double z = -pd;
+  double ground_effect = max(ground_effect_.a*z*z*z*z + ground_effect_.b*z*z*z + ground_effect_.c*z*z + ground_effect_.d*z + ground_effect_.e, 0);
 
   //  // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
   //  // By Rob Leishman et al.
-  forces_.Fx = -mu_*ur;
-  forces_.Fy = -mu_*vr;
-  forces_.Fz = -mu_*wr + output_forces_and_torques(3);
-  forces_.l = output_forces_and_torques(0);
-  forces_.m = output_forces_and_torques(1);
-  forces_.n = output_forces_and_torques(2);
-
-//  gzmsg << "forces: x = " << forces_.Fx <<
-//                  " y = " << forces_.Fy <<
-//                  " z = " << forces_.Fz <<
-//                  " l = " << forces_.l <<
-//                  " m = " << forces_.m <<
-//                  " n = " << forces_.n << "\n";
-
-  // calculate the appropriate control <- Depends on Control type (which block is being controlled)
-  //  if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
-  //  {
-  //    desired_forces_.l = roll_controller_.computePID(command_.value1, p, sampling_time_);
-  //    desired_forces_.m = pitch_controller_.computePID(command_.value2, q, sampling_time_);
-  //    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-  //    desired_forces_.Fz = command_.value4*actuators_.F.max; // this comes in normalized between 0 and 1
-  //  }
-  //  else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
-  //  {
-  //    desired_forces_.l = roll_controller_.computePIDDirect(command_.value1, phi, p, sampling_time_);
-  //    desired_forces_.m = pitch_controller_.computePIDDirect(command_.value2, theta, q, sampling_time_);
-  //    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-  //    desired_forces_.Fz = command_.value4*actuators_.F.max;
-  //  }
-  //  else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
-  //  {
-  //    desired_forces_.l = roll_controller_.computePIDDirect(command_.value1, phi, p, sampling_time_);
-  //    desired_forces_.m = pitch_controller_.computePIDDirect(command_.value2, theta, q, sampling_time_);
-  //    desired_forces_.n = yaw_controller_.computePID(command_.value3, r, sampling_time_);
-  //    double hdot = sin(theta)*u - sin(phi)*cos(theta)*v - cos(phi)*cos(theta)*w;
-  //    double p1 = alt_controller_.computePIDDirect(command_.value4, -pd, hdot, sampling_time_);
-  //    desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.value1)*cos(command_.value2));
-  //  }
-
-  //  // calculate the actual output force using low-pass-filters to introduce a first-order
-  //  // approximation of delay in motor reponse
-  //  // x(t+1) = Ce^(-t/tau)dt <- transfer to z-domain using backward differentiation
-
-  //  // first get the appropriate tau for this situation
-  //  double taul = (desired_forces_.l > applied_forces_.l ) ? actuators_.l.tau_up : actuators_.l.tau_down;
-  //  double taum = (desired_forces_.m > applied_forces_.m ) ? actuators_.m.tau_up : actuators_.m.tau_down;
-  //  double taun = (desired_forces_.n > applied_forces_.n ) ? actuators_.n.tau_up : actuators_.n.tau_down;
-  //  double tauF = (desired_forces_.Fz > applied_forces_.Fz ) ? actuators_.F.tau_up : actuators_.F.tau_down;
-
-  //  // calulate the alpha for the filter
-  //  double alphal = sampling_time_/(taul + sampling_time_);
-  //  double alpham = sampling_time_/(taum + sampling_time_);
-  //  double alphan = sampling_time_/(taun + sampling_time_);
-  //  double alphaF = sampling_time_/(tauF + sampling_time_);
-
-  //  // Apply the discrete first-order filter
-  //  applied_forces_.l = sat((1 - alphal)*applied_forces_.l + alphal *desired_forces_.l, actuators_.l.max, -1.0*actuators_.l.max);
-  //  applied_forces_.m = sat((1 - alpham)*applied_forces_.m + alpham *desired_forces_.m, actuators_.m.max, -1.0*actuators_.m.max);
-  //  applied_forces_.n = sat((1 - alphan)*applied_forces_.n + alphan *desired_forces_.n, actuators_.n.max, -1.0*actuators_.n.max);
-  //  applied_forces_.Fz = sat((1 - alphaF)*applied_forces_.Fz + alphaF *desired_forces_.Fz, actuators_.F.max, 0.0);
-
-
-  //  forces_.Fx = -1.0*mu_*ur;
-  //  forces_.Fy = -1.0*mu_*vr;
-  //  forces_.Fz = -1.0*mu_*wr + applied_forces_.Fz;
-  //  forces_.l = applied_forces_.l;
-  //  forces_.m = applied_forces_.m;
-  //  forces_.n = applied_forces_.n;
+  forces_.Fx = -linear_mu_*ur;
+  forces_.Fy = -linear_mu_*vr;
+  forces_.Fz = -linear_mu_*wr + ground_effect + output_forces_and_torques(3);
+  forces_.l = -angular_mu_*p + output_forces_and_torques(0);
+  forces_.m = -angular_mu_*q + output_forces_and_torques(1);
+  forces_.n = -angular_mu_*r + output_forces_and_torques(2);
 }
 
 double GazeboROSflightSIL::sat(double x, double max, double min)
@@ -533,6 +446,11 @@ double GazeboROSflightSIL::sat(double x, double max, double min)
     return min;
   else
     return x;
+}
+
+double GazeboROSflightSIL::max(double x, double y)
+{
+  return (x > y) ? x : y;
 }
 
 void GazeboROSflightSIL::init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
@@ -548,6 +466,7 @@ void GazeboROSflightSIL::init_param_float(param_id_t id, char name[PARAMS_NAME_L
   _params.values[id] = *((int32_t *) &value);
   _params.types[id] = PARAM_TYPE_FLOAT;
 }
+
 
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboROSflightSIL);

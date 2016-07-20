@@ -70,7 +70,7 @@ Author: James Jackson
 
   <!-- Mount an IMU -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
-  <xacro:IMU_ADIS16448
+  <xacro:IMU_MPU6050
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     imu_topic="imu/data"/>
