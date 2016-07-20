@@ -15,7 +15,7 @@
   <arg name="z"                   default="0.1"/>
   <arg name="yaw"                 default="0"/>
 
-  <arg name="world_file" default="powerplant.world"/>
+  <arg name="world_file" default="better_crazy_world.sdf"/>
 
   <!-- Start Simulator -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -37,7 +37,7 @@
   </include>
 
   <!-- Joy -->
-  <node name="rc" pkg="fcu_common" type="fcu_common_joy"/>
+  <node name="rc" pkg="fcu_common" type="fcu_common_joy" output="screen"/>
   <node name="joy" pkg="joy" type="joy_node">
     <param name="autorepeat_rate" value="100"/>
   </node>
