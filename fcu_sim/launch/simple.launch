@@ -6,7 +6,7 @@
 
 
 <launch>
-  <arg name="mav_name"            default="mikey"/>
+  <arg name="mav_name"            default="shredder"/>
   <arg name="enable_ground_truth" default="true" />
   <arg name="log_file"            default="$(arg mav_name)" />
   <arg name="color"               default="White"/>
@@ -20,8 +20,8 @@
   <!-- Start Simulator -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/$(arg world_file)"/>
-    <arg name="paused" value="false"/>
-    <arg name="gui" value="false"/>
+    <arg name="paused" value="true"/>
+    <arg name="gui" value="true"/>
   </include>
 
   <!-- Spawn in Gazebo -->
