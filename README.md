@@ -46,11 +46,12 @@ How To Use
 
 To use for simulating shredder, one can simply just copy the launch file and customize it for their needs.  However, creating a new model may be more complicated.
 
-* First, you will need to duplicate the base `xacro` file, specifically
-	1 - fcu_sim/urdf/shredder_base.xacro
+* First, you will need to duplicate the base `xacro` file, specifically fcu_sim/urdf/shredder_base.xacro
 
 * Go through this file and reconfigure it to match your desired MAV.  If you want to import new geometry from a .dae mesh file, that can be saved in the fcu_sim/meshes folder.
 
 * Copy fcu_sim/launch/simulator.launch, which is a bare-bones launch file for simply creating the simulation environment.  Modify the model launched by the spawn_mav.launch command to match the files you copied earlier.
 
-Try launching simulator.launch.  It should function, and you will see your MAV flying in Gazebo.  You can additionally run fcu_common/joy to control your MAV like it were being commaned by RC inputs.
+Try launching `simulator.launch`.  If all goes well, you should see your MAV fall to the ground in Gazebo (This is because it not being provided with any commands).  You can additionally run fcu_common/joy to control your MAV like it were being commaned by RC inputs.  `simple.launch` should run this joystick RC teleop as well as launching your MAV in Gazebo.  Look at the documentation for `fcu_common/joy` to know how to use this node.
+
+To use the ROSflight SIL plugin instead of the simplified multirotor dynamics, simply uncomment line 60 of shredder_base.xacro, and comment out line 64.  This instead loads the software-in-the loop plugin and runs the embedded ROSflight code in Gazebo.
