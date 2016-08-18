@@ -93,6 +93,8 @@ void GazeboAirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
   double u = C_linear_velocity_W_C.x;
   double v = -C_linear_velocity_W_C.y;
   double w = -C_linear_velocity_W_C.z;
+
+  /// TODO: Wind is being applied in the inertial frame, not the body-fixed frame
   double ur = u - wind_.N;
   double vr = v - wind_.E;
   double wr = w - wind_.D;

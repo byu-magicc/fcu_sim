@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright 2016 James Jackson, MAGICC Lab, Brigham Young University, Provo, UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,10 +238,7 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double CZ_q_a = -CD_.q*sin(alpha) - CL_.q*cos(alpha);
   double CZ_deltaE_a = -CD_.delta_e*sin(alpha) - CL_.delta_e*cos(alpha);
 
-
-
   // calculate forces
-
   /*
    * Pack Forces and Moments into the forces_ member for publishing in
    * SendForces()
