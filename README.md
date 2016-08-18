@@ -58,8 +58,10 @@ To use the ROSflight SIL plugin instead of the simplified multirotor dynamics, s
 
 Technical Details
 =======================
-Simulation of multirotors is done in two ways.
+Simulation of multirotors is done in two ways:
+
 1. First-order models of applied body-fixed torques.  Torques are applied to the body-fixed axes of the UAV using PID control and with a first-order response.  The time constants and thrust/torque response for several motors/propeller combinations have been measured using the thrust test stand at BYU, and the information in the shredder and mikey configurations are accurate.  We have data for all the 3DR motor/propeller combination, a number of 250-size quad systems, MikroCopter systems, and old Ascending Technologies systems.  We have found that this first-order model is appropriate for most simulations.  It is somewhat simplistic, bu it is faster to calculate than other methods.
+
 2. ROSflight SIL.  This method uses the actual ROSflight code to perform estimation and control.  Forces are then applied as if propellers at the various locations on the airframe.  Currently, propellers not aligned with the body-fixed Z axes are not supported, but likely could be if you need something like that.  Individual motor response is modeled using a quadratic fit, and a first-order response.  This parameterization fits very well the data collected on actual thrust stands.  For more information on how to collect the motor data for your platform, please contact one of the authors via an Issue or personal message.
 
-Simulation of Fixed wing MAVs is performed using the method described in "Small Unmanned Aircraft - Theory and Practice" by Randy Beard and Tim McLain.  This model uses stability derivatives which can be calculated by AVL for a particular airframe, and lift coefficients from a particular airframe.  A detailed explanation of each term in the aircraft_forces_and_moments plugin can be found in that book.
+Simulation of Fixed wing MAVs is performed using the method described in "Small Unmanned Aircraft - Theory and Practice" by Randy Beard and Tim McLain.  This model uses stability derivatives which can be calculated by AVL for a particular airframe, and lift coefficients from a particular airframe.  A detailed explanation of each term in the aircraft_forces_and_moments plugin can be found in that book.  Currently, ROSflight SIL is not well supported for fixed wing MAVs.  We expect this to change in the near future.
