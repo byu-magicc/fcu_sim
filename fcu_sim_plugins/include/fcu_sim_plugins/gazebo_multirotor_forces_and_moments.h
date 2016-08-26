@@ -47,7 +47,7 @@ static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
 class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
- public:
+public:
   GazeboMultiRotorForcesAndMoments();
 
   ~GazeboMultiRotorForcesAndMoments();
@@ -55,12 +55,12 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
   void InitializeParams();
   void SendForces();
 
- protected:
+protected:
   void UpdateForcesAndMoments();
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
- private:
+private:
   std::string command_topic_;
   std::string wind_speed_topic_;
   std::string joint_name_;
@@ -77,7 +77,15 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
   event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
   // physical parameters
-  double mu_; // drag coefficient (approx 0.1)
+  double linear_mu_;
+  double angular_mu_;
+  struct GE_constants{
+    double a;
+    double b;
+    double c;
+    double d;
+    double e;
+  } ground_effect_;
   double mass_; // for static thrust offset when in altitude mode (kg)
 
   // Container for an Actuator
@@ -87,8 +95,6 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
     double tau_down;
   };
 
-  bool stabilized_; // flag of whether to use an inner PID controller for states
-
   // Struct of Actuators
   // This organizes the physical limitations of the abstract torques and Force
   struct Actuators{
@@ -97,13 +103,6 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
     Actuator n;
     Actuator F;
   } actuators_;
-
-  // wind
-  struct Wind{
-    double N;
-    double E;
-    double D;
-  } wind_;
 
   // container for forces
   struct ForcesAndTorques{
@@ -139,9 +138,10 @@ class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
   void CommandCallback(const fcu_common::ExtendedCommand msg);
   void ComputeControl(void);
   double sat(double x, double max, double min);
+  double max(double x, double y);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
-  math::Vector3 wind_speed_W_;
+  math::Vector3 W_wind_speed_;
 };
 }
 
