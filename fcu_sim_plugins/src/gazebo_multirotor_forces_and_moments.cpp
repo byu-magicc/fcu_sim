@@ -242,7 +242,6 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double alphan = sampling_time_/(taun + sampling_time_);
   double alphaF = sampling_time_/(tauF + sampling_time_);
 
-
   // Apply the discrete first-order filter
   applied_forces_.l = sat((1 - alphal)*applied_forces_.l + alphal *desired_forces_.l, actuators_.l.max, -1.0*actuators_.l.max);
   applied_forces_.m = sat((1 - alpham)*applied_forces_.m + alpham *desired_forces_.m, actuators_.m.max, -1.0*actuators_.m.max);
@@ -261,8 +260,6 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   actual_forces_.l = -1.0*angular_mu_*p + applied_forces_.l;
   actual_forces_.m = -1.0*angular_mu_*q + applied_forces_.m;
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
-
-  gzmsg << "Fz desired = " << desired_forces_.Fz << "Fz actual = " << actual_forces_.Fz <<"\n";
 }
 
 double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
