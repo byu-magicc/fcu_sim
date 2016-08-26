@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright 2016 James Jackson, MAGICC Lab, Brigham Young University, Provo, UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,20 +32,10 @@ GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments()
   }
 }
 
-
-void GazeboAircraftForcesAndMoments::SendForces()
-{
-  // apply the forces and torques to the joint
-  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
-  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
-}
-
-
 void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
   world_ = model_->GetWorld();
-
   namespace_.clear();
 
   /*
@@ -72,6 +58,10 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
+
+  // The following parameters are aircraft-specific, most of these can be found using AVL
+  // The rest are more geometry-based and can be found in conventional methods
+  // For the moments of inertia, look into using the BiFilar pendulum method
 
   // physical parameters
   getSdfParam<double>(_sdf, "mass", mass_, 13.5);
@@ -174,7 +164,6 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
 
 // This gets called by the world update event.
 void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
-
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
@@ -189,6 +178,7 @@ void GazeboAircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vect
 
 void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
 {
+  /// TODO - Update to use fcu_common::ExtendedCommand struct
   delta_.t = msg->normalized_throttle;
   delta_.e = msg->normalized_pitch;
   delta_.a = msg->normalized_roll;
@@ -198,7 +188,7 @@ void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_common::CommandCo
 
 void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
 {
-  /* Get state information from Gazebo                          *
+  /* Get state information from Gazebo (in NED)                 *
    * C denotes child frame, P parent frame, and W world frame.  *
    * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
   math::Pose W_pose_W_C = link_->GetWorldCoGPose();
@@ -219,10 +209,17 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double r = -C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
+  /// TODO: This is wrong. Wind is being applied in the body frame, not inertial frame
   double ur = u - wind_.N;
   double vr = v - wind_.E;
   double wr = w - wind_.D;
 
+  /*
+   * THe following math follows the method described in chapter 4 of
+   * Small Unmanned Aircraft: Theory and Practice
+   * By Randy Beard and Tim McLain.
+   * Look there for a detailed explanation of each line in the rest of this function
+   */
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
   double alpha = atan2(wr , ur);
   double beta = asin(vr/Va);
@@ -241,10 +238,7 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
   double CZ_q_a = -CD_.q*sin(alpha) - CL_.q*cos(alpha);
   double CZ_deltaE_a = -CD_.delta_e*sin(alpha) - CL_.delta_e*cos(alpha);
 
-
-
   // calculate forces
-
   /*
    * Pack Forces and Moments into the forces_ member for publishing in
    * SendForces()
@@ -265,6 +259,14 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
     forces_.m = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.c*(Cm_.O + Cm_.alpha*alpha + (Cm_.q*wing_.c*q)/(2.0*Va) + Cm_.delta_e*delta_.e);
     forces_.n = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cn_.O + Cn_.beta*beta + (Cn_.p*wing_.b*p)/(2.0*Va) + (Cn_.r*wing_.b*r)/(2.0*Va) + Cn_.delta_a*delta_.a + Cn_.delta_r*delta_.r);
   }
+}
+
+
+void GazeboAircraftForcesAndMoments::SendForces()
+{
+  // apply the forces and torques to the joint
+  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
+  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftForcesAndMoments);
