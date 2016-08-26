@@ -41,7 +41,7 @@ void GazeboMultiRotorForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   // Gazebo is in NWU, while we calculate forces in NED, hence the negatives
-  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, -actual_forces_.Fy, actual_forces_.Fz));
+  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, actual_forces_.Fy, actual_forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(actual_forces_.l, -actual_forces_.m, -actual_forces_.n));
 }
 
@@ -73,10 +73,18 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
+  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
 
   // Drag Constant
-  getSdfParam<double>(_sdf, "mu", mu_, .1); // Ns^2/m
-  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
+  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
+  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
+
+  /* Ground Effect Coefficients */
+  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
+  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
+  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
+  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
+  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
 
   // Build Actuators Container
   getSdfParam<double>(_sdf, "max_l", actuators_.l.max, .2); // N-m
@@ -125,6 +133,21 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboMultiRotorForcesAndMoments::WindSpeedCallback, this);
 
   debug_ = node_handle_->advertise<std_msgs::Float32>("debug", 1);
+
+  // Initialize Variables
+  applied_forces_.Fx = 0;
+  applied_forces_.Fy = 0;
+  applied_forces_.Fz = 0;
+  applied_forces_.l = 0;
+  applied_forces_.m = 0;
+  applied_forces_.n = 0;
+
+  actual_forces_.Fx = 0;
+  actual_forces_.Fy = 0;
+  actual_forces_.Fz = 0;
+  actual_forces_.l = 0;
+  actual_forces_.m = 0;
+  actual_forces_.n = 0;
 }
 
 // This gets called by the world update event.
@@ -137,9 +160,9 @@ void GazeboMultiRotorForcesAndMoments::OnUpdate(const common::UpdateInfo& _info)
 }
 
 void GazeboMultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
-  wind_.N = wind.x;
-  wind_.E = wind.y;
-  wind_.D = wind.z;
+  W_wind_speed_.x = wind.x;
+  W_wind_speed_.y = wind.y;
+  W_wind_speed_.z = wind.z;
 }
 
 void GazeboMultiRotorForcesAndMoments::CommandCallback(const fcu_common::ExtendedCommand msg)
@@ -172,10 +195,11 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double r = -C_angular_velocity_W_C.z;
 
   // wind info is available in the wind_ struct
-  /// THIS IS WRONG WIND NEEDS TO BE IN BODY FRAME
-  double ur = u - wind_.N;
-  double vr = v - wind_.E;
-  double wr = w - wind_.D;
+  // Rotate into body frame and relative velocity
+  math::Vector3 C_wind_speed = W_pose_W_C.rot.RotateVector(W_wind_speed_);
+  double ur = u - C_wind_speed.x;
+  double vr = v - C_wind_speed.y;
+  double wr = w - C_wind_speed.z;
 
   // calculate the appropriate control <- Depends on Control type (which block is being controlled)
   if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
@@ -224,18 +248,18 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   applied_forces_.n = sat((1 - alphan)*applied_forces_.n + alphan *desired_forces_.n, actuators_.n.max, -1.0*actuators_.n.max);
   applied_forces_.Fz = sat((1 - alphaF)*applied_forces_.Fz + alphaF *desired_forces_.Fz, actuators_.F.max, 0.0);
 
+  // calculate ground effect
+  double z = -pd;
+  double ground_effect = max(ground_effect_.a*z*z*z*z + ground_effect_.b*z*z*z + ground_effect_.c*z*z + ground_effect_.d*z + ground_effect_.e, 0);
+
   // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
   // By Rob Leishman et al.
-  actual_forces_.Fx = -1.0*mu_*ur;
-  actual_forces_.Fy = -1.0*mu_*vr;
-  actual_forces_.Fz = -1.0*mu_*wr + applied_forces_.Fz;
-  actual_forces_.l = applied_forces_.l;
-  actual_forces_.m = applied_forces_.m;
-  actual_forces_.n = applied_forces_.n;
-
-  std_msgs::Float32 debug_msg;
-  debug_msg.data = command_.F +pd;
-  debug_.publish(debug_msg);
+  actual_forces_.Fx = -1.0*linear_mu_*ur;
+  actual_forces_.Fy = 1.0*linear_mu_*vr;
+  actual_forces_.Fz = 1.0*linear_mu_*wr + applied_forces_.Fz + ground_effect;
+  actual_forces_.l = -1.0*angular_mu_*p + applied_forces_.l;
+  actual_forces_.m = -1.0*angular_mu_*q + applied_forces_.m;
+  actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
 }
 
 double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
@@ -246,6 +270,11 @@ double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
     return min;
   else
     return x;
+}
+
+double GazeboMultiRotorForcesAndMoments::max(double x, double y)
+{
+  return (x > y) ? x : y;
 }
 
 GZ_REGISTER_MODEL_PLUGIN(GazeboMultiRotorForcesAndMoments);

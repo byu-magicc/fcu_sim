@@ -101,6 +101,6 @@ Author: James Jackson
   <xacro:hokuyo_UTM-30LX
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    visualize="true"/>
+    visualize="false"/>
 
 </robot>
