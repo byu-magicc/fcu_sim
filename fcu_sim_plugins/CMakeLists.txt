@@ -40,9 +40,9 @@ include_directories(${Eigen_INCLUDE_DIRS})
 add_library(fcu_sim_ROSflight_sil_plugin
   src/gazebo_ROSflight_sil.cpp
   include/fcu_sim_plugins/gazebo_ROSflight_sil.h
-  include/ROSflight2/src/estimator.c
-  include/ROSflight2/src/mixer.c
-  include/ROSflight2/src/controller.c
+  include/ROSflight/src/estimator.c
+  include/ROSflight/src/mixer.c
+  include/ROSflight/src/controller.c
   include/ROSflight_SIL/sensors.c
   include/ROSflight_SIL/param.c
   include/ROSflight_SIL/mode.c
