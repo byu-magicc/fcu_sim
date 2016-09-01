@@ -233,16 +233,20 @@ void GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info) {
     odometry.header.stamp.nsec = (world_->GetSimTime()).nsec + ros::Duration(unknown_delay_).nsec;
     odometry.child_frame_id = namespace_;
     copyPosition(gazebo_pose.pos, &odometry.pose.pose.position);
+
+    // Convert from NWU (gazebo coordinates) to NED (MAV coordinates)
+    odometry.pose.pose.position.y *= -1.0;
+    odometry.pose.pose.position.z *= -1.0;
     odometry.pose.pose.orientation.w = gazebo_pose.rot.w;
     odometry.pose.pose.orientation.x = gazebo_pose.rot.x;
-    odometry.pose.pose.orientation.y = gazebo_pose.rot.y;
-    odometry.pose.pose.orientation.z = gazebo_pose.rot.z;
+    odometry.pose.pose.orientation.y = -1.0*gazebo_pose.rot.y;
+    odometry.pose.pose.orientation.z = -1.0*gazebo_pose.rot.z;
     odometry.twist.twist.linear.x = gazebo_linear_velocity.x;
-    odometry.twist.twist.linear.y = gazebo_linear_velocity.y;
-    odometry.twist.twist.linear.z = gazebo_linear_velocity.z;
+    odometry.twist.twist.linear.y = -1.0*gazebo_linear_velocity.y;
+    odometry.twist.twist.linear.z = -1.0*gazebo_linear_velocity.z;
     odometry.twist.twist.angular.x = gazebo_angular_velocity.x;
-    odometry.twist.twist.angular.y = gazebo_angular_velocity.y;
-    odometry.twist.twist.angular.z = gazebo_angular_velocity.z;
+    odometry.twist.twist.angular.y = -1.0*gazebo_angular_velocity.y;
+    odometry.twist.twist.angular.z = -1.0*gazebo_angular_velocity.z;
 
     if (publish_odometry)
       odometry_queue_.push_back(std::make_pair(gazebo_sequence_ + measurement_delay_, odometry));
