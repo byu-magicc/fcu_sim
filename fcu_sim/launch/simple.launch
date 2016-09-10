@@ -59,29 +59,29 @@
 
   <!-- Controller -->
   <node name="controller" pkg="ros_copter" type="controller" output="screen">
-    <param name-"x/P" value="1"/>
-    <param name-"x/I" value="0"/>
-    <param name-"x/D" value="0"/>
+    <param name="x/P" value="1"/>
+    <param name="x/I" value="0"/>
+    <param name="x/D" value="0"/>
 
-    <param name-"y/P" value="1"/>
-    <param name-"y/I" value="0"/>
-    <param name-"y/D" value="0"/>
+    <param name="y/P" value="1"/>
+    <param name="y/I" value="0"/>
+    <param name="y/D" value="0"/>
 
-    <param name-"z/P" value="1"/>
-    <param name-"z/I" value="0"/>
-    <param name-"z/D" value="0"/>
+    <param name="z/P" value="1"/>
+    <param name="z/I" value="0"/>
+    <param name="z/D" value="0"/>
 
-    <param name-"u/P" value="1"/>
-    <param name-"u/I" value="0"/>
-    <param name-"u/D" value="0"/>
+    <param name="u/P" value="1"/>
+    <param name="u/I" value="0"/>
+    <param name="u/D" value="0"/>
 
-    <param name-"v/P" value="1"/>
-    <param name-"v/I" value="0"/>
-    <param name-"v/D" value="0"/>
+    <param name="v/P" value="1"/>
+    <param name="v/I" value="0"/>
+    <param name="v/D" value="0"/>
 
-    <param name-"psi/P" value="1"/>
-    <param name-"psi/I" value="0"/>
-    <param name-"psi/D" value="0"/>
+    <param name="psi/P" value="1"/>
+    <param name="psi/I" value="0"/>
+    <param name="psi/D" value="0"/>
   </node>
 
 
