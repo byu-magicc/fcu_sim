@@ -127,6 +127,9 @@ class GazeboImuPlugin : public ModelPlugin {
   std::string frame_id_;
   std::string link_name_;
 
+  /// Turn off noise
+  bool perfect_imu_;
+
   std::default_random_engine random_generator_;
   std::normal_distribution<double> standard_normal_distribution_;
 
