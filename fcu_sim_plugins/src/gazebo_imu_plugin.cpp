@@ -83,6 +83,7 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   getSdfParam<double>(_sdf, "accelerometerBiasCorrelationTime",
                       imu_parameters_.accelerometer_bias_correlation_time,
                       300.0);
+  getSdfParam<bool>(_sdf, "perfectIMU", perfect_imu_, false);
   assert(imu_parameters_.accelerometer_bias_correlation_time > 0.0);
   getSdfParam<double>(_sdf, "accelerometerTurnOnBiasSigma",
                       imu_parameters_.accelerometer_turn_on_bias_sigma,
@@ -204,6 +205,9 @@ void GazeboImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
 
 // This gets called by the world update start event.
 void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
+
+  static math::Vector3 velocity_prev_B(0, 0, 0);
+
   common::Time current_time  = world_->GetSimTime();
   double dt = (current_time - last_time_).Double();
   last_time_ = current_time;
@@ -213,25 +217,46 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   math::Quaternion C_W_I = T_W_I.rot;
 
   math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
+  math::Vector3 velocity_current_B = link_->GetRelativeLinearVel();
+
+  math::Vector3 vdot = link_->GetRelativeLinearAccel();
+
+  math::Vector3 angular_velocity_B = link_->GetRelativeAngularVel();
+  math::Vector3 gravity_B = C_W_I.RotateVector(gravity_W_);
+
+  static int counter = 0;
+  counter++;
+  if( counter > 10)
+  {
+    gzmsg << "vdot.x = " << vdot.x << " gravity_B.x " << gravity_B.x << "\n";
+    gzmsg << "vdot.y = " << vdot.y << " gravity_B.y " << gravity_B.y << "\n";
+    gzmsg << "vdot.z = " << vdot.z << " gravity_B.z " << gravity_B.z << "\n\n";
+    counter = 0;
+  }
+
+  math::Vector3 total_acceleration_B = vdot + gravity_B;
+
 
   // link_->GetRelativeLinearAccel() does not work sometimes. Returns only 0.
   // TODO For an accurate simulation, this might have to be fixed. Consider the
   //      time delay introduced by this numerical derivative, for example.
-  math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
-  math::Vector3 acceleration_I =
-      C_W_I.RotateVectorReverse(acceleration - gravity_W_);
-  math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
+//  math::Vector3 acceleration = link_->GetRelativeLinearAccel();
+//  math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
+//  math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
+//  math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
 
-  Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
-                                        acceleration_I.y,
-                                        acceleration_I.z);
-  Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
-                                     angular_vel_I.y,
-                                     angular_vel_I.z);
+//  Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
+//                                        acceleration_I.y,
+//                                        acceleration_I.z);
+//  Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
+//                                     angular_vel_I.y,
+//                                     angular_vel_I.z);
 
-  addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
+  if(!perfect_imu_){
+//    addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
+  }
 
-  // Fill IMU message.
+  // Fill IMU message.1
   imu_message_.header.stamp.sec = current_time.sec;
   imu_message_.header.stamp.nsec = current_time.nsec;
 
@@ -245,12 +270,12 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 //  imu_message_.orientation.y = C_W_I.y;
 //  imu_message_.orientation.z = C_W_I.z;
 
-  imu_message_.linear_acceleration.x = linear_acceleration_I[0];
-  imu_message_.linear_acceleration.y = -linear_acceleration_I[1];
-  imu_message_.linear_acceleration.z = -linear_acceleration_I[2];
-  imu_message_.angular_velocity.x = angular_velocity_I[0];
-  imu_message_.angular_velocity.y = -angular_velocity_I[1];
-  imu_message_.angular_velocity.z = -angular_velocity_I[2];
+  imu_message_.linear_acceleration.x = total_acceleration_B[0];
+  imu_message_.linear_acceleration.y = -total_acceleration_B[1];
+  imu_message_.linear_acceleration.z = -total_acceleration_B[2];
+  imu_message_.angular_velocity.x = angular_velocity_B[0];
+  imu_message_.angular_velocity.y = -angular_velocity_B[1];
+  imu_message_.angular_velocity.z = -angular_velocity_B[2];
 
   imu_pub_.publish(imu_message_);
 
