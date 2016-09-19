@@ -50,6 +50,7 @@
 #include <ros/ros.h>
 #include <fcu_sim_plugins/common.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/tf.h>
 #include <chrono>
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -117,6 +118,7 @@ class GazeboOdometryPlugin : public ModelPlugin {
   ros::Publisher position_pub_;
   ros::Publisher transform_pub_;
   ros::Publisher odometry_pub_;
+  ros::Publisher euler_pub_;
 
   tf::Transform tf_;
   tf::TransformBroadcaster transform_broadcaster_;

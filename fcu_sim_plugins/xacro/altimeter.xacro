@@ -2,9 +2,31 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="pi" value="3.14159265359" />
 
+  <!-- Perfect Barometer -->
+  <xacro:macro
+    name="perfect_baro"
+    params="namespace parent_link altimeter_topic">
+    <xacro:altimeter_plugin_macro
+      namespace="${namespace}"
+      altimeter_suffix="sonar"
+      parent_link="${parent_link}"
+      altimeter_topic="${altimeter_topic}"
+      mass_altimeter_sensor="0.0043"
+      altimeter_min_range="0.0"
+      altimeter_max_range="1000.0"
+      altimeter_error_stdev="0.0000000001"
+      altimeter_field_of_view="0.000001"
+      altimeter_publish_rate="20"
+      altimeter_noise_on="0"
+      publish_float="0" >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:altimeter_plugin_macro>
+  </xacro:macro>
+
   <!-- Sonar  HC-SR04 -->
-  <xacro:macro 
-    name="Sonar_HC-SR04" 
+  <xacro:macro
+    name="Sonar_HC-SR04"
     params="namespace parent_link altimeter_topic">
     <xacro:altimeter_plugin_macro
       namespace="${namespace}"
@@ -25,8 +47,8 @@
   </xacro:macro>
 
   <!-- Barometer  MS5611-->
-  <xacro:macro 
-    name="Barometer_MS5611" 
+  <xacro:macro
+    name="Barometer_MS5611"
     params="namespace parent_link altimeter_topic">
     <xacro:altimeter_plugin_macro
       namespace="${namespace}"
@@ -47,8 +69,29 @@
   </xacro:macro>
 
   <!-- LV-MaxSonar-EZ3 MB1030 -->
-  <xacro:macro 
-    name="Sonar_MB1030" 
+  <xacro:macro
+    name="Sonar_MB1030"
+    params="namespace parent_link altimeter_topic">
+    <xacro:altimeter_plugin_macro
+      namespace="${namespace}"
+      altimeter_suffix=""
+      parent_link="${parent_link}"
+      altimeter_topic="${altimeter_topic}"
+      mass_altimeter_sensor="0.0043"
+      altimeter_min_range="0.381"
+      altimeter_max_range="6.45"
+      altimeter_error_stdev="0.10"
+      altimeter_field_of_view="1.107"
+      altimeter_publish_rate="20"
+      altimeter_noise_on="1"
+      publish_float="0" >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:altimeter_plugin_macro>
+  </xacro:macro>
+
+  <xacro:macro
+    name="Sonar_MB1030"
     params="namespace parent_link altimeter_topic">
     <xacro:altimeter_plugin_macro
       namespace="${namespace}"
@@ -73,9 +116,9 @@
   <!-- Macro to add an altimeter. -->
   <xacro:macro name="altimeter_plugin_macro"
     params="
-    namespace altimeter_suffix parent_link altimeter_topic 
-    mass_altimeter_sensor altimeter_min_range altimeter_max_range 
-    altimeter_error_stdev altimeter_field_of_view 
+    namespace altimeter_suffix parent_link altimeter_topic
+    mass_altimeter_sensor altimeter_min_range altimeter_max_range
+    altimeter_error_stdev altimeter_field_of_view
     altimeter_publish_rate altimeter_noise_on publish_float *inertia *origin">
 
     <!-- altimeter link -->

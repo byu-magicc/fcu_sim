@@ -21,9 +21,11 @@
 #include "fcu_sim_plugins/gazebo_imu_plugin.h"
 
 
+using namespace std;
+
 namespace gazebo {
 
-GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_W_(0, 0, 0) {}
+GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_B_(0, 0, 0) {}
 
 GazeboImuPlugin::~GazeboImuPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
@@ -216,25 +218,22 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   math::Pose T_W_I = link_->GetWorldPose(); //TODO(burrimi): Check tf.
   math::Quaternion C_W_I = T_W_I.rot;
 
-  math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
   math::Vector3 velocity_current_B = link_->GetRelativeLinearVel();
 
-  math::Vector3 vdot = link_->GetRelativeLinearAccel();
+  math::Vector3 vdot = (velocity_current_B - velocity_prev_B_) / dt;
 
   math::Vector3 angular_velocity_B = link_->GetRelativeAngularVel();
   math::Vector3 gravity_B = C_W_I.RotateVector(gravity_W_);
 
-  static int counter = 0;
-  counter++;
-  if( counter > 10)
-  {
-    gzmsg << "vdot.x = " << vdot.x << " gravity_B.x " << gravity_B.x << "\n";
-    gzmsg << "vdot.y = " << vdot.y << " gravity_B.y " << gravity_B.y << "\n";
-    gzmsg << "vdot.z = " << vdot.z << " gravity_B.z " << gravity_B.z << "\n\n";
-    counter = 0;
-  }
+  math::Vector3 coriolis = angular_velocity_B.Cross(velocity_current_B);
 
-  math::Vector3 total_acceleration_B = vdot + gravity_B;
+  math::Vector3 total_acceleration_B = vdot + coriolis - gravity_B;
+
+  cout << "v_prev = " << velocity_prev_B_ << "\nv_current = " << velocity_current_B << "\ndt = " << dt <<  endl;
+  velocity_prev_B_ = velocity_current_B;
+  cout << "vdot = " << vdot << endl;
+  cout << "coriolis = " << coriolis << endl;
+  cout << "gravity = " << gravity_B << endl << endl;
 
 
   // link_->GetRelativeLinearAccel() does not work sometimes. Returns only 0.
@@ -278,8 +277,6 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   imu_message_.angular_velocity.z = -angular_velocity_B[2];
 
   imu_pub_.publish(imu_message_);
-
-  velocity_prev_W_ = velocity_current_W;
 }
 
 
