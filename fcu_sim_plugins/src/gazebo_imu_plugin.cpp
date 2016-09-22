@@ -216,25 +216,30 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   math::Pose T_W_I = link_->GetWorldPose(); //TODO(burrimi): Check tf.
   math::Quaternion C_W_I = T_W_I.rot;
 
+  gravity_W_ = world_->GetPhysicsEngine()->GetGravity();
+
   math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
   math::Vector3 velocity_current_B = link_->GetRelativeLinearVel();
 
-  math::Vector3 vdot = link_->GetRelativeLinearAccel();
+  //math::Vector3 vdot = link_->GetRelativeLinearAccel();
+  math::Vector3 vdot = (velocity_current_W - velocity_prev_W_)/dt;
 
   math::Vector3 angular_velocity_B = link_->GetRelativeAngularVel();
   math::Vector3 gravity_B = C_W_I.RotateVector(gravity_W_);
+
+  math::Vector3 coriolis = velocity_current_W.Cross(angular_velocity_B);
 
   static int counter = 0;
   counter++;
   if( counter > 10)
   {
-    gzmsg << "vdot.x = " << vdot.x << " gravity_B.x " << gravity_B.x << "\n";
-    gzmsg << "vdot.y = " << vdot.y << " gravity_B.y " << gravity_B.y << "\n";
-    gzmsg << "vdot.z = " << vdot.z << " gravity_B.z " << gravity_B.z << "\n\n";
+    gzmsg << "vdot.x = " << vdot.x + coriolis.x << " gravity_B.x " << gravity_B.x << "\n";
+    gzmsg << "vdot.y = " << vdot.y + coriolis.y << " gravity_B.y " << gravity_B.y << "\n";
+    gzmsg << "vdot.z = " << vdot.z + coriolis.z << " gravity_B.z " << gravity_B.z << "\n\n";
     counter = 0;
   }
 
-  math::Vector3 total_acceleration_B = vdot + gravity_B;
+  math::Vector3 total_acceleration_B =  vdot + coriolis - gravity_B;
 
 
   // link_->GetRelativeLinearAccel() does not work sometimes. Returns only 0.
