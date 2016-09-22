@@ -77,11 +77,11 @@ Author: James Jackson
     imu_topic="imu"/>
 
   <!--Enable Wind -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
     namespace="${namespace}"
     link_name="${namespace}/base_link"
-    wind_pub_topic="wind"/>
+    wind_pub_topic="wind"/> -->
 
   <!-- Mount an Altimeter -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
@@ -91,17 +91,17 @@ Author: James Jackson
     altimeter_topic="altimeter"/>
 
   <!-- Mount an RGBD Camera -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
   <xacro:xtion
     namespace="${namespace}"
-    parent_link="${namespace}/base_link"/>
+    parent_link="${namespace}/base_link"/> -->
 
   <!-- Laser Scanner -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
   <xacro:hokuyo_UTM-30LX
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    visualize="false"/>
+    visualize="false"/> -->
 
   <!-- GPS -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/GPS.xacro"/>
