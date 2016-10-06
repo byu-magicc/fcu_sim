@@ -2,40 +2,42 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="pi" value="3.14159265359" />
 
-  <!-- Hokuyo UTM-30LX-->
   <xacro:macro
     name="velodyne_custom"
     params="namespace
             parent_link
-            visualize">
+            visualize
+            *origin">
     <xacro:laser_scanner
       namespace="${namespace}"
       parent_link="${parent_link}"
-      num_samples="720"
       visualize="${visualize}"
       min_range="0.1"
-      max_range="10"
-      res_range="0.03"
-      min_angle="-pi/2"
-      max_angle="pi/2"
-      update_rate="40">
-      <origin xyz="0.09525 0 -0.0127" rpy="0 0 0" />
+      max_range="40"
+      resolution="0.03"
+      update_rate="40"
+      horizontal_range="2.0944"
+      vertical_range="0.1"
+      num_horizontal_points="40"
+      num_vertical_points="2">
+      <xacro:insert_block name="origin"/>
     </xacro:laser_scanner>
   </xacro:macro>
 
-  <!-- Macro to add a laser scanner. -->
+  <!-- Macro to add a velodyne laser scanner. -->
   <xacro:macro
     name="laser_scanner"
     params="namespace
             parent_link
-            num_samples
             visualize
             min_range
             max_range
-            res_range
-            min_angle
-            max_angle
+            resolution
             update_rate
+            horizontal_range
+            vertical_range
+            num_horizontal_points
+            num_vertical_points
             *origin">
     <link name="${namespace}/laser_link">
       <collision>
@@ -66,22 +68,20 @@
       <ray>
         <scan>
           <horizontal>
-            <samples>60</samples>
-            <resolution>3</resolution>
-            <min_angle>-1.570796</min_angle>
-            <max_angle>1.570796</max_angle>
+            <samples>${num_horizontal_points}</samples>
+            <min_angle>${-horizontal_range/2.0}</min_angle>
+            <max_angle>${horizontal_range/2.0}</max_angle>
           </horizontal>
           <vertical>
-              <samples>60</samples>
-              <resolution>3</resolution>
-              <min_angle>-1.570796</min_angle>
-              <max_angle>1.570796</max_angle>
+            <samples>${num_vertical_points}</samples>
+            <min_angle>${-vertical_range/2.0}</min_angle>
+            <max_angle>${vertical_range/2.0}</max_angle>
           </vertical>
         </scan>
         <range>
-          <min>0.10</min>
-          <max>30.0</max>
-          <resolution>0.01</resolution>
+          <min>${min_range}</min>
+          <max>${max_range}</max>
+          <resolution>${resolution}</resolution>
         </range>
         <noise>
           <type>gaussian</type>
