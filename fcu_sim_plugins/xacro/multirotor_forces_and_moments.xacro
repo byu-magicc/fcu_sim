@@ -13,7 +13,7 @@
         command_topic="extended_command"
         parent_frame_id="${parent_link}"
         mass="3.81"
-        mu="1"
+        mu="0.01"
         max_l="12.542"
         max_m="12.542"
         max_n="0.4505"

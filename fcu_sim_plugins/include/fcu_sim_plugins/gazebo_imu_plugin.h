@@ -147,7 +147,7 @@ class GazeboImuPlugin : public ModelPlugin {
   sensor_msgs::Imu imu_message_;
 
   math::Vector3 gravity_W_;
-  math::Vector3 velocity_prev_B_;
+  math::Vector3 velocity_prev_W_;
 
   Eigen::Vector3d gyroscope_bias_;
   Eigen::Vector3d accelerometer_bias_;

@@ -25,7 +25,7 @@ using namespace std;
 
 namespace gazebo {
 
-GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_B_(0, 0, 0) {}
+GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_W_(0, 0, 0) {}
 
 GazeboImuPlugin::~GazeboImuPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
@@ -218,22 +218,26 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   math::Pose T_W_I = link_->GetWorldPose(); //TODO(burrimi): Check tf.
   math::Quaternion C_W_I = T_W_I.rot;
 
-  math::Vector3 velocity_current_B = link_->GetRelativeLinearVel();
+#if GAZEBO_MAJOR_VERSION < 5
+  math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
+  // link_->GetRelativeLinearAccel() does not work sometimes with old gazebo versions.
+  // This issue is solved in gazebo 5.
+  math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
+  math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
 
-  math::Vector3 vdot = (velocity_current_B - velocity_prev_B_) / dt;
+  velocity_prev_W_ = velocity_current_W;
+#else
+  math::Vector3 acceleration_I = link_->GetRelativeLinearAccel() - C_W_I.RotateVectorReverse(gravity_W_);
+#endif
 
-  math::Vector3 angular_velocity_B = link_->GetRelativeAngularVel();
-  math::Vector3 gravity_B = C_W_I.RotateVector(gravity_W_);
+  math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
 
-  math::Vector3 coriolis = angular_velocity_B.Cross(velocity_current_B);
-
-  math::Vector3 total_acceleration_B = vdot + coriolis - gravity_B;
-
-  cout << "v_prev = " << velocity_prev_B_ << "\nv_current = " << velocity_current_B << "\ndt = " << dt <<  endl;
-  velocity_prev_B_ = velocity_current_B;
-  cout << "vdot = " << vdot << endl;
-  cout << "coriolis = " << coriolis << endl;
-  cout << "gravity = " << gravity_B << endl << endl;
+  Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
+                                        acceleration_I.y,
+                                        acceleration_I.z);
+  Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
+                                     angular_vel_I.y,
+                                     angular_vel_I.z);
 
 
   // link_->GetRelativeLinearAccel() does not work sometimes. Returns only 0.
@@ -252,7 +256,7 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 //                                     angular_vel_I.z);
 
   if(!perfect_imu_){
-//    addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
+    addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
   }
 
   // Fill IMU message.1
@@ -269,12 +273,12 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 //  imu_message_.orientation.y = C_W_I.y;
 //  imu_message_.orientation.z = C_W_I.z;
 
-  imu_message_.linear_acceleration.x = total_acceleration_B[0];
-  imu_message_.linear_acceleration.y = -total_acceleration_B[1];
-  imu_message_.linear_acceleration.z = -total_acceleration_B[2];
-  imu_message_.angular_velocity.x = angular_velocity_B[0];
-  imu_message_.angular_velocity.y = -angular_velocity_B[1];
-  imu_message_.angular_velocity.z = -angular_velocity_B[2];
+  imu_message_.linear_acceleration.x = linear_acceleration_I[0];
+  imu_message_.linear_acceleration.y = -linear_acceleration_I[1];
+  imu_message_.linear_acceleration.z = -linear_acceleration_I[2];
+  imu_message_.angular_velocity.x = angular_velocity_I[0];
+  imu_message_.angular_velocity.y = -angular_velocity_I[1];
+  imu_message_.angular_velocity.z = -angular_velocity_I[2];
 
   imu_pub_.publish(imu_message_);
 }
