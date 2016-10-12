@@ -141,7 +141,7 @@ void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   roll_actual_ = roll_filter_->updateFilter(roll_desired_, dt);
 
   // Set the Joint Angles to the Filtered angles
-#if GAZEBO_MAJOR_VERSION < 5
+#if GAZEBO_MAJOR_VERSION > 5
   yaw_joint_->SetPosition(0, yaw_actual_);
   pitch_joint_->SetPosition(0, pitch_actual_);
   roll_joint_->SetPosition(0, roll_actual_);
