@@ -167,6 +167,7 @@ void GazeboOdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   position_pub_ = node_handle_->advertise<geometry_msgs::PointStamped>(position_pub_topic_, 10);
   transform_pub_ = node_handle_->advertise<geometry_msgs::TransformStamped>(transform_pub_topic_, 10);
   odometry_pub_ = node_handle_->advertise<nav_msgs::Odometry>(odometry_pub_topic_, 10);
+  euler_pub_ = node_handle_->advertise<geometry_msgs::Vector3Stamped>("euler", 1);
 }
 
 // This gets called by the world update start event.
@@ -233,16 +234,20 @@ void GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info) {
     odometry.header.stamp.nsec = (world_->GetSimTime()).nsec + ros::Duration(unknown_delay_).nsec;
     odometry.child_frame_id = namespace_;
     copyPosition(gazebo_pose.pos, &odometry.pose.pose.position);
+
+    // Convert from NWU (gazebo coordinates) to NED (MAV coordinates)
+    odometry.pose.pose.position.y *= -1.0;
+    odometry.pose.pose.position.z *= -1.0;
     odometry.pose.pose.orientation.w = gazebo_pose.rot.w;
     odometry.pose.pose.orientation.x = gazebo_pose.rot.x;
-    odometry.pose.pose.orientation.y = gazebo_pose.rot.y;
-    odometry.pose.pose.orientation.z = gazebo_pose.rot.z;
+    odometry.pose.pose.orientation.y = -1.0*gazebo_pose.rot.y;
+    odometry.pose.pose.orientation.z = -1.0*gazebo_pose.rot.z;
     odometry.twist.twist.linear.x = gazebo_linear_velocity.x;
-    odometry.twist.twist.linear.y = gazebo_linear_velocity.y;
-    odometry.twist.twist.linear.z = gazebo_linear_velocity.z;
+    odometry.twist.twist.linear.y = -1.0*gazebo_linear_velocity.y;
+    odometry.twist.twist.linear.z = -1.0*gazebo_linear_velocity.z;
     odometry.twist.twist.angular.x = gazebo_angular_velocity.x;
-    odometry.twist.twist.angular.y = gazebo_angular_velocity.y;
-    odometry.twist.twist.angular.z = gazebo_angular_velocity.z;
+    odometry.twist.twist.angular.y = -1.0*gazebo_angular_velocity.y;
+    odometry.twist.twist.angular.z = -1.0*gazebo_angular_velocity.z;
 
     if (publish_odometry)
       odometry_queue_.push_back(std::make_pair(gazebo_sequence_ + measurement_delay_, odometry));
@@ -306,7 +311,22 @@ void GazeboOdometryPlugin::OnUpdate(const common::UpdateInfo& _info) {
     odometry->pose.covariance = pose_covariance_matrix_;
     odometry->twist.covariance = twist_covariance_matrix_;
 
+
+
     // Publish all the topics, for which the topic name is specified.
+    if (euler_pub_.getNumSubscribers() > 0) {
+      geometry_msgs::Vector3Stamped euler;
+      tf::Quaternion q;
+      tf::quaternionMsgToTF(odometry->pose.pose.orientation, q);
+      tf::Matrix3x3 R(q);
+      double roll, pitch, yaw;
+      R.getEulerYPR(yaw, pitch, roll);
+      euler.header = odometry->header;
+      euler.vector.x = roll;
+      euler.vector.y = pitch;
+      euler.vector.z = yaw;
+      euler_pub_.publish(euler);
+    }
     if (pose_pub_.getNumSubscribers() > 0) {
       geometry_msgs::PoseStampedPtr pose(new geometry_msgs::PoseStamped);
       pose->header = odometry->header;

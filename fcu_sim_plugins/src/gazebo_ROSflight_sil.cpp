@@ -432,7 +432,7 @@ void GazeboROSflightSIL::UpdateForcesAndMoments()
   //  // By Rob Leishman et al.
   forces_.Fx = -linear_mu_*ur;
   forces_.Fy = -linear_mu_*vr;
-  forces_.Fz = -linear_mu_*wr + ground_effect + output_forces_and_torques(3);
+  forces_.Fz = linear_mu_*wr + ground_effect + output_forces_and_torques(3);
   forces_.l = -angular_mu_*p + output_forces_and_torques(0);
   forces_.m = -angular_mu_*q + output_forces_and_torques(1);
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
