@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+<!-- Sonar  HC-SR04 -->
+<xacro:macro
+  name="Sonar_HCSR04"
+  params="namespace parent_link sonar_topic *origin">
+  <xacro:sonar_plugin_macro
+    namespace="${namespace}"
+    parent_link="${parent_link}"
+    sonar_topic="${sonar_topic}"
+    mass="0.0043"
+    min_range="0.2"
+    max_range="4.0"
+    noise="0.2"
+    resolution="0.10"
+    field_of_view="0.2618"
+    publish_rate="40">
+    <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <xacro:insert_block name="origin"/>
+  </xacro:sonar_plugin_macro>
+</xacro:macro>
+
+<!-- LV-MaxSonar-EZ3 MB1030 -->
+<xacro:macro
+  name="Sonar_MB1030"
+  params="namespace parent_link sonar_topic *origin">
+  <xacro:sonar_plugin_macro
+    namespace="${namespace}"
+    parent_link="${parent_link}"
+    sonar_topic="${sonar_topic}"
+    mass="0.0043"
+    min_range="0.381"
+    max_range="6.45"
+    noise="0.10"
+    resolution="0.10"
+    field_of_view="1.107"
+    update_rate="40">
+    <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+    <xacro:insert_block name="origin"/>
+    <!-- <origin xyz="0 0 0" rpy="0 0 0"/> -->
+  </xacro:sonar_plugin_macro>
+</xacro:macro>
+
+<!-- Macro to add an sonar. -->
+<xacro:macro
+  name="sonar_plugin_macro"
+  params="
+    namespace
+    parent_link
+    sonar_topic
+    mass
+    min_range
+    max_range
+    resolution
+    noise
+    field_of_view
+    update_rate
+    *inertia
+    *origin">
+
+  <!-- sonar link -->
+  <link name="${namespace}/sonar_link">
+    <inertial>
+      <xacro:insert_block name="inertia" />
+      <mass value="${mass}" />
+      <xacro:insert_block name="origin"/>
+    </inertial>
+  <sensor type="ray" name="sonar">
+     <update_rate>${update_rate}</update_rate>
+     <ray>
+       <scan>
+         <horizontal>
+           <samples>10</samples>
+           <resolution>${resolution}</resolution>
+           <min_angle>${-field_of_view / 2.0}</min_angle>
+           <max_angle>${field_of_view / 2.0}</max_angle>
+         </horizontal>
+         <vertical>
+           <samples>10</samples>
+           <resolution>${resolution}</resolution>
+           <min_angle>${-field_of_view / 2.0}</min_angle>
+           <max_angle>${field_of_view / 2.0}</max_angle>
+         </vertical>
+       </scan>
+       <range>
+         <min>${min_range}</min>
+         <max>${max_range}</max>
+         <resolution>${resolution}</resolution>
+       </range>
+     </ray>
+     <plugin filename="libgazebo_ros_range.so" name="gazebo_ros_range">
+       <gaussianNoise>${noise}</gaussianNoise>
+       <alwaysOn>true</alwaysOn>
+       <updateRate>${update_rate}</updateRate>
+       <topicName>{sonar_topic}</topicName>
+       <frameName>sonar_link</frameName>
+       <fov>${field_of_view}</fov>
+       <radiation>ultrasound</radiation>
+     </plugin>
+   </sensor>
+ </link>
+
+  <!-- sonar joint -->
+  <joint name="${namespace}/sonar_joint" type="revolute">
+    <xacro:insert_block name="origin" />
+    <parent link="${parent_link}" />
+    <child link="${namespace}/sonar_link" />
+    <limit upper="0" lower="0" effort="0" velocity="0" />
+  </joint>
+</xacro:macro>
+
+</robot>
