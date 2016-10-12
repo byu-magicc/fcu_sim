@@ -35,7 +35,7 @@
               <ode/>
             </contact>
           </surface>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
         </collision>
         <visual name='visual'>
           <cast_shadows>0</cast_shadows>
@@ -62,9 +62,16 @@
       </link>
     </model>
     <physics type='ode'>
-      <max_step_size>0.001</max_step_size>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>70</iters>
+          <sor>1.3</sor>
+        </solver>
+      </ode>
+      <max_step_size>0.01</max_step_size>
       <real_time_factor>2</real_time_factor>
-      <real_time_update_rate>1000</real_time_update_rate>
+      <real_time_update_rate>100</real_time_update_rate>
       <gravity>0 0 -9.8</gravity>
     </physics>
     <scene>
@@ -88,7 +95,7 @@
               <uri>model://house_1/meshes/house_1.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -135,7 +142,7 @@
               <uri>model://house_2/meshes/house_2.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -183,7 +190,7 @@
               <uri>model://house_3/meshes/house_3.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -239,7 +246,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -274,7 +281,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -309,7 +316,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -344,7 +351,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -379,7 +386,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -414,7 +421,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -449,7 +456,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -484,7 +491,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -519,7 +526,7 @@
               <uri>model://drc_practice_blue_cylinder/meshes/cylinder.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -554,7 +561,7 @@
               <uri>model://drc_practice_blue_cylinder/meshes/cylinder.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -585,7 +592,7 @@
               <uri>model://office_building/meshes/office_building.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -622,7 +629,7 @@
               <uri>model://house_1/meshes/house_1.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -669,7 +676,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -763,7 +770,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -857,7 +864,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -951,7 +958,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1045,7 +1052,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1139,7 +1146,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1233,7 +1240,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1327,7 +1334,7 @@
               <size>20 20 0.1</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1372,7 +1379,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1467,7 +1474,7 @@
               <uri>model://gas_station/meshes/gas_station.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1514,7 +1521,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1608,7 +1615,7 @@
               <size>20 20 0.1</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1653,7 +1660,7 @@
               <size>8 10 0.2</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1746,7 +1753,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1801,7 +1808,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1856,7 +1863,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1911,7 +1918,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -1966,7 +1973,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2021,7 +2028,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2076,7 +2083,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2131,7 +2138,7 @@
               <uri>model://dumpster/meshes/dumpster.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2198,7 +2205,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2247,7 +2254,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2296,7 +2303,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2345,7 +2352,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2394,7 +2401,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2433,7 +2440,7 @@
               <size>3 1 3</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2479,7 +2486,7 @@
               <size>3 1 3</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2525,7 +2532,7 @@
               <size>3 1 3</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2577,7 +2584,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -2614,7 +2621,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3206,7 +3213,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3255,7 +3262,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3304,7 +3311,7 @@
               <uri>model://construction_barrel/meshes/construction_barrel.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3349,7 +3356,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3386,7 +3393,7 @@
               <uri>model://drc_practice_orange_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3423,7 +3430,7 @@
               <uri>model://drc_practice_white_jersey_barrier/meshes/jersey_barrier.dae</uri>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3473,7 +3480,7 @@
               <size>1.27 0.5842 0.003175</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3499,7 +3506,7 @@
               <size>0.08375 0.28575 1.83198</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3525,7 +3532,7 @@
               <size>0.08375 0.28575 1.83198</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3551,7 +3558,7 @@
               <size>1.22962 0.28575 0.26657</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3577,7 +3584,7 @@
               <radius>0.03272</radius>
             </sphere>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3603,7 +3610,7 @@
               <radius>0.03272</radius>
             </sphere>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3629,7 +3636,7 @@
               <radius>0.03272</radius>
             </sphere>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3655,7 +3662,7 @@
               <radius>0.03272</radius>
             </sphere>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3694,7 +3701,7 @@
               <size>1.1938 0.02496 1.45732</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3911,7 +3918,7 @@
               <size>1.5 1.34 0.06</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3929,7 +3936,7 @@
               <size>0.9 1.2 0.01</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3947,7 +3954,7 @@
               <size>0.05 1.2 0.25</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3965,7 +3972,7 @@
               <size>0.05 1.2 0.25</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -3983,7 +3990,7 @@
               <size>0.9 0.05 0.25</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4001,7 +4008,7 @@
               <size>0.9 0.05 0.25</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4030,7 +4037,7 @@
               <ode/>
             </friction>
           </surface>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
         </collision>
         <collision name='mud_seat'>
           <pose>-0.1 0 0.81 0 -0 0</pose>
@@ -4049,7 +4056,7 @@
               <ode/>
             </friction>
           </surface>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
         </collision>
         <sensor name='seat_contact' type='contact'>
           <always_on>1</always_on>
@@ -4066,7 +4073,7 @@
               <size>0.06 1 0.4</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4084,7 +4091,7 @@
               <size>0.58 1 0.8</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4103,7 +4110,7 @@
               <length>0.17</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4122,7 +4129,7 @@
               <length>0.17</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4141,7 +4148,7 @@
               <length>0.68</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4160,7 +4167,7 @@
               <length>0.68</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4179,7 +4186,7 @@
               <length>1.22</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4198,7 +4205,7 @@
               <length>1.22</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4217,7 +4224,7 @@
               <length>1.04</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4236,7 +4243,7 @@
               <length>1.04</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4255,7 +4262,7 @@
               <length>0.72</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4274,7 +4281,7 @@
               <length>0.72</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4293,7 +4300,7 @@
               <length>0.9</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4312,7 +4319,7 @@
               <length>0.9</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4331,7 +4338,7 @@
               <length>0.9</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4350,7 +4357,7 @@
               <length>0.9</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4369,7 +4376,7 @@
               <length>0.29</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4388,7 +4395,7 @@
               <length>0.29</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4407,7 +4414,7 @@
               <length>0.29</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4426,7 +4433,7 @@
               <length>0.29</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4666,7 +4673,7 @@
               <length>0.01</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4772,7 +4779,7 @@
               <length>0.01</length>
             </cylinder>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4813,7 +4820,7 @@
               <size>0.1069 0.077 0.01</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4872,7 +4879,7 @@
               <size>0.063 0.08 0.01</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -4945,7 +4952,7 @@
               <ode/>
             </friction>
           </surface>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
         </collision>
         <visual name='visual'>
           <pose>0 0 0 -0.69 5.55112e-17 -1.5708</pose>
@@ -4998,7 +5005,7 @@
               </submesh>
             </mesh>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>
@@ -5055,7 +5062,7 @@
               <size>0.02 0.04 0.08</size>
             </box>
           </geometry>
-          <max_contacts>10</max_contacts>
+          <max_contacts>1</max_contacts>
           <surface>
             <bounce/>
             <friction>

@@ -114,9 +114,9 @@ void GazeboGPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
       double pe = -W_pose_W_C.pos.y;
       double pd = -W_pose_W_C.pos.z;
 
-      double y_GPS_n = pn + north_GPS_error_;
-      double y_GPS_e = pe + east_GPS_error_;
-      double y_GPS_alt = -pd + alt_GPS_error_;
+      double y_GPS_n = pn + 0;//north_GPS_error_;
+      double y_GPS_e = pe + 0;//east_GPS_error_;
+      double y_GPS_alt = -pd + 0;//alt_GPS_error_;
 
       // Convert meters to GPS angle
       double dlat, dlon;
@@ -137,9 +137,7 @@ void GazeboGPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
       GPS_message_.speed = Vg + ground_speed_error;
 
       // Get Course Angle
-      math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
-      double psi = -euler_angles.z;
-      double chi = atan2(Vg*sin(psi), Vg*cos(psi));
+      double chi = atan2(v,u);
       double sigma_chi = pow((u*u*north_stdev_*north_stdev_ + v*v*east_stdev_*east_stdev_)/((u*u+v*v)*(u*u+v*v)),0.5);
       double chi_error = sigma_chi*standard_normal_distribution_(random_generator_);
       GPS_message_.ground_course = chi + chi_error;
