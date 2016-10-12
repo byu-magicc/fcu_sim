@@ -224,12 +224,10 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // This issue is solved in gazebo 5.
   math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
   math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
-
   velocity_prev_W_ = velocity_current_W;
 #else
   math::Vector3 acceleration_I = link_->GetRelativeLinearAccel() - C_W_I.RotateVectorReverse(gravity_W_);
 #endif
-
   math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
 
   Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
@@ -238,22 +236,6 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
                                      angular_vel_I.y,
                                      angular_vel_I.z);
-
-
-  // link_->GetRelativeLinearAccel() does not work sometimes. Returns only 0.
-  // TODO For an accurate simulation, this might have to be fixed. Consider the
-  //      time delay introduced by this numerical derivative, for example.
-//  math::Vector3 acceleration = link_->GetRelativeLinearAccel();
-//  math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
-//  math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
-//  math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
-
-//  Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
-//                                        acceleration_I.y,
-//                                        acceleration_I.z);
-//  Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
-//                                     angular_vel_I.y,
-//                                     angular_vel_I.z);
 
   if(!perfect_imu_){
     addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
