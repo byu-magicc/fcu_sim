@@ -1,18 +1,8 @@
-<sdf version='1.8'>
+<sdf version='1.10'>
   <world name='default'>
-    <light name='sun' type='directional'>
-      <cast_shadows>1</cast_shadows>
-      <pose>0 0 10 0 -0 0</pose>
-      <diffuse>0.8 0.8 0.8 1</diffuse>
-      <specular>0.4 0.4 0.4 1</specular>
-      <attenuation>
-        <range>1000</range>
-        <constant>0.9</constant>
-        <linear>0.01</linear>
-        <quadratic>0.001</quadratic>
-      </attenuation>
-      <direction>-0.5 0.1 -0.9</direction>
-    </light>
+  <include>
+    <uri>model://sun</uri>
+  </include>
     <model name='ground_plane'>
       <static>1</static>
       <link name='link'>
@@ -68,7 +58,7 @@
       <gravity>0 0 -9.8</gravity>
     </physics>
     <scene>
-      <ambient>0.8 0.8 0.8 1</ambient>
+      <ambient>0.10 0.10 0.10 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
     </scene>
@@ -80,7 +70,7 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <model name='cylinder_1'>
-      <pose>4 4 1.5 0 -0 0</pose>
+      <pose>5 5 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -97,7 +87,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -115,7 +105,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -136,7 +126,7 @@
       <static>1</static>
     </model>
     <model name='cylinder_2'>
-      <pose>4 8 1.5 0 -0 0</pose>
+      <pose>5 10 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -153,7 +143,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -171,7 +161,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -192,7 +182,7 @@
       <static>1</static>
     </model>
     <model name='cylinder_3'>
-      <pose>4 12 1.5 0 -0 0</pose>
+      <pose>5 15 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -209,7 +199,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -227,7 +217,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -248,7 +238,7 @@
       <static>1</static>
     </model>
     <model name='cylinder_4'>
-      <pose>4 16 1.5 0 -0 0</pose>
+      <pose>5 20 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -265,7 +255,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -283,7 +273,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -302,9 +292,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>    
+    </model>
     <model name='cylinder_5'>
-      <pose>4 20 1.5 0 -0 0</pose>
+      <pose>5 25 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -321,7 +311,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -339,7 +329,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -358,9 +348,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>    
+    </model>
     <model name='cylinder_6'>
-      <pose>8 4 1.5 0 -0 0</pose>
+      <pose>10 5 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -377,7 +367,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -395,7 +385,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -414,9 +404,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>  
+    </model>
     <model name='cylinder_7'>
-      <pose>8 8 1.5 0 -0 0</pose>
+      <pose>10 10 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -433,7 +423,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -451,7 +441,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -470,9 +460,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_8'>
-      <pose>8 12 1.5 0 -0 0</pose>
+      <pose>10 15 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -489,7 +479,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -507,7 +497,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -526,9 +516,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model> 
+    </model>
     <model name='cylinder_9'>
-      <pose>8 16 1.5 0 -0 0</pose>
+      <pose>10 20 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -545,7 +535,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -563,7 +553,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -582,9 +572,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>       
+    </model>
     <model name='cylinder_10'>
-      <pose>8 20 1.5 0 -0 0</pose>
+      <pose>10 25 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -601,7 +591,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -619,7 +609,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -638,9 +628,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_11'>
-      <pose>12 4 1.5 0 -0 0</pose>
+      <pose>15 5 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -657,7 +647,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -675,7 +665,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -694,9 +684,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_12'>
-      <pose>12 8 1.5 0 -0 0</pose>
+      <pose>15 10 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -713,7 +703,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -731,7 +721,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -750,9 +740,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_13'>
-      <pose>12 12 1.5 0 -0 0</pose>
+      <pose>15 15 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -769,7 +759,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -787,7 +777,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -806,9 +796,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_14'>
-      <pose>12 16 1.5 0 -0 0</pose>
+      <pose>15 20 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -825,7 +815,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -843,7 +833,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -862,9 +852,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>     
+    </model>
     <model name='cylinder_15'>
-      <pose>12 20 1.5 0 -0 0</pose>
+      <pose>15 25 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -881,7 +871,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -899,7 +889,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -918,9 +908,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model> 
+    </model>
     <model name='cylinder_16'>
-      <pose>16 4 1.5 0 -0 0</pose>
+      <pose>20 5 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -937,7 +927,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -955,7 +945,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -974,9 +964,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_17'>
-      <pose>16 8 1.5 0 -0 0</pose>
+      <pose>20 10 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -993,7 +983,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1011,7 +1001,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1030,9 +1020,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>      
+    </model>
     <model name='cylinder_18'>
-      <pose>16 12 1.5 0 -0 0</pose>
+      <pose>20 15 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1049,7 +1039,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1067,7 +1057,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1088,7 +1078,7 @@
       <static>1</static>
     </model>
     <model name='cylinder_19'>
-      <pose>16 16 1.5 0 -0 0</pose>
+      <pose>20 20 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1105,7 +1095,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1123,7 +1113,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1142,9 +1132,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>  
+    </model>
     <model name='cylinder_20'>
-      <pose>16 20 1.5 0 -0 0</pose>
+      <pose>20 25 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1161,7 +1151,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1179,7 +1169,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1198,9 +1188,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>    
+    </model>
     <model name='cylinder_21'>
-      <pose>20 4 1.5 0 -0 0</pose>
+      <pose>25 5 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1217,7 +1207,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1235,7 +1225,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1254,9 +1244,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>     
+    </model>
     <model name='cylinder_22'>
-      <pose>20 8 1.5 0 -0 0</pose>
+      <pose>25 10 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1273,7 +1263,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1291,7 +1281,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1310,9 +1300,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>     
+    </model>
     <model name='cylinder_23'>
-      <pose>20 12 1.5 0 -0 0</pose>
+      <pose>25 15 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1329,7 +1319,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1347,7 +1337,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1368,7 +1358,7 @@
       <static>1</static>
     </model>
     <model name='cylinder_24'>
-      <pose>20 16 1.5 0 -0 0</pose>
+      <pose>25 20 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1385,7 +1375,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1403,7 +1393,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1422,9 +1412,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>   
+    </model>
     <model name='cylinder_24'>
-      <pose>20 20 1.5 0 -0 0</pose>
+      <pose>25 25 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1441,7 +1431,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <max_contacts>9</max_contacts>
@@ -1459,7 +1449,7 @@
           <geometry>
             <cylinder>
               <radius>0.5</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1478,9 +1468,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>         
+    </model>
     <model name='start'>
-      <pose>2 2 1.5 0 -0 0</pose>
+      <pose>2 2 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1497,7 +1487,7 @@
           <geometry>
             <cylinder>
               <radius>0.1</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1516,9 +1506,9 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>     
-    <model name='goal'>
-      <pose>22 22 1.5 0 -0 0</pose>
+    </model>
+    <model name='start'>
+      <pose>22 22 5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1000</mass>
@@ -1535,7 +1525,7 @@
           <geometry>
             <cylinder>
               <radius>0.1</radius>
-              <length>3</length>
+              <length>10</length>
             </cylinder>
           </geometry>
           <material>
@@ -1554,7 +1544,7 @@
         <gravity>1</gravity>
       </link>
       <static>1</static>
-    </model>         
+    </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>26.5424 -10.7085 28.7054 0 0.865796 2.096</pose>

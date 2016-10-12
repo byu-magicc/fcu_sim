@@ -21,7 +21,8 @@
       accelerometer_noise_density="0.000"
       accelerometer_random_walk="0.000"
       accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.0">
+      accelerometer_turn_on_bias_sigma="0.0"
+      perfect_imu="true">
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:imu_plugin_macro>
@@ -43,7 +44,8 @@
       accelerometer_noise_density="0.004"
       accelerometer_random_walk="0.006"
       accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.1960">
+      accelerometer_turn_on_bias_sigma="0.1960"
+      perfect_imu="false">
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:imu_plugin_macro>
@@ -66,7 +68,8 @@
       accelerometer_noise_density="0.008"
       accelerometer_random_walk="0.006"
       accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.1960">
+      accelerometer_turn_on_bias_sigma="0.1960"
+      perfect_imu="false">
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:imu_plugin_macro>
@@ -79,6 +82,7 @@
       gyroscope_bias_correlation_time gyroscope_turn_on_bias_sigma
       accelerometer_noise_density accelerometer_random_walk
       accelerometer_bias_correlation_time accelerometer_turn_on_bias_sigma
+      perfect_imu
       *inertia *origin">
     <!-- IMU link -->
     <link name="${namespace}/imu${imu_suffix}_link">
@@ -110,6 +114,7 @@
         <accelerometerRandomWalk>${accelerometer_random_walk}</accelerometerRandomWalk> <!-- Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] -->
         <accelerometerBiasCorrelationTime>${accelerometer_bias_correlation_time}</accelerometerBiasCorrelationTime> <!-- Accelerometer bias correlation time constant [s] -->
         <accelerometerTurnOnBiasSigma>${accelerometer_turn_on_bias_sigma}</accelerometerTurnOnBiasSigma> <!-- Accelerometer turn on bias standard deviation [m/s^2] -->
+        <perfectIMU>${perfect_imu}</perfectIMU>
       </plugin>
     </gazebo>
   </xacro:macro>

@@ -5,7 +5,12 @@
     <!-- Configure ZENMUSE Gimbal -->
     <xacro:macro
       name="gimbal_ZENMUSE"
-      params="namespace parent_link camera_topic pose_topic command_topic *origin">
+      params="namespace
+              parent_link
+              camera_topic
+              pose_topic
+              command_topic
+              *origin">
     <xacro:gimbal_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
@@ -14,7 +19,7 @@
       command_topic="${command_topic}"
       mass="0.001"
       x_rotation_range="1000000000"
-      y_rotation_range="0000000000"
+      y_rotation_range="1000000000"
       z_rotation_range="1000000000"
       time_constant="0.25">
       <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />

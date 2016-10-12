@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright 2016 Gary Ellingson, MAGICC Lab, Brigham Young University, Provo, UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +87,7 @@ void GazeboAircraftTruth::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
 
 void GazeboAircraftTruth::PublishTruth()
 {
-  /* Get state information from Gazebo                          *
+  /* Get state information from Gazebo - convert to NED         *
    * C denotes child frame, P parent frame, and W world frame.  *
    * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
   fcu_common::FW_State msg;
