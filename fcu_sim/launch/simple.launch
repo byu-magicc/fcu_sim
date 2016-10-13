@@ -36,53 +36,19 @@
     <arg name="color"               value="$(arg color)"/>
   </include>
 
-  <!-- Joy -->
-  <node name="rc" pkg="fcu_common" type="joy" output="screen">
-    <param name="F_axis" value="1"/>
-    <param name="x_axis" value="2"/>
-    <param name="y_axis" value="3"/>
-    <param name="z_axis" value="0"/>
-
-    <param name="x_sign" value="1"/>
-    <param name="y_sign" value="1"/>
-    <param name="z_sign" value="-1"/>
-    <param name="F_sign" value="1"/>
-
-    <param name="button_takeoff_" value="0"/>
-    <param name="button_mode_" value="1"/>
-    <param name="button_reset_" value="6"/>
-    <param name="button_pause_" value="7"/>
-  </node>
-  <node name="joy" pkg="joy" type="joy_node">
-    <param name="autorepeat_rate" value="100"/>
-  </node>
+  <!-- Is Flying Publisher -->
+  <node pkg="rostopic" type="rostopic" name="is_flying_pub" args="pub /is_flying std_msgs/Bool true"/>
 
   <!-- Controller -->
-  <node name="controller" pkg="ros_copter" type="controller" output="screen">
-    <param name="x/P" value="1"/>
-    <param name="x/I" value="0"/>
-    <param name="x/D" value="0"/>
+  <node name="controller" pkg="ros_copter" type="controller"/>
 
-    <param name="y/P" value="1"/>
-    <param name="y/I" value="0"/>
-    <param name="y/D" value="0"/>
-
-    <param name="z/P" value="1"/>
-    <param name="z/I" value="0"/>
-    <param name="z/D" value="0"/>
-
-    <param name="u/P" value="1"/>
-    <param name="u/I" value="0"/>
-    <param name="u/D" value="0"/>
-
-    <param name="v/P" value="1"/>
-    <param name="v/I" value="0"/>
-    <param name="v/D" value="0"/>
-
-    <param name="psi/P" value="1"/>
-    <param name="psi/I" value="0"/>
-    <param name="psi/D" value="0"/>
+  <!-- Waypoint Manager -->
+  <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
+    <param name="waypoint_filename" value="$(find ros_copter)/params/waypoints.csv"/>
+    <remap from="waypoint" to="high_level_command"/>
+    <remap from="state" to="$(arg mav_name)/ground_truth/odometry"/>
   </node>
+
 
 
   <!-- FPV -->
