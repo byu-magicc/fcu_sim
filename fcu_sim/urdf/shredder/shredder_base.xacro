@@ -97,13 +97,13 @@ Author: James Jackson
     parent_link="${namespace}/bavese_link"/> -->
 
   <!-- Laser Scanner -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/velodyne.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/velodyne.xacro"/>
   <xacro:velodyne_custom
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    visualize="false">
+    visualize="false">1
     <origin xyz="${body_width+0.1} 0 0" rpy="0 0 0"/>
-  </xacro:velodyne_custom>
+  </xacro:velodyne_custom> -->
 
   <!-- Laser Scanner -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
