@@ -90,6 +90,16 @@ Author: James Jackson
     parent_link="${namespace}/base_link"
     altimeter_topic="altimeter"/>
 
+  <!-- Mount a Magnetometer -->
+  <!-- Default Inclination and Declination for Provo, UT -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/magnetometer.xacro"/>
+  <xacro:hmc5883l
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    mag_topic="mag/data"
+    inclination="1.14316156541"
+    declination="0.198584539676"/>
+
   <!-- Mount an RGBD Camera -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
   <xacro:xtion

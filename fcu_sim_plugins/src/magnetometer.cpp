@@ -53,7 +53,6 @@ void MagnetometerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   frame_id_ = link_name_;
   next_pub_time_ = world_->GetSimTime().Double();
 
-  int numSat;
   getSdfParam<std::string>(_sdf, "namespace", namespace_, "~");
   getSdfParam<std::string>(_sdf, "mag_topic", mag_topic_, "gps/data");
   getSdfParam<double>(_sdf, "noise_sigma", noise_sigma_, 0.21);
@@ -112,6 +111,8 @@ void MagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info)
     {
         next_pub_time_ += 1/pub_rate_;
         mag_msg_.header.seq += 1;
+        mag_msg_.header.stamp.sec = world_->GetSimTime().sec;
+        mag_msg_.header.stamp.nsec = world_->GetSimTime().nsec;
         mag_msg_.magnetic_field.x = normalized.x;
         mag_msg_.magnetic_field.y = normalized.y;
         mag_msg_.magnetic_field.z = normalized.z;
