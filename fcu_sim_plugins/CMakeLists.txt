@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   tf
   fcu_common
+  sensor_msgs
 )
 
 find_package(Eigen REQUIRED)
@@ -65,6 +66,12 @@ add_library(fcu_sim_multirotor_forces_and_moments_plugin
   include/fcu_sim_plugins/gazebo_multirotor_forces_and_moments.h)
 target_link_libraries(fcu_sim_multirotor_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_multirotor_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS})
+
+add_library(fcu_sim_magnetometer_plugin
+  src/magnetometer.cpp
+include/fcu_sim_plugins/magnetometer.h)
+target_link_libraries(fcu_sim_magnetometer_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(fcu_sim_magnetometer_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(fcu_sim_aircraft_truth_plugin
   src/gazebo_aircraft_truth.cpp
@@ -126,6 +133,7 @@ install(
 #    fcu_sim_ROSflight_sil_plugin
     fcu_sim_multirotor_forces_and_moments_plugin
     fcu_sim_aircraft_forces_and_moments_plugin
+    fcu_sim_magnetometer_plugin
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
