@@ -60,27 +60,27 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     std::string yaw_joint_name = _sdf->GetElement("yawJoint")->Get<std::string>();
     yaw_joint_ = model_->GetJoint(yaw_joint_name);
   } else{
-    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a yawJoint";
+    gzerr << "[gazeboGimbalPlugin] Please specify a yawJoint";
   }
 
   if (_sdf->HasElement("pitchJoint")) {
     std::string pitch_joint_name = _sdf->GetElement("pitchJoint")->Get<std::string>();
     pitch_joint_ = model_->GetJoint(pitch_joint_name);
   } else{
-    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a pitchJoint";
+    gzerr << "[gazeboGimbalPlugin] Please specify a pitchJoint";
   }
 
   if (_sdf->HasElement("rollJoint")) {
     std::string roll_joint_name = _sdf->GetElement("rollJoint")->Get<std::string>();
     roll_joint_ = model_->GetJoint(roll_joint_name);
   } else{
-    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a rollJoint";
+    gzerr << "[gazeboGimbalPlugin] Please specify a rollJoint";
   }
 
   if (_sdf->HasElement("timeConstant")) {
     time_constant_ = _sdf->GetElement("timeConstant")->Get<double>();
   } else{
-    gzerr << gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
+    gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
   }
 
   // Connect Gazebo Update
@@ -108,9 +108,17 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Set the max force allowed to set the angle, they are really big because we are using the filter instead
   // of controlling actual forces
+#if GAZEBO_MAJOR_VERSION > 5
+  pitch_joint_->SetParam("max_force", 0, 10000);
+  yaw_joint_->SetParam("max_force", 0, 10000);
+  roll_joint_->SetParam("max_force", 0, 10000);
+#else
   pitch_joint_->SetMaxForce(0, 10000);
   yaw_joint_->SetMaxForce(0, 10000);
   roll_joint_->SetMaxForce(0, 10000);
+#endif
+
+
 
   // Set the axes of the gimbal
   yaw_joint_->SetAxis(0, math::Vector3(0, 0, 1));
@@ -133,9 +141,15 @@ void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   roll_actual_ = roll_filter_->updateFilter(roll_desired_, dt);
 
   // Set the Joint Angles to the Filtered angles
+#if GAZEBO_MAJOR_VERSION > 5
+  yaw_joint_->SetPosition(0, yaw_actual_);
+  pitch_joint_->SetPosition(0, pitch_actual_);
+  roll_joint_->SetPosition(0, roll_actual_);
+#else
   yaw_joint_->SetAngle(0, math::Angle(yaw_actual_));
   pitch_joint_->SetAngle(0, math::Angle(pitch_actual_));
   roll_joint_->SetAngle(0, math::Angle(roll_actual_));
+#endif
 
   // Publish ROS message of actual angles
   geometry_msgs::Vector3 angles_msg;
@@ -172,4 +186,3 @@ int GazeboGimbalPlugin::sign(double x){
 GZ_REGISTER_MODEL_PLUGIN(GazeboGimbalPlugin);
 
 } // namespace
-
