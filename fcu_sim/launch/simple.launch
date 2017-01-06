@@ -15,7 +15,7 @@
   <arg name="z"                   default="0.1"/>
   <arg name="yaw"                 default="0"/>
 
-  <arg name="world_file" default="better_crazy_world.sdf"/>
+  <arg name="world_file" default="basic.world"/>
 
   <!-- Start Simulator -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -48,9 +48,7 @@
     <remap from="waypoint" to="high_level_command"/>
     <remap from="state" to="$(arg mav_name)/ground_truth/odometry"/>
   </node>
-
-
-
+  
   <!-- FPV -->
   <node name="fpv" pkg="image_view" type="image_view">
     <remap from="image" to="/$(arg mav_name)/camera/rgb/image_raw"/>
