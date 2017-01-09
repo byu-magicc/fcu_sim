@@ -51,6 +51,6 @@
 
   <!-- FPV -->
   <node name="fpv" pkg="image_view" type="image_view">
-    <remap from="image" to="/$(arg mav_name)/camera/rgb/image_raw"/>
+    <remap from="image" to="/$(arg mav_name)/camera/rgb"/>
   </node>
 </launch>
