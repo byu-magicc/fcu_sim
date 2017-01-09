@@ -44,11 +44,11 @@
 
   <!-- Waypoint Manager -->
   <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
-    <param name="waypoint_filename" value="$(find ros_copter)/params/waypoints.csv"/>
+    <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml"/>
     <remap from="waypoint" to="high_level_command"/>
     <remap from="state" to="$(arg mav_name)/ground_truth/odometry"/>
   </node>
-  
+
   <!-- FPV -->
   <node name="fpv" pkg="image_view" type="image_view">
     <remap from="image" to="/$(arg mav_name)/camera/rgb/image_raw"/>
