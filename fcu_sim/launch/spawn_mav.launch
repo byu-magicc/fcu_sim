@@ -16,7 +16,7 @@
 
   <!-- send the robot XML to param server -->
   <param name="robot_description" command="
-    $(find xacro)/xacro.py '$(arg model)'
+    $(find xacro)/xacro '$(arg model)'
     mav_name:=$(arg mav_name)
     color:=$(arg color)"
   />

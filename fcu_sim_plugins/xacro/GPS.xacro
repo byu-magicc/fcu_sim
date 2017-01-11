@@ -5,13 +5,13 @@
   <xacro:property name="pi" value="3.14159265359" />
 
   <!-- Configure GPS -->
-    <xacro:macro 
-      name="GPS_BYU" 
+    <xacro:macro
+      name="GPS_BYU"
       params="namespace parent_link GPS_topic">
     <xacro:gps_plugin_macro
       namespace=""
       parent_link="${parent_link}"
-      gps_topic="gps/data"
+      gps_topic="${GPS_topic}"
       mass_gps_sensor="0.001"
       north_stdev="0.21"
       east_stdev="0.21"
@@ -32,7 +32,7 @@
 
   <!-- Macro to add a GPS module. -->
   <xacro:macro name="gps_plugin_macro"
-    params="namespace parent_link gps_topic 
+    params="namespace parent_link gps_topic
       north_stdev east_stdev alt_stdev
       north_k_GPS east_k_GPS alt_k_GPS
       initial_latitude initial_longitude initial_altitude
