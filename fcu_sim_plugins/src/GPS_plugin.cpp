@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_GPS_plugin.h"
+#include "fcu_sim_plugins/GPS_plugin.h"
 
 
 namespace gazebo {
 
 
-GazeboGPSPlugin::GazeboGPSPlugin() : ModelPlugin() {}
+GPSPlugin::GPSPlugin() : ModelPlugin() {}
 
 
-GazeboGPSPlugin::~GazeboGPSPlugin() {
+GPSPlugin::~GPSPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (nh_) {
     nh_->shutdown();
@@ -32,7 +32,7 @@ GazeboGPSPlugin::~GazeboGPSPlugin() {
 }
 
 
-void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void GPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Store the pointer to the model
   model_ = _model;
   world_ = model_->GetWorld();
@@ -73,7 +73,7 @@ void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   last_time_ = world_->GetSimTime();
 
   // Listen to the update event. This event is broadcast every simulation iteration.
-  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGPSPlugin::OnUpdate, this, _1));
+  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GPSPlugin::OnUpdate, this, _1));
 
   GPS_pub_ = nh_->advertise<fcu_common::GPS>(GPS_topic_, 10);
   pub_rate_ = 1.0;
@@ -92,7 +92,7 @@ void GazeboGPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 }
 
 // This gets called by the world update start event.
-void GazeboGPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
   // check if time to publish
   common::Time current_time  = world_->GetSimTime();
@@ -152,7 +152,7 @@ void GazeboGPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
 }
 
-void GazeboGPSPlugin::measure(double dx, double dy, double& dlat, double& dlon){  // generally used geo measurement function
+void GPSPlugin::measure(double dx, double dy, double& dlat, double& dlon){  // generally used geo measurement function
   static const double R = 6371000.0; // radius of earth in meters
   static const double R_prime = cos(initial_latitude_*M_PI/180.0)*R; // assumes you don't travel huge amounts
 
@@ -161,5 +161,5 @@ void GazeboGPSPlugin::measure(double dx, double dy, double& dlat, double& dlon){
 }
 
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboGPSPlugin);
+GZ_REGISTER_MODEL_PLUGIN(GPSPlugin);
 }

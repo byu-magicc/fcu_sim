@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_aircraft_truth.h"
+#include "fcu_sim_plugins/aircraft_truth.h"
 
 namespace gazebo
 {
 
-GazeboAircraftTruth::GazeboAircraftTruth() :
-  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
+AircraftTruth::AircraftTruth() :
+  ModelPlugin(),
+  node_handle_(nullptr),
+  prev_sim_time_(0)
+{}
 
 
-GazeboAircraftTruth::~GazeboAircraftTruth()
+AircraftTruth::~AircraftTruth()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
@@ -33,7 +36,7 @@ GazeboAircraftTruth::~GazeboAircraftTruth()
 }
 
 
-void GazeboAircraftTruth::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void AircraftTruth::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
   world_ = model_->GetWorld();
@@ -63,29 +66,29 @@ void GazeboAircraftTruth::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
 
   // Connect the update function to the simulation
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAircraftTruth::OnUpdate, this, _1));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AircraftTruth::OnUpdate, this, _1));
 
   // Connect Subscribers
   true_state_pub_ = node_handle_->advertise<fcu_common::FW_State>(truth_topic_,1);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftTruth::WindSpeedCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &AircraftTruth::WindSpeedCallback, this);
 }
 
 // This gets called by the world update event.
-void GazeboAircraftTruth::OnUpdate(const common::UpdateInfo& _info) {
+void AircraftTruth::OnUpdate(const common::UpdateInfo& _info) {
 
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   PublishTruth();
 }
 
-void GazeboAircraftTruth::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void AircraftTruth::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
   wind_.N = wind.x;
   wind_.E = wind.y;
   wind_.D = wind.z;
 }
 
 
-void GazeboAircraftTruth::PublishTruth()
+void AircraftTruth::PublishTruth()
 {
   /* Get state information from Gazebo - convert to NED         *
    * C denotes child frame, P parent frame, and W world frame.  *
@@ -130,5 +133,5 @@ void GazeboAircraftTruth::PublishTruth()
   true_state_pub_.publish(msg);
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftTruth);
+GZ_REGISTER_MODEL_PLUGIN(AircraftTruth);
 }

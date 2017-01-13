@@ -18,16 +18,16 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_imu_plugin.h"
+#include "fcu_sim_plugins/imu_plugin.h"
 
 
 using namespace std;
 
 namespace gazebo {
 
-GazeboImuPlugin::GazeboImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_W_(0, 0, 0) {}
+ImuPlugin::ImuPlugin() : ModelPlugin(),node_handle_(0),velocity_prev_W_(0, 0, 0) {}
 
-GazeboImuPlugin::~GazeboImuPlugin() {
+ImuPlugin::~ImuPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
     node_handle_->shutdown();
@@ -36,7 +36,7 @@ GazeboImuPlugin::~GazeboImuPlugin() {
 }
 
 
-void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void ImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Store the pointer to the model
   model_ = _model;
   world_ = model_->GetWorld();
@@ -97,7 +97,7 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // simulation iteration.
   this->updateConnection_ =
       event::Events::ConnectWorldUpdateBegin(
-          boost::bind(&GazeboImuPlugin::OnUpdate, this, _1));
+          boost::bind(&ImuPlugin::OnUpdate, this, _1));
 
   imu_pub_ = node_handle_->advertise<sensor_msgs::Imu>(imu_topic_, 10);
 
@@ -151,7 +151,7 @@ void GazeboImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
 /// \brief This function adds noise to acceleration and angular rates for
 ///        accelerometer and gyroscope measurement simulation.
-void GazeboImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
+void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
                                Eigen::Vector3d* angular_velocity,
                                const double dt) {
   ROS_ASSERT(linear_acceleration != nullptr);
@@ -206,7 +206,7 @@ void GazeboImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
 }
 
 // This gets called by the world update start event.
-void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void ImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
   static math::Vector3 velocity_prev_B(0, 0, 0);
 
@@ -266,5 +266,5 @@ void GazeboImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
 }
 
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboImuPlugin);
+GZ_REGISTER_MODEL_PLUGIN(ImuPlugin);
 }

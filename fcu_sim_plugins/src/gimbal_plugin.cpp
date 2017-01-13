@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_gimbal_plugin.h"
+#include "fcu_sim_plugins/gimbal_plugin.h"
 
 namespace gazebo {
 
-GazeboGimbalPlugin::GazeboGimbalPlugin() : ModelPlugin() {}
+GimbalPlugin::GimbalPlugin() : ModelPlugin() {}
 
-GazeboGimbalPlugin::~GazeboGimbalPlugin() {
+GimbalPlugin::~GimbalPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (nh_) {
     nh_->shutdown();
@@ -28,7 +28,7 @@ GazeboGimbalPlugin::~GazeboGimbalPlugin() {
   }
 }
 
-void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   // Configure Gazebo Integration
   model_ = _model;
@@ -84,11 +84,11 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   // Connect Gazebo Update
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGimbalPlugin::OnUpdate, this, _1));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GimbalPlugin::OnUpdate, this, _1));
 
   // Connect ROS
   nh_ = new ros::NodeHandle();
-  command_sub_ = nh_->subscribe(command_topic, 1, &GazeboGimbalPlugin::commandCallback, this);
+  command_sub_ = nh_->subscribe(command_topic, 1, &GimbalPlugin::commandCallback, this);
   pose_pub_ = nh_->advertise<geometry_msgs::Vector3>(pose_topic, 10);
 
   // Initialize Commands
@@ -129,7 +129,7 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   previous_time_ = 0.0;
 }
 // Return the Sign of the argument
-void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
+void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
   // Update time
   double dt = _info.simTime.Double() - previous_time_;
@@ -159,7 +159,7 @@ void GazeboGimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   pose_pub_.publish(angles_msg);
 }
 
-void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& msg)
+void GimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& msg)
 {
   // Pull in command from message, convert to NED
   yaw_desired_ = -1.0*msg->z;
@@ -179,10 +179,10 @@ void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& m
   }
 }
 
-int GazeboGimbalPlugin::sign(double x){
+int GimbalPlugin::sign(double x){
   return (0 < x) - (x < 0);
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboGimbalPlugin);
+GZ_REGISTER_MODEL_PLUGIN(GimbalPlugin);
 
 } // namespace

@@ -49,11 +49,11 @@ namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
-class GazeboROSflightSIL : public ModelPlugin {
+class ROSflightSIL : public ModelPlugin {
 public:
-  GazeboROSflightSIL();
+  ROSflightSIL();
 
-  ~GazeboROSflightSIL();
+  ~ROSflightSIL();
 
   void InitializeParams();
   void SendForces();

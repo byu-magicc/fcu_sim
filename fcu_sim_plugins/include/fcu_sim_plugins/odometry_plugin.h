@@ -59,16 +59,28 @@
 
 namespace gazebo {
 
+#if GAZEBO_MAJOR_VERSION > 5
+  typedef ignition::math::Vector3d Vector3d;
+  #define XVAL X()
+  #define YVAL Y()
+  #define ZVAL Z()
+#else
+  typedef sdf::Vector3 Vector3d;
+  #define XVAL .x
+  #define YVAL .y
+  #define ZVAL .z
+#endif
 
-class GazeboOdometryPlugin : public ModelPlugin {
+
+class OdometryPlugin : public ModelPlugin {
  public:
   typedef std::normal_distribution<> NormalDistribution;
   typedef std::uniform_real_distribution<> UniformDistribution;
   typedef std::deque<std::pair<int, nav_msgs::Odometry> > OdometryQueue;
 
-  GazeboOdometryPlugin() : ModelPlugin() {}
+  OdometryPlugin() : ModelPlugin() {}
 
-  ~GazeboOdometryPlugin();
+  ~OdometryPlugin();
 
   void InitializeParams();
   void Publish();

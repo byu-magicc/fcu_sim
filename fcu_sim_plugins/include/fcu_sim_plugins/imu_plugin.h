@@ -100,11 +100,11 @@ struct ImuParameters {
         gravity_magnitude(kDefaultGravityMagnitude) {}
 };
 
-class GazeboImuPlugin : public ModelPlugin {
+class ImuPlugin : public ModelPlugin {
  public:
 
-  GazeboImuPlugin();
-  ~GazeboImuPlugin();
+  ImuPlugin();
+  ~ImuPlugin();
 
   void InitializeParams();
   void Publish();

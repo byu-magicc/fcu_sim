@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_aircraft_forces_and_moments.h"
+#include "fcu_sim_plugins/aircraft_forces_and_moments.h"
 
 namespace gazebo
 {
 
-GazeboAircraftForcesAndMoments::GazeboAircraftForcesAndMoments() :
+AircraftForcesAndMoments::AircraftForcesAndMoments() :
   ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
 
 
-GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments()
+AircraftForcesAndMoments::~AircraftForcesAndMoments()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
@@ -32,7 +32,7 @@ GazeboAircraftForcesAndMoments::~GazeboAircraftForcesAndMoments()
   }
 }
 
-void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
   world_ = model_->GetWorld();
@@ -155,28 +155,28 @@ void GazeboAircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::Element
 
 
   // Connect the update function to the simulation
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAircraftForcesAndMoments::OnUpdate, this, _1));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AircraftForcesAndMoments::OnUpdate, this, _1));
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboAircraftForcesAndMoments::CommandCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboAircraftForcesAndMoments::WindSpeedCallback, this);
+  command_sub_ = node_handle_->subscribe(command_topic_, 1, &AircraftForcesAndMoments::CommandCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &AircraftForcesAndMoments::WindSpeedCallback, this);
 }
 
 // This gets called by the world update event.
-void GazeboAircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
+void AircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
   SendForces();
 }
 
-void GazeboAircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void AircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
   wind_.N = wind.x;
   wind_.E = wind.y;
   wind_.D = wind.z;
 }
 
-void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
+void AircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
 {
   /// TODO - Update to use fcu_common::ExtendedCommand struct
   delta_.t = msg->normalized_throttle;
@@ -186,7 +186,7 @@ void GazeboAircraftForcesAndMoments::CommandCallback(const fcu_common::CommandCo
 }
 
 
-void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
+void AircraftForcesAndMoments::UpdateForcesAndMoments()
 {
   /* Get state information from Gazebo (in NED)                 *
    * C denotes child frame, P parent frame, and W world frame.  *
@@ -262,12 +262,12 @@ void GazeboAircraftForcesAndMoments::UpdateForcesAndMoments()
 }
 
 
-void GazeboAircraftForcesAndMoments::SendForces()
+void AircraftForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboAircraftForcesAndMoments);
+GZ_REGISTER_MODEL_PLUGIN(AircraftForcesAndMoments);
 }

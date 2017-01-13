@@ -1,5 +1,9 @@
 /*
- * Copyright 2015 James Jackson BYU Provo, UT
+ * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +18,8 @@
  * limitations under the License.
  */
 
-#ifndef fcu_sim_PLUGINS_GPS_PLUGIN_H
-#define fcu_sim_PLUGINS_GPS_PLUGIN_H
+#ifndef fcu_sim_PLUGINS_RANGE_PLUGIN_H
+#define fcu_sim_PLUGINS_RANGE_PLUGIN_H
 
 #include <random>
 
@@ -26,7 +30,8 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <fcu_common/GPS.h>
+#include <sensor_msgs/Range.h>
+#include <std_msgs/Float32.h>
 
 #include <chrono>
 #include <cmath>
@@ -39,69 +44,50 @@
 
 namespace gazebo {
 
-class GazeboGPSPlugin : public ModelPlugin {
+class AltimeterPlugin : public ModelPlugin {
  public:
 
-  GazeboGPSPlugin();
-  ~GazeboGPSPlugin();
-
-  void InitializeParams();
-  void Publish();
+  AltimeterPlugin();
+  ~AltimeterPlugin();
 
  protected:
-
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo&);
 
  private:
+  // Ros Stuff
   std::string namespace_;
-  std::string GPS_topic_;
-  ros::NodeHandle* nh_;
-  ros::Publisher GPS_pub_;
-  double pub_rate_;
-  std::string frame_id_;
-  std::string link_name_;
+  ros::NodeHandle* node_handle_;
+  ros::Publisher alt_pub_;
 
+  // Topic
+  std::string alt_topic_;
+
+  // params
+  double min_range_;
+  double max_range_;
+  double error_stdev_;
+  double field_of_view_;
+  double pub_rate_;
+  bool alt_noise_on_;
+  bool publish_float_;
+
+  // Random Engine
   std::default_random_engine random_generator_;
   std::normal_distribution<double> standard_normal_distribution_;
 
-  // Gazebo connections
+  // Gazebo Information
+  std::string frame_id_;
+  std::string link_name_;
   physics::WorldPtr world_;
   physics::ModelPtr model_;
   physics::LinkPtr link_;
   event::ConnectionPtr updateConnection_;
-
   common::Time last_time_;
 
-  // Wind Connection
-  struct Wind{ double N;  double E;  double D; } wind_;
-  ros::Subscriber wind_speed_sub_;
-
-  fcu_common::GPS GPS_message_;
-
-  double north_stdev_;
-  double east_stdev_;
-  double alt_stdev_;
-
-  double north_k_GPS_;
-  double east_k_GPS_;
-  double alt_k_GPS_;
-  double sample_time_;
-
-  double north_GPS_error_;
-  double east_GPS_error_;
-  double alt_GPS_error_;
-
-  double initial_latitude_;
-  double initial_longitude_;
-  double initial_altitude_;
-
-  double length_latitude_;
-  double length_longitude_;
-
-  void measure(double dx, double dy, double & dlat, double & dlon);
-
+  // Memory
+  sensor_msgs::Range alt_message_;
 };
 }
 
-#endif // fcu_sim_PLUGINS_GPS_PLUGIN_H
+#endif // fcu_sim_PLUGINS_RANGE_PLUGIN_H

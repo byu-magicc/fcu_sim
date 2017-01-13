@@ -43,10 +43,10 @@
 namespace gazebo {
 
 
-class GazeboGimbalPlugin : public ModelPlugin {
+class GimbalPlugin : public ModelPlugin {
 public:
-  GazeboGimbalPlugin();
-  ~GazeboGimbalPlugin();
+  GimbalPlugin();
+  ~GimbalPlugin();
   void commandCallback(const geometry_msgs::Vector3ConstPtr &msg);
 
 protected:

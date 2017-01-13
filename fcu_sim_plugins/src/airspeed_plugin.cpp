@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_airspeed_plugin.h"
+#include "fcu_sim_plugins/airspeed_plugin.h"
 
 
 namespace gazebo {
 
 
-GazeboAirspeedPlugin::GazeboAirspeedPlugin() : ModelPlugin() {}
+AirspeedPlugin::AirspeedPlugin() : ModelPlugin() {}
 
 
-GazeboAirspeedPlugin::~GazeboAirspeedPlugin() {
+AirspeedPlugin::~AirspeedPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (nh_) {
     nh_->shutdown();
@@ -31,7 +31,7 @@ GazeboAirspeedPlugin::~GazeboAirspeedPlugin() {
   }
 }
 
-void GazeboAirspeedPlugin::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void AirspeedPlugin::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
   wind_.N = wind.x;
   wind_.E = wind.y;
   wind_.D = wind.z;
@@ -39,7 +39,7 @@ void GazeboAirspeedPlugin::WindSpeedCallback(const geometry_msgs::Vector3 &wind)
 
 
 
-void GazeboAirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void AirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Store the pointer to the model
   model_ = _model;
   world_ = model_->GetWorld();
@@ -74,7 +74,7 @@ void GazeboAirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
   last_time_ = world_->GetSimTime();
 
   // Listen to the update event. This event is broadcast every simulation iteration.
-  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAirspeedPlugin::OnUpdate, this, _1));
+  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AirspeedPlugin::OnUpdate, this, _1));
 
   airspeed_pub_ = nh_->advertise<sensor_msgs::FluidPressure>(airspeed_topic_, 10);
 
@@ -86,7 +86,7 @@ void GazeboAirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
 }
 
 // This gets called by the world update start event.
-void GazeboAirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void AirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
   // Calculate Airspeed
   math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
@@ -113,5 +113,5 @@ void GazeboAirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
 }
 
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboAirspeedPlugin);
+GZ_REGISTER_MODEL_PLUGIN(AirspeedPlugin);
 }

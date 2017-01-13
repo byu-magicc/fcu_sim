@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_altimeter_plugin.h"
+#include "fcu_sim_plugins/altimeter_plugin.h"
 
 namespace gazebo {
 
-GazeboAltimeterPlugin::GazeboAltimeterPlugin()
+AltimeterPlugin::AltimeterPlugin()
     : ModelPlugin(),
       node_handle_(0){}
 
-GazeboAltimeterPlugin::~GazeboAltimeterPlugin() {
+AltimeterPlugin::~AltimeterPlugin() {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
     node_handle_->shutdown();
@@ -31,7 +31,7 @@ GazeboAltimeterPlugin::~GazeboAltimeterPlugin() {
 }
 
 
-void GazeboAltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void AltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   // Configure Gazebo Integration
   model_ = _model;
@@ -49,7 +49,7 @@ void GazeboAltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (link_ == NULL)
     gzthrow("[gazebo_altimeter_plugin] Couldn't find specified link \"" << link_name_ << "\".");
   // Connect to the Gazebo Update
-  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboAltimeterPlugin::OnUpdate, this, _1));
+  this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AltimeterPlugin::OnUpdate, this, _1));
   frame_id_ = link_name_;
 
   // load params from xacro
@@ -83,7 +83,7 @@ void GazeboAltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 }
 
 
-void GazeboAltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
+void AltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
 {
   // check if time to publish
   common::Time current_time  = world_->GetSimTime();
@@ -117,5 +117,5 @@ void GazeboAltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
   }
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboAltimeterPlugin);
+GZ_REGISTER_MODEL_PLUGIN(AltimeterPlugin);
 }
