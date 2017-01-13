@@ -20,7 +20,7 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#include "fcu_sim_plugins/gazebo_ROSflight_sil.h"
+#include "fcu_sim_plugins/ROSflight_sil.h"
 #include <sstream>
 #include <stdint.h>
 
@@ -36,7 +36,7 @@
 namespace gazebo
 {
 
-GazeboROSflightSIL::GazeboROSflightSIL() :
+\ROSflightSIL::\ROSflightSIL() :
   ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
 
 

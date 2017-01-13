@@ -34,11 +34,11 @@
 namespace gazebo {
 
 /// \brief This gazebo plugin simulates wind acting on a model.
-class GazeboWindPlugin : public ModelPlugin {
+class WindPlugin : public ModelPlugin {
  public:
-  GazeboWindPlugin() : ModelPlugin(){}
+  WindPlugin() : ModelPlugin(){}
 
-  virtual ~GazeboWindPlugin();
+  virtual ~WindPlugin();
 
  protected:
   /// \brief Load the plugin.

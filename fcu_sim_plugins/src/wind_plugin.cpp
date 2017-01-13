@@ -16,11 +16,11 @@
  */
 
 
-#include "fcu_sim_plugins/gazebo_wind_plugin.h"
+#include "fcu_sim_plugins/wind_plugin.h"
 
 namespace gazebo {
 
-GazeboWindPlugin::~GazeboWindPlugin() {
+WindPlugin::~WindPlugin() {
   event::Events::DisconnectWorldUpdateBegin(update_connection_);
   if (node_handle_) {
     node_handle_->shutdown();
@@ -28,7 +28,7 @@ GazeboWindPlugin::~GazeboWindPlugin() {
   }
 }
 
-void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void WindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Store the pointer to the model.
   model_ = _model;
   world_ = model_->GetWorld();
@@ -72,13 +72,13 @@ void GazeboWindPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   // Listen to the update event. This event is broadcast every
   // simulation iteration.
-  update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboWindPlugin::OnUpdate, this, _1));
+  update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&WindPlugin::OnUpdate, this, _1));
 
   wind_pub_ = node_handle_->advertise<geometry_msgs::Vector3>(wind_pub_topic_, 10);
 }
 
 // This gets called by the world update start event.
-void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void WindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // Get the current simulation time.
   common::Time now = world_->GetSimTime();
 
@@ -138,5 +138,5 @@ void GazeboWindPlugin::OnUpdate(const common::UpdateInfo& _info) {
   wind_pub_.publish(wind_msg);
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboWindPlugin);
+GZ_REGISTER_MODEL_PLUGIN(WindPlugin);
 }

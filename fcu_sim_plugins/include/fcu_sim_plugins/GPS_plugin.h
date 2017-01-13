@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef fcu_sim_PLUGINS_AIRSPEED_PLUGIN_H
-#define fcu_sim_PLUGINS_AIRSPEED_PLUGIN_H
+#ifndef fcu_sim_PLUGINS_GPS_PLUGIN_H
+#define fcu_sim_PLUGINS_GPS_PLUGIN_H
 
 #include <random>
 
@@ -26,8 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <sensor_msgs/FluidPressure.h>
-#include <geometry_msgs/Vector3.h>
+#include <fcu_common/GPS.h>
 
 #include <chrono>
 #include <cmath>
@@ -40,11 +39,11 @@
 
 namespace gazebo {
 
-class GazeboAirspeedPlugin : public ModelPlugin {
+class GPSPlugin : public ModelPlugin {
  public:
 
-  GazeboAirspeedPlugin();
-  ~GazeboAirspeedPlugin();
+  GPSPlugin();
+  ~GPSPlugin();
 
   void InitializeParams();
   void Publish();
@@ -56,9 +55,10 @@ class GazeboAirspeedPlugin : public ModelPlugin {
 
  private:
   std::string namespace_;
-  std::string airspeed_topic_;
+  std::string GPS_topic_;
   ros::NodeHandle* nh_;
-  ros::Publisher airspeed_pub_;
+  ros::Publisher GPS_pub_;
+  double pub_rate_;
   std::string frame_id_;
   std::string link_name_;
 
@@ -76,16 +76,32 @@ class GazeboAirspeedPlugin : public ModelPlugin {
   // Wind Connection
   struct Wind{ double N;  double E;  double D; } wind_;
   ros::Subscriber wind_speed_sub_;
-  void WindSpeedCallback(const geometry_msgs::Vector3& wind);
 
-  sensor_msgs::FluidPressure airspeed_message_;
+  fcu_common::GPS GPS_message_;
 
-  double pressure_bias_;
-  double pressure_noise_sigma_;
-  double max_pressure_;
-  double min_pressure_;
-  double rho_;
+  double north_stdev_;
+  double east_stdev_;
+  double alt_stdev_;
+
+  double north_k_GPS_;
+  double east_k_GPS_;
+  double alt_k_GPS_;
+  double sample_time_;
+
+  double north_GPS_error_;
+  double east_GPS_error_;
+  double alt_GPS_error_;
+
+  double initial_latitude_;
+  double initial_longitude_;
+  double initial_altitude_;
+
+  double length_latitude_;
+  double length_longitude_;
+
+  void measure(double dx, double dy, double & dlat, double & dlon);
+
 };
 }
 
-#endif // fcu_sim_PLUGINS_AIRSPEED_PLUGIN_H
+#endif // fcu_sim_PLUGINS_GPS_PLUGIN_H

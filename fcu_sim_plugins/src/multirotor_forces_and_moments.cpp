@@ -18,16 +18,17 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/gazebo_multirotor_forces_and_moments.h"
+#include "fcu_sim_plugins/multirotor_forces_and_moments.h"
 
 namespace gazebo
 {
 
-GazeboMultiRotorForcesAndMoments::GazeboMultiRotorForcesAndMoments() :
-  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
+MultiRotorForcesAndMoments::MultiRotorForcesAndMoments() :
+  ModelPlugin(), node_handle_(nullptr),
+  prev_sim_time_(0)  {}
 
 
-GazeboMultiRotorForcesAndMoments::~GazeboMultiRotorForcesAndMoments()
+MultiRotorForcesAndMoments::~MultiRotorForcesAndMoments()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
@@ -37,7 +38,7 @@ GazeboMultiRotorForcesAndMoments::~GazeboMultiRotorForcesAndMoments()
 }
 
 
-void GazeboMultiRotorForcesAndMoments::SendForces()
+void MultiRotorForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   // Gazebo is in NWU, while we calculate forces in NED, hence the negatives
@@ -46,7 +47,7 @@ void GazeboMultiRotorForcesAndMoments::SendForces()
 }
 
 
-void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
   world_ = model_->GetWorld();
@@ -126,11 +127,11 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
   prev_control_time_ = ros::Time::now().toSec();
 
   // Connect the update function to the simulation
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboMultiRotorForcesAndMoments::OnUpdate, this, _1));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&MultiRotorForcesAndMoments::OnUpdate, this, _1));
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboMultiRotorForcesAndMoments::CommandCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboMultiRotorForcesAndMoments::WindSpeedCallback, this);
+  command_sub_ = node_handle_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
 
   debug_ = node_handle_->advertise<std_msgs::Float32>("debug", 1);
 
@@ -151,7 +152,7 @@ void GazeboMultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::Eleme
 }
 
 // This gets called by the world update event.
-void GazeboMultiRotorForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
+void MultiRotorForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
 
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
@@ -159,19 +160,19 @@ void GazeboMultiRotorForcesAndMoments::OnUpdate(const common::UpdateInfo& _info)
   SendForces();
 }
 
-void GazeboMultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void MultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
   W_wind_speed_.x = wind.x;
   W_wind_speed_.y = wind.y;
   W_wind_speed_.z = wind.z;
 }
 
-void GazeboMultiRotorForcesAndMoments::CommandCallback(const fcu_common::ExtendedCommand msg)
+void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::ExtendedCommand msg)
 {
   command_ = msg;
 }
 
 
-void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
+void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
 {
   /* Get state information from Gazebo                          *
    * C denotes child frame, P parent frame, and W world frame.  *
@@ -262,7 +263,7 @@ void GazeboMultiRotorForcesAndMoments::UpdateForcesAndMoments()
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
 }
 
-double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
+double MultiRotorForcesAndMoments::sat(double x, double max, double min)
 {
   if(x > max)
     return max;
@@ -272,10 +273,10 @@ double GazeboMultiRotorForcesAndMoments::sat(double x, double max, double min)
     return x;
 }
 
-double GazeboMultiRotorForcesAndMoments::max(double x, double y)
+double MultiRotorForcesAndMoments::max(double x, double y)
 {
   return (x > y) ? x : y;
 }
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboMultiRotorForcesAndMoments);
+GZ_REGISTER_MODEL_PLUGIN(MultiRotorForcesAndMoments);
 }

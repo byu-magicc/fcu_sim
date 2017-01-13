@@ -46,11 +46,11 @@ namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
-class GazeboMultiRotorForcesAndMoments : public ModelPlugin {
+class MultiRotorForcesAndMoments : public ModelPlugin {
 public:
-  GazeboMultiRotorForcesAndMoments();
+  MultiRotorForcesAndMoments();
 
-  ~GazeboMultiRotorForcesAndMoments();
+  ~MultiRotorForcesAndMoments();
 
   void InitializeParams();
   void SendForces();

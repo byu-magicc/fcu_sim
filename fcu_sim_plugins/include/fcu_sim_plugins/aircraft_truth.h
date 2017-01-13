@@ -1,5 +1,9 @@
 /*
- * Copyright 2016 James Jackson, MAGICC Lab, Brigham Young University - Provo, UT
+ * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
+ * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +19,8 @@
  */
 
 
-#ifndef fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
-#define fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#ifndef fcu_sim_PLUGINS_AIRCRAFT_TRUTH_H
+#define fcu_sim_PLUGINS_AIRCRAFT_TRUTH_H
 
 #include <stdio.h>
 
@@ -31,6 +35,7 @@
 #include <ros/ros.h>
 
 #include <fcu_common/Command.h>
+#include <fcu_common/FW_State.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
 
@@ -40,23 +45,21 @@ namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
-class GazeboAircraftForcesAndMoments : public ModelPlugin {
+class AircraftTruth : public ModelPlugin {
  public:
-  GazeboAircraftForcesAndMoments();
+  AircraftTruth();
 
-  ~GazeboAircraftForcesAndMoments();
+  ~AircraftTruth();
 
-  void InitializeParams();
-  void SendForces();
-
+  void InitializeParams();  
 
  protected:
-  void UpdateForcesAndMoments();
+  void PublishTruth();
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
  private:
-  std::string command_topic_;
+  std::string truth_topic_;
   std::string wind_speed_topic_;
   std::string joint_name_;
   std::string link_name_;
@@ -71,96 +74,28 @@ class GazeboAircraftForcesAndMoments : public ModelPlugin {
   physics::EntityPtr parent_link_;
   event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
-  // physical parameters
-  double mass_;
-  double Jx_;
-  double Jy_;
-  double Jz_;
-  double Jxz_;
-  double rho_;
-
-  // aerodynamic coefficients
-  struct WingCoeff{
-    double S;
-    double b;
-    double c;
-    double M;
-    double epsilon;
-    double alpha0;
-  } wing_;
-
-  // Propeller Coefficients
-  struct PropCoeff{
-    double k_motor;
-    double k_T_P;
-    double k_Omega;
-    double e;
-    double S;
-    double C;
-  } prop_;
-
-  // Lift Coefficients
-  struct LiftCoeff{
-    double O;
-    double alpha;
-    double beta;
-    double p;
-    double q;
-    double r;
-    double delta_a;
-    double delta_e;
-    double delta_r;
-  };
-
-  LiftCoeff CL_;
-  LiftCoeff CD_;
-  LiftCoeff Cm_;
-  LiftCoeff CY_;
-  LiftCoeff Cell_;
-  LiftCoeff Cn_;
-
-  // not constants
-  // actuators
-  struct Actuators{
-    double e;
-    double a;
-    double r;
-    double t;
-  } delta_;
-
-    // wind
+  // wind
   struct Wind{
     double N;
     double E;
     double D;
   } wind_;
 
-  // container for forces
-  struct ForcesAndTorques{
-    double Fx;
-    double Fy;
-    double Fz;
-    double l;
-    double m;
-    double n;
-  } forces_;
-
   // Time Counters
   double sampling_time_;
   double prev_sim_time_;
 
   ros::NodeHandle* node_handle_;
-  ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
+  ros::Publisher true_state_pub_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_common::CommandConstPtr& msg);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;
 };
 }
 
-#endif // fcu_sim_PLUGINS_AIRCRAFT_FORCES_AND_MOMENTS_H
+#endif // fcu_sim_PLUGINS_AIRCRAFT_TRUTH_H
