@@ -17,7 +17,7 @@
       camera_topic="${camera_topic}"
       pose_topic="${pose_topic}"
       command_topic="${command_topic}"
-      mass="0.001"
+      mass="0.00001"
       x_rotation_range="1000000000"
       y_rotation_range="1000000000"
       z_rotation_range="1000000000"
@@ -56,7 +56,7 @@
     <link name="${namespace}/gimbal/yaw_link">
       <inertial>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <mass value="0.0001" />
+        <mass value="${mass}" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
     </link>
@@ -73,7 +73,7 @@
     <link name="${namespace}/gimbal/roll_link">
       <inertial>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <mass value="0.0001" />
+        <mass value="${mass}" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
     </link>
@@ -90,7 +90,7 @@
     <link name="${namespace}/gimbal/pitch_link">
       <inertial>
         <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <mass value="0.0001" />
+        <mass value="${mass}" />
         <origin xyz="0 0 0" rpy = "0 0 0"/>
       </inertial>
     </link>
