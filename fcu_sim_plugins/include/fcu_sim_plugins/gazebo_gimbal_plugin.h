@@ -87,6 +87,9 @@ private:
   double pitch_actual_;
   double roll_actual_;
 
+  // Flags
+  bool use_slipring_;
+
   // Filters on Axes
   std::unique_ptr<FirstOrderFilter<double>> yaw_filter_;
   std::unique_ptr<FirstOrderFilter<double>> pitch_filter_;
