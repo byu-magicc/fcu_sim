@@ -10,6 +10,7 @@
               camera_topic
               pose_topic
               command_topic
+              use_slipring
               *origin">
     <xacro:gimbal_plugin_macro
       namespace="${namespace}"
@@ -147,6 +148,7 @@
         <timeConstant>${time_constant}</timeConstant>
         <commandTopic>${command_topic}</commandTopic>
         <poseTopic>${pose_topic}</poseTopic>
+        <useSlipring>${use_slipring}</useSlipring>
       </plugin>
     </gazebo>
   </xacro:macro>
