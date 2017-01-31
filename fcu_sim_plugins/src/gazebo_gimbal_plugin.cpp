@@ -83,6 +83,12 @@ void GazeboGimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
   }
 
+  if (_sdf->HasElement("useSlipring")) {
+    use_slipring_ = _sdf->GetElement("useSlipring")->Get<bool>();
+  } else{
+    gzerr << "[gazeboGimbalPlugin] Please specify whether to use a slipring";
+  }
+
   // Connect Gazebo Update
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboGimbalPlugin::OnUpdate, this, _1));
 
@@ -166,16 +172,17 @@ void GazeboGimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& m
   pitch_desired_ = -1.0*msg->y;
   roll_desired_ = msg->x;
 
-  // Wrap Commands between -PI and PI.  This may cause problems if someone wants to control
-  // Across 2 PI, but I'm not dealing with this now.
-  while (fabs(yaw_desired_) > PI) {
-    yaw_desired_ -= sign(yaw_desired_)*2.0*PI;
-  }
-  while (fabs(pitch_desired_) > PI){
-    pitch_desired_ -= sign(pitch_desired_)*2.0*PI;
-  }
-  while (fabs(roll_desired_) > PI) {
-    roll_desired_ -= sign(roll_desired_)*2.0*PI;
+  if (!use_slipring_) {
+    // Wrap Commands between -PI and PI if a slipring isn't being simulated
+    while (fabs(yaw_desired_) > PI) {
+      yaw_desired_ -= sign(yaw_desired_)*2.0*PI;
+    }
+    while (fabs(pitch_desired_) > PI){
+      pitch_desired_ -= sign(pitch_desired_)*2.0*PI;
+    }
+    while (fabs(roll_desired_) > PI) {
+      roll_desired_ -= sign(roll_desired_)*2.0*PI;
+    }
   }
 }
 
