@@ -18,6 +18,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   fcu_common
   sensor_msgs
+  std_msgs
+  tf2_ros
+  image_transport
+  polled_camera
+  camera_info_manager
+  nav_msgs
+  gazebo_ros
 )
 
 find_package(Eigen REQUIRED)
@@ -26,17 +33,18 @@ find_package(OpenCV REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(${GAZEBO_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(${Eigen_INCLUDE_DIRS})
 include_directories(include/ROSflight_SIL)
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
-                 fcu_sim std_srvs tf relative_nav relative_nav
-  DEPENDS eigen gazebo opencv fcu_common
+                 fcu_sim std_srvs tf relative_nav
+		 cv_bridge geometry_msgs fcu_sim rosbag roscpp
+		 tf2_ros image_transport polled_camera camera_info_manager std_msgs nav_msgs sensor_msgs
+  DEPENDS eigen gazebo opencv fcu_common SDF roscpp gazebo_ros
 )
-
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(${Eigen_INCLUDE_DIRS})
 
 #add_library(fcu_sim_ROSflight_sil_plugin
 #  src/gazebo_ROSflight_sil.cpp
@@ -121,6 +129,16 @@ add_library(fcu_sim_gimbal_plugin
 target_link_libraries(fcu_sim_gimbal_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(fcu_sim_gimbal_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(fcu_sim_camera_utils
+  src/gazebo_ros_camera_utils.cpp)
+target_link_libraries(fcu_sim_camera_utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(fcu_sim_camera_utils ${catkin_EXPORTED_TARGETS})
+
+add_library(fcu_sim_camera_plugin
+  src/gazebo_ros_camera.cpp)
+target_link_libraries(fcu_sim_camera_plugin fcu_sim_camera_utils ${GAZEBO_LIBRARIES} CameraPlugin ${catkin_LIBRARIES})
+add_dependencies(fcu_sim_camera_plugin ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     fcu_sim_odometry_plugin
@@ -134,6 +152,7 @@ install(
     fcu_sim_multirotor_forces_and_moments_plugin
     fcu_sim_aircraft_forces_and_moments_plugin
     fcu_sim_magnetometer_plugin
+    fcu_sim_camera_plugin
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
