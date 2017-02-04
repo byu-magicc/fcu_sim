@@ -28,7 +28,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include <fcu_sim_plugins/common.h>
 
 #include <chrono>
@@ -47,7 +47,7 @@ class GazeboGimbalPlugin : public ModelPlugin {
 public:
   GazeboGimbalPlugin();
   ~GazeboGimbalPlugin();
-  void commandCallback(const geometry_msgs::Vector3ConstPtr &msg);
+  void commandCallback(const geometry_msgs::Vector3StampedConstPtr &msg);
 
 protected:
 
