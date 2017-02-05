@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright 2016 James Jackson, Brigham Young University, Provo UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,7 +162,7 @@ void MultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 
   W_wind_speed_.z = wind.z;
 }
 
-void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::ExtendedCommand msg)
+void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::Command msg)
 {
   command_ = msg;
 }
@@ -203,21 +199,21 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double wr = w - C_wind_speed.z;
 
   // calculate the appropriate control <- Depends on Control type (which block is being controlled)
-  if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+  if (command_.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
     desired_forces_.l = roll_controller_.computePID(command_.x, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePID(command_.y, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max; // this comes in normalized between 0 and 1
   }
-  else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
+  else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
     desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max;
   }
-  else if (command_.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
+  else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
     desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);

@@ -152,7 +152,7 @@
 
   <!-- Add Aerodynamics -->
   <gazebo>
-    <plugin filename="libfcu_sim_aircraft_forces_and_moments_plugin.so" name="aircraft_forces_and_moments_plugin">
+    <plugin filename="aircraft_forces_and_moments_plugin.so" name="aircraft_forces_and_moments_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${namespace}/base_link</linkName>
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
@@ -235,7 +235,7 @@
 
   <!-- Sensors -->
   <gazebo>
-    <plugin filename="libfcu_sim_aircraft_truth_plugin.so" name="aircraft_truth_plugin">
+    <plugin filename="aircraft_truth_plugin.so" name="aircraft_truth_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${namespace}/base_link</linkName>
       <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
