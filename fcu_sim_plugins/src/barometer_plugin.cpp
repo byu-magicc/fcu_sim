@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "fcu_sim_plugins/altimeter_plugin.h"
+#include "fcu_sim_plugins/barometer_plugin.h"
 
 namespace gazebo {
 
@@ -37,45 +37,31 @@ void AltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   model_ = _model;
   world_ = model_->GetWorld();
   namespace_.clear();
-  if (_sdf->HasElement("robotNamespace"))
-    namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>();
+  if (_sdf->HasElement("namespace"))
+    namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_altimeter_plugin] Please specify a robotNamespace.\n";
+    gzerr << "[barometer_plugin] Please specify a namespace.\n";
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
-    gzerr << "[gazebo_altimeter_plugin] Please specify a linkName.\n";
+    gzerr << "[barometer_plugin] Please specify a linkName.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
-    gzthrow("[gazebo_altimeter_plugin] Couldn't find specified link \"" << link_name_ << "\".");
+    gzthrow("[barometer_plugin] Couldn't find specified link \"" << link_name_ << "\".");
   // Connect to the Gazebo Update
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AltimeterPlugin::OnUpdate, this, _1));
   frame_id_ = link_name_;
 
   // load params from xacro
-  getSdfParam<std::string>(_sdf, "altimeterTopic", alt_topic_, "altimeter");
-  getSdfParam<double>(_sdf, "altimeterMinRange", min_range_, 0.381);
-  getSdfParam<double>(_sdf, "altimeterMaxRange", max_range_, 6.45);
-  getSdfParam<double>(_sdf, "altimeterErrorStdev", error_stdev_, 0.10);
-  getSdfParam<double>(_sdf, "altimeterFOV", field_of_view_, 1.107);
-  getSdfParam<double>(_sdf, "altimeterPublishRate", pub_rate_, 20.0);
-  getSdfParam<bool>(_sdf, "altimeterNoiseOn", alt_noise_on_, true);
-  getSdfParam<bool>(_sdf, "publishFloat32", publish_float_, false);
+  getSdfParam<std::string>(_sdf, "messageTopic", message_topic_, "baro");
+  getSdfParam<double>(_sdf, "noiseStdev", error_stdev_, 0.10);
+  getSdfParam<double>(_sdf, "publishRate", pub_rate_, 50.0);
+  getSdfParam<bool>(_sdf, "noiseOn", noise_on_, true);
   last_time_ = world_->GetSimTime();
 
   // Configure ROS Integration
   node_handle_ = new ros::NodeHandle(namespace_);
-  if(publish_float_)
-      alt_pub_ = node_handle_->advertise<std_msgs::Float32>(alt_topic_, 10);
-  else
-      alt_pub_ = node_handle_->advertise<sensor_msgs::Range>(alt_topic_, 10);
-
-  // Fill static members of alt message.
-  alt_message_.header.frame_id = frame_id_;
-  alt_message_.max_range = max_range_;
-  alt_message_.min_range = min_range_;
-  alt_message_.field_of_view = field_of_view_;
-  alt_message_.radiation_type = sensor_msgs::Range::ULTRASOUND;
+  alt_pub_ = node_handle_->advertise<fcu_common::Barometer>(message_topic_, 10);
 
   // Configure Noise
   random_generator_= std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count());
@@ -91,29 +77,22 @@ void AltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
 
     // pull z measurement out of Gazebo
     math::Pose current_state_LFU = link_->GetWorldPose();
-    alt_message_.range = current_state_LFU.pos.z;
 
-    // zero measurement when messages are out of range
-    if(alt_message_.range > max_range_ || alt_message_.range < min_range_){
-      alt_message_.range = 0.0;
-    }
-
+    fcu_common::Barometer message;
+    message.altitude = current_state_LFU.pos.z;
     // add noise, if requested
-    if(alt_noise_on_){
-      alt_message_.range += standard_normal_distribution_(random_generator_);
+    if(noise_on_){
+      message.altitude += standard_normal_distribution_(random_generator_);
     }
+
+    // Invert measurement model for pressure and temperature
+    message.temperature = 25.0; // This is constant for simulation
+    message.pressure = 101325.0*pow(1- (2.25577e-5 * message.altitude), 5.25588);
+
 
     // publish message
-    alt_message_.header.stamp = ros::Time::now();
-    if(publish_float_)
-    {
-        std_msgs::Float32 msg;
-        msg.data = alt_message_.range;
-        alt_pub_.publish(msg);
-    }
-    else
-        alt_pub_.publish(alt_message_);
-    last_time_ = current_time;
+    message.header.stamp = ros::Time::now();
+    alt_pub_.publish(message);
   }
 }
 

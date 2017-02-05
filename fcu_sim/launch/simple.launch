@@ -7,8 +7,6 @@
 
 <launch>
   <arg name="mav_name"            default="mikey"/>
-  <arg name="enable_ground_truth" default="true" />
-  <arg name="log_file"            default="$(arg mav_name)" />
   <arg name="color"               default="White"/>
   <arg name="x"                   default="0"/>
   <arg name="y"                   default="0"/>

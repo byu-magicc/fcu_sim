@@ -6,7 +6,7 @@ Author: James Jackson
 
 -->
 
-<robot name="shredder" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="mikey" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Properties -->
   <xacro:property name="namespace" value="mikey" />
   <xacro:property name="use_mesh_file" value="true" />
@@ -60,7 +60,7 @@ Author: James Jackson
 
   <!-- Simplified Dynamics -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
-  <xacro:mikey_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link"/>
+  <xacro:mikey_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
 
   <!-- ***************** SENSORS ******************* -->
   <!-- Ground Truth -->
