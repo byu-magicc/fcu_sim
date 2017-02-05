@@ -5,8 +5,8 @@
   <xacro:property name="pi" value="3.14159265359" />
 
   <!-- Configure GPS -->
-    <xacro:macro 
-      name="GPS_BYU" 
+    <xacro:macro
+      name="GPS_BYU"
       params="namespace parent_link GPS_topic">
     <xacro:gps_plugin_macro
       namespace=""
@@ -32,7 +32,7 @@
 
   <!-- Macro to add a GPS module. -->
   <xacro:macro name="gps_plugin_macro"
-    params="namespace parent_link gps_topic 
+    params="namespace parent_link gps_topic
       north_stdev east_stdev alt_stdev
       north_k_GPS east_k_GPS alt_k_GPS
       initial_latitude initial_longitude initial_altitude
@@ -58,7 +58,7 @@
 
     <!-- Load Plugin -->
     <gazebo>
-      <plugin filename="libfcu_sim_GPS_plugin.so" name="fcu_sim_GPS_plugin">
+      <plugin filename="libGPS_plugin.so" name="fcu_sim_GPS_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${namespace}/GPS_link</linkName>
       <GPSTopic>${gps_topic}</GPSTopic>

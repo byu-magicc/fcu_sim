@@ -56,12 +56,12 @@ Author: James Jackson
   <!-- ************************* ROTOR DYNAMICS ********************** -->
 
   <!-- ROSflight_SIL -->
-  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/ROSflight_SIL.xacro"/> -->
-  <!-- <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link"/> -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/ROSflight_SIL.xacro"/>
+  <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link"/>
 
   <!-- Simplified Dynamics -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
-  <xacro:shredder_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/> -->
+  <!-- <xacro:shredder_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link"/> -->
 
 
   <!-- ***************** SENSORS ******************* -->
@@ -84,21 +84,21 @@ Author: James Jackson
     wind_pub_topic="wind"/> -->
 
   <!-- Mount an Altimeter -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
   <xacro:perfect_baro
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    altimeter_topic="altimeter"/>
+    altimeter_topic="altimeter"/> -->
 
   <!-- Mount a Magnetometer -->
   <!-- Default Inclination and Declination for Provo, UT -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/magnetometer.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/magnetometer.xacro"/>
   <xacro:hmc5883l
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     mag_topic="mag/data"
     inclination="1.14316156541"
-    declination="0.198584539676"/>
+    declination="0.198584539676"/> -->
 
   <!-- Mount an RGBD Camera -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>
@@ -106,7 +106,7 @@ Author: James Jackson
     namespace="${namespace}"
     parent_link="${namespace}/bavese_link"/> -->
 
-  <!-- Laser Scanner -->
+  <!-- Block Laser Scanner -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/velodyne.xacro"/>
   <xacro:velodyne_custom
     namespace="${namespace}"
@@ -123,11 +123,11 @@ Author: James Jackson
     visualize="false"/> -->
 
   <!-- GPS -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/GPS.xacro"/>
+  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/GPS.xacro"/>
   <xacro:GPS_BYU
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    GPS_topic="gps"/>
+    GPS_topic="gps"/> -->
 
   <!-- Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>

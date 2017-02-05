@@ -100,7 +100,7 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="libfcu_sim_imu_plugin.so" name="fcu_sim_imu${imu_suffix}_plugin">
+      <plugin filename="libimu_plugin.so" name="fcu_sim_imu${imu_suffix}_plugin">
       <!-- A good description of the IMU parameters can be found in the kalibr documentation:
            https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics -->
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->

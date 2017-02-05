@@ -5,8 +5,8 @@
   <xacro:property name="pi" value="3.14159265359" />
 
     <!-- Configure Airspeed -->
-    <xacro:macro 
-      name="airspeed_MPXV5004G" 
+    <xacro:macro
+      name="airspeed_MPXV5004G"
       params="namespace parent_link airspeed_topic">
     <xacro:airspeed_plugin_macro
       namespace="${namespace}"
@@ -25,7 +25,7 @@
 
     <!-- Macro to add an Airspeed. -->
   <xacro:macro name="airspeed_plugin_macro"
-    params="namespace parent_link airspeed_topic pressure_bias pressure_noise_sigma air_density 
+    params="namespace parent_link airspeed_topic pressure_bias pressure_noise_sigma air_density
       mass_airspeed_sensor max_pressure min_pressure
       *inertia *origin">
 
@@ -48,7 +48,7 @@
 
     <!-- Load Plugin -->
     <gazebo>
-      <plugin filename="libfcu_sim_airspeed_plugin.so" name="fcu_sim_airspeed_plugin">
+      <plugin filename="libairspeed_plugin.so" name="fcu_sim_airspeed_plugin">
         <namespace>${namespace}</namespace>
         <linkName>${namespace}/airspeed_link</linkName>
         <airspeedTopic>${airspeed_topic}</airspeedTopic>

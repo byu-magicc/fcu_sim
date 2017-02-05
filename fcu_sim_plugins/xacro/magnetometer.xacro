@@ -49,7 +49,7 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="libfcu_sim_magnetometer_plugin.so" name="fcu_sim_magnetometer_plugin">
+      <plugin filename="magnetometer_plugin.so" name="fcu_sim_magnetometer_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${namespace}/magnetometer_link</linkName>
       <mag_topic>${mag_topic}</mag_topic>

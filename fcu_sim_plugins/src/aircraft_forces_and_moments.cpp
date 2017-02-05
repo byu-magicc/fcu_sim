@@ -178,11 +178,11 @@ void AircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &w
 
 void AircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
 {
-  /// TODO - Update to use fcu_common::ExtendedCommand struct
-  delta_.t = msg->normalized_throttle;
-  delta_.e = msg->normalized_pitch;
-  delta_.a = msg->normalized_roll;
-  delta_.r = msg->normalized_yaw;
+  /// TODO - Update to use fcu_common::Command struct
+  delta_.t = msg->F;
+  delta_.e = msg->y;
+  delta_.a = msg->x;
+  delta_.r = msg->z;
 }
 
 

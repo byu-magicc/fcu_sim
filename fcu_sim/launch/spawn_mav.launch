@@ -8,15 +8,11 @@
   <arg name="y" default="0.0"/>
   <arg name="yaw" default="0.0"/>
   <arg name="z" default="1.0"/>
-  <arg name="enable_logging" default="false"/>
-  <arg name="enable_ground_truth" default="true"/>
-  <arg name="log_file" default="$(arg mav_name)"/>
-  <arg name="enable_wind" default="true"/>
   <arg name="color" default="Black"/>
 
   <!-- send the robot XML to param server -->
   <param name="robot_description" command="
-    $(find xacro)/xacro.py '$(arg model)'
+    $(find xacro)/xacro '$(arg model)'
     mav_name:=$(arg mav_name)
     color:=$(arg color)"
   />

@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright  2016 James Jackson, Brigham Young University, Provo UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +20,8 @@
 #include <sstream>
 #include <stdint.h>
 
+#include <stdio.h>
+
 #include "sensors.h"
 #include "estimator.h"
 #include "param.h"
@@ -36,11 +34,13 @@
 namespace gazebo
 {
 
-\ROSflightSIL::\ROSflightSIL() :
-  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {}
+ROSflightSIL::ROSflightSIL() :
+  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {
+  printf("STARTING");
+}
 
 
-GazeboROSflightSIL::~GazeboROSflightSIL()
+ROSflightSIL::~ROSflightSIL()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (node_handle_) {
@@ -50,7 +50,7 @@ GazeboROSflightSIL::~GazeboROSflightSIL()
 }
 
 
-void GazeboROSflightSIL::SendForces()
+void ROSflightSIL::SendForces()
 {
   // apply the forces and torques to the joint
   link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, forces_.Fz));
@@ -58,7 +58,7 @@ void GazeboROSflightSIL::SendForces()
 }
 
 
-void GazeboROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
   world_ = model_->GetWorld();
@@ -118,7 +118,7 @@ void GazeboROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   force_allocation_matrix_.resize(4,num_rotors_);
   torque_allocation_matrix_.resize(4,num_rotors_);
-  for(int i = 0; i<num_rotors_; i++)
+  for(int i = 0; i < num_rotors_; i++)
   {
     std::stringstream int_strm;
     int_strm << i+1;
@@ -147,6 +147,7 @@ void GazeboROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   actual_forces_.resize(num_rotors_);
   actual_torques_.resize(num_rotors_);
   motor_signals_.resize(num_rotors_);
+
   for (int i = 0; i < num_rotors_; i++)
   {
     desired_forces_(i)=0.0;
@@ -157,99 +158,31 @@ void GazeboROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   }
 
   // Connect the update function to the simulation
-  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GazeboROSflightSIL::OnUpdate, this, _1));
+  updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&ROSflightSIL::OnUpdate, this, _1));
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &GazeboROSflightSIL::CommandCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &GazeboROSflightSIL::WindSpeedCallback, this);
-  imu_sub_ = node_handle_->subscribe(imu_topic_, 1, &GazeboROSflightSIL::imuCallback, this);
+  command_sub_ = node_handle_->subscribe(command_topic_, 1, &ROSflightSIL::CommandCallback, this);
+  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &ROSflightSIL::WindSpeedCallback, this);
+  imu_sub_ = node_handle_->subscribe(imu_topic_, 1, &ROSflightSIL::imuCallback, this);
 
   // Connect Publishers
   estimate_pub_ = node_handle_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
-  signals_pub_ = node_handle_->advertise<fcu_common::ServoOutputRaw>(signals_topic_, 1);
-  alt_pub_ = node_handle_->advertise<fcu_common::ExtendedCommand>("altitude_command", 1);
-  rate_pub_ = node_handle_->advertise<fcu_common::ExtendedCommand>("rate_command", 1);
-  angle_pub_ = node_handle_->advertise<fcu_common::ExtendedCommand>("angle_command", 1);
-  passthrough_pub_ = node_handle_->advertise<fcu_common::ExtendedCommand>("passthrough_command", 1);
+  signals_pub_ = node_handle_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
+  alt_pub_ = node_handle_->advertise<fcu_common::Command>("altitude_command", 1);
+  rate_pub_ = node_handle_->advertise<fcu_common::Command>("rate_command", 1);
+  angle_pub_ = node_handle_->advertise<fcu_common::Command>("angle_command", 1);
+  passthrough_pub_ = node_handle_->advertise<fcu_common::Command>("passthrough_command", 1);
 
   // Initialize ROSflight code
-  initialize_params();
+  init_params();
   init_mode();
   init_estimator(false, false, true);
   init_mixing();
 }
 
-void GazeboROSflightSIL::initialize_params()
-{
-  printf("testing");
-  // temporary: replace with actual initialisation of rest of params
-  char temp_name[PARAMS_NAME_LENGTH];
-  for (int id = 0; id < PARAMS_COUNT; id++)
-  {
-    sprintf(temp_name, "TEMP_%c%c", 'A' + id/10, 'A' + id%10);
-    init_param_int((param_id_t)id, temp_name, id);
-  }
-  init_param_int(PARAM_INIT_TIME, "FILTER_INIT_T", 3000); // ms
-  init_param_int(PARAM_FILTER_KP, "FILTER_KP", 1000); // munits
-  init_param_int(PARAM_FILTER_KI, "FILTER_KI", 100);  // munits
-  init_param_int(PARAM_STREAM_ADJUSTED_GYRO, "STRM_ADJUST_GYRO", 1);
-  init_param_float(PARAM_GYRO_X_BIAS, "GYRO_X_BIAS", 0.0f);
-  init_param_float(PARAM_GYRO_Y_BIAS, "GYRO_Y_BIAS", 0.0f);
-  init_param_float(PARAM_GYRO_Z_BIAS, "GYRO_Z_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_X_BIAS,  "ACC_X_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_Y_BIAS,  "ACC_Y_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_Z_BIAS,  "ACC_Z_BIAS", 0.0f);
-  init_param_float(PARAM_ACC_X_TEMP_COMP,  "ACC_X_TEMP_COMP", 0.0f);
-  init_param_float(PARAM_ACC_Y_TEMP_COMP,  "ACC_Y_TEMP_COMP", 0.0f);
-  init_param_float(PARAM_ACC_Z_TEMP_COMP,  "ACC_Z_TEMP_COMP", 0.0f);
-
-  init_param_int(PARAM_MOTOR_PWM_SEND_RATE, "MOTOR_PWM_PERIOD", 400);
-  init_param_int(PARAM_MOTOR_IDLE_PWM, "MOTOR_IDLE_PWM", 1100);
-  init_param_int(PARAM_SPIN_MOTORS_WHEN_ARMED, "ARM_SPIN_MOTORS", true);
-
-  init_param_float(PARAM_RC_MAX_ROLL_MRAD, "RC_MAX_ROLL", 0.786f); // 45 deg
-  init_param_float(PARAM_RC_MAX_PITCH_MRAD, "RC_MAX_PITCH", 0.786f);
-  init_param_float(PARAM_RC_MAX_ROLLRATE_MRAD_S, "RC_MAX_ROLLRATE", 12.566f);
-  init_param_float(PARAM_RC_MAX_PITCHRATE_MRAD_S, "RC_MAX_PITCHRATE", 12.566f);
-  init_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S, "RC_MAX_YAWRATE", 6.28f);
-
-  init_param_float(PARAM_PID_ALT_P, "PID_ALT_P", 10.0f);
-  init_param_float(PARAM_PID_ALT_I, "PID_ALT_I", 0.0f);
-  init_param_float(PARAM_PID_ALT_D, "PID_ALT_D", 0.0f);
-
-  init_param_float(PARAM_PID_ROLL_ANGLE_P, "PID_ROLL_ANG_P", 30.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_I, "PID_ROLL_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_ROLL_ANGLE_D, "PID_ROLL_ANG_D", 25.0f);
-  init_param_float(PARAM_MAX_ROLL_ANGLE, "MAX_ROLL_ANG", 0.786f);
-
-  init_param_float(PARAM_PID_PITCH_ANGLE_P, "PID_PITCH_ANG_P", 30.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_I, "PID_PITCH_ANG_I", 0.0f);
-  init_param_float(PARAM_PID_PITCH_ANGLE_D, "PID_PITCH_ANG_D", 15.0f);
-  init_param_float(PARAM_MAX_PITCH_ANGLE, "MAX_PITCH_ANG", 0.786);
-
-  init_param_float(PARAM_PID_ROLL_RATE_P, "PID_ROLL_RATE_P", 10.00f);
-  init_param_float(PARAM_PID_ROLL_RATE_I, "PID_ROLL_RATE_I", 0.00f);
-  init_param_float(PARAM_MAX_ROLL_RATE, "MAX_ROLL_RATE", 12.566f);
-
-  init_param_float(PARAM_PID_PITCH_RATE_P, "PID_PITCH_RATE_P", 10.00f);
-  init_param_float(PARAM_PID_PITCH_RATE_I, "PID_PITCH_RATE_I", 0.30f);
-  init_param_float(PARAM_MAX_PITCH_RATE, "MAX_PITCH_RATE", 12.566f);
-
-  init_param_float(PARAM_PID_YAW_RATE_P, "PID_YAW_RATE_P", 25.0f);
-  init_param_float(PARAM_PID_YAW_RATE_I, "PID_YAW_RATE_I", 0.0f);
-  init_param_float(PARAM_MAX_YAW_RATE, "MAX_YAW_RATE", 6.283f);
-
-  init_param_int(PARAM_MAX_COMMAND, "PARAM_MAX_CMD", 1000);
-
-  init_param_int(PARAM_MIXER, "MIXER", QUADCOPTER_H);
-  init_param_int(PARAM_ELEVATOR_REVERSE, "ELEVATOR_REV", 0);
-  init_param_int(PARAM_AILERON_REVERSE, "AIL_REV", 0);
-  init_param_int(PARAM_RUDDER_REVERSE, "RUDDER_REV", 0);
-  init_param_int(PARAM_FIXED_WING, "FIXED_WING", false);
-}
 
 // This gets called by the world update event.
-void GazeboROSflightSIL::OnUpdate(const common::UpdateInfo& _info) {
+void ROSflightSIL::OnUpdate(const common::UpdateInfo& _info) {
 
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
@@ -257,20 +190,20 @@ void GazeboROSflightSIL::OnUpdate(const common::UpdateInfo& _info) {
   SendForces();
 }
 
-void GazeboROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
   W_wind_speed_.x = wind.x;
   W_wind_speed_.y = wind.y;
   W_wind_speed_.z = wind.z;
 }
 
-void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
+void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
 {
   _combined_control.F.active = true;
   _combined_control.x.active = true;
   _combined_control.y.active = true;
   _combined_control.z.active = true;
 
-  if (msg.mode == fcu_common::ExtendedCommand::MODE_PASS_THROUGH)
+  if (msg.mode == fcu_common::Command::MODE_PASS_THROUGH)
   {
     _combined_control.x.type = PASSTHROUGH;
     _combined_control.y.type = PASSTHROUGH;
@@ -280,38 +213,38 @@ void GazeboROSflightSIL::CommandCallback(const fcu_common::ExtendedCommand &msg)
     _combined_control.y.value = msg.y;
     _combined_control.z.value = msg.z;
   }
-  else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+  else if (msg.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
     _combined_control.x.type = RATE;
     _combined_control.y.type = RATE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x*2*get_param_float(PARAM_RC_MAX_ROLLRATE_MRAD_S);
-    _combined_control.y.value = msg.y*2*get_param_float(PARAM_RC_MAX_PITCHRATE_MRAD_S);
-    _combined_control.z.value = msg.z*2*get_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S);
+    _combined_control.x.value = msg.x;
+    _combined_control.y.value = msg.y;
+    _combined_control.z.value = msg.z;
 
   }
-  else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
+  else if (msg.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
     _combined_control.x.type = ANGLE;
     _combined_control.y.type = ANGLE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x*2*get_param_float(PARAM_RC_MAX_ROLL_MRAD);
-    _combined_control.y.value = msg.y*2*get_param_float(PARAM_RC_MAX_PITCH_MRAD);
-    _combined_control.z.value = msg.z*2*get_param_float(PARAM_RC_MAX_YAWRATE_MRAD_S);
+    _combined_control.x.value = msg.x;
+    _combined_control.y.value = msg.y;
+    _combined_control.z.value = msg.z;
   }
-  else if (msg.mode == fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
+  else if (msg.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
     _combined_control.x.type = ANGLE;
     _combined_control.y.type = ANGLE;
     _combined_control.z.type = RATE;
     _combined_control.F.type = ALTITUDE;
   }
-  _combined_control.F.value = msg.F*1000.0;
+  _combined_control.F.value = msg.F;
 }
 
-void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
+void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 {
   uint32_t now = (uint32_t)(msg.header.stamp.toSec()*1e6);
   // update IMU measurements
@@ -326,7 +259,7 @@ void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   _imu_time = now;
 
   // update estimate
-  run_estimator(now);
+  run_estimator();
 
   // publish estimate
   fcu_common::Attitude attitude_msg;
@@ -340,12 +273,12 @@ void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   estimate_pub_.publish(attitude_msg);
 
   // Run Controller
-  fcu_common::ExtendedCommand alt_msg, angle_msg, rate_msg, pt_msg;
-  run_controller(now);
-  alt_msg.mode = fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
-  angle_msg.mode = fcu_common::ExtendedCommand::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-  rate_msg.mode = fcu_common::ExtendedCommand::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-  pt_msg.mode = fcu_common::ExtendedCommand::MODE_PASS_THROUGH;
+  fcu_common::Command alt_msg, angle_msg, rate_msg, pt_msg;
+  run_controller();
+  alt_msg.mode = fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
+  angle_msg.mode = fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
+  rate_msg.mode = fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
+  pt_msg.mode = fcu_common::Command::MODE_PASS_THROUGH;
 
   rate_msg.x = _combined_control.x.value;
   rate_msg.y = _combined_control.y.value;
@@ -377,7 +310,7 @@ void GazeboROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 }
 
 
-void GazeboROSflightSIL::UpdateForcesAndMoments()
+void ROSflightSIL::UpdateForcesAndMoments()
 {
   /* Get state information from Gazebo                          *
    * C denotes child frame, P parent frame, and W world frame.  *
@@ -438,7 +371,7 @@ void GazeboROSflightSIL::UpdateForcesAndMoments()
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
 }
 
-double GazeboROSflightSIL::sat(double x, double max, double min)
+double ROSflightSIL::sat(double x, double max, double min)
 {
   if(x > max)
     return max;
@@ -448,19 +381,19 @@ double GazeboROSflightSIL::sat(double x, double max, double min)
     return x;
 }
 
-double GazeboROSflightSIL::max(double x, double y)
+double ROSflightSIL::max(double x, double y)
 {
   return (x > y) ? x : y;
 }
 
-void GazeboROSflightSIL::init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
+void ROSflightSIL::init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
 {
   memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
   _params.values[id] = value;
   _params.types[id] = PARAM_TYPE_INT32;
 }
 
-void GazeboROSflightSIL::init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
+void ROSflightSIL::init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
 {
   memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
   _params.values[id] = *((int32_t *) &value);
@@ -469,7 +402,7 @@ void GazeboROSflightSIL::init_param_float(param_id_t id, char name[PARAMS_NAME_L
 
 
 
-GZ_REGISTER_MODEL_PLUGIN(GazeboROSflightSIL);
+GZ_REGISTER_MODEL_PLUGIN(ROSflightSIL);
 }
 
 

@@ -22,13 +22,13 @@
     <arg name="world_name" value="$(find fcu_sim)/worlds/$(arg world_file)"/>
     <arg name="paused" value="true"/>
     <arg name="gui" value="true"/>
+    <arg name="verbose" value="true"/>
   </include>
 
   <!-- Spawn in Gazebo -->
   <include file="$(find fcu_sim)/launch/spawn_mav.launch">
     <arg name="mav_name"            value="$(arg mav_name)" />
     <arg name="model"               value="$(find fcu_sim)/urdf/$(arg mav_name)/$(arg mav_name)_base.xacro" />
-    <arg name="enable_ground_truth" value="true" />
     <arg name="x"                   value="$(arg x)"/>
     <arg name="y"                   value="$(arg y)"/>
     <arg name="z"                   value="$(arg z)"/>
@@ -50,7 +50,7 @@
   </node>
 
   <!-- FPV -->
-  <node name="fpv" pkg="image_view" type="image_view">
+  <!-- <node name="fpv" pkg="image_view" type="image_view">
     <remap from="image" to="/$(arg mav_name)/camera/rgb"/>
-  </node>
+  </node> -->
 </launch>

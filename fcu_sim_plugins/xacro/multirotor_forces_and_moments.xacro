@@ -96,7 +96,7 @@
     <link name="${namespace}/multirotor_forces_and_moments_link">
       <inertial>
         <xacro:insert_block name="inertia" />
-        <mass value="0.001"/>  <!-- [kg] -->
+        <mass value="0.001"/>
       </inertial>
     </link>
 
@@ -110,7 +110,7 @@
 
     <!-- plugin -->
     <gazebo>
-      <plugin filename="libfcu_sim_multirotor_forces_and_moments_plugin.so" name="multirotor_forces_and_moments">
+      <plugin filename="libmultirotor_forces_and_moments_plugin.so" name="multirotor_forces_and_moments">
         <linkName>${namespace}/multirotor_forces_and_moments_link</linkName>
         <robotNamespace>${namespace}</robotNamespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
