@@ -56,16 +56,16 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   if (_sdf->HasElement("namespace"))
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_multirotor_forces_and_moments] Please specify a namespace.\n";
+    gzerr << "[multirotor_forces_and_moments] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
-    gzerr << "[gazebo_multirotor_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
+    gzerr << "[multirotor_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
-    gzthrow("[gazebo_multirotor_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
+    gzthrow("[multirotor_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");

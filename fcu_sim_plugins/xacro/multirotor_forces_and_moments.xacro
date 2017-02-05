@@ -7,10 +7,10 @@
       name="shredder_forces_and_moments"
       params="namespace parent_link">
       <xacro:multirotor_forces_and_moments_macro
-        namespace="${namespace}/multirotor_forces_and_moments"
+        namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
-        command_topic="${namespace}/command"
+        command_topic="command"
         parent_frame_id="${parent_link}"
         mass="3.81"
         mu="0.01"
@@ -47,10 +47,10 @@
       name="mikey_forces_and_moments"
       params="namespace parent_link">
       <xacro:multirotor_forces_and_moments_macro
-        namespace="${namespace}/multirotor_forces_and_moments"
+        namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
-        command_topic="${namespace}/command"
+        command_topic="command"
         parent_frame_id="${parent_link}"
         mass="3.856"
         mu="1"
@@ -112,7 +112,7 @@
     <gazebo>
       <plugin filename="libmultirotor_forces_and_moments_plugin.so" name="multirotor_forces_and_moments">
         <linkName>${namespace}/multirotor_forces_and_moments_link</linkName>
-        <robotNamespace>${namespace}</robotNamespace>
+        <namespace>${namespace}</namespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>
         <parentFrameId>${parent_frame_id}</parentFrameId>
