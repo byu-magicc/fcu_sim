@@ -39,15 +39,15 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   model_ = _model;
   world_ = model_->GetWorld();
 
-  Vector3d noise_normal_position;
-  Vector3d noise_normal_quaternion;
-  Vector3d noise_normal_linear_velocity;
-  Vector3d noise_normal_angular_velocity;
-  Vector3d noise_uniform_position;
-  Vector3d noise_uniform_quaternion;
-  Vector3d noise_uniform_linear_velocity;
-  Vector3d noise_uniform_angular_velocity;
-  const Vector3d zeros3(0.0, 0.0, 0.0);
+  ignition::math::Vector3d noise_normal_position;
+  ignition::math::Vector3d noise_normal_quaternion;
+  ignition::math::Vector3d noise_normal_linear_velocity;
+  ignition::math::Vector3d noise_normal_angular_velocity;
+  ignition::math::Vector3d noise_uniform_position;
+  ignition::math::Vector3d noise_uniform_quaternion;
+  ignition::math::Vector3d noise_uniform_linear_velocity;
+  ignition::math::Vector3d noise_uniform_angular_velocity;
+  const ignition::math::Vector3d zeros3(0.0, 0.0, 0.0);
 
   odometry_queue_.clear();
 
@@ -86,14 +86,14 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   getSdfParam<std::string>(_sdf, "transformTopic", transform_pub_topic_, "transform");
   getSdfParam<std::string>(_sdf, "odometryTopic", odometry_pub_topic_, "odometry");
   getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, "world");
-  getSdfParam<Vector3d>(_sdf, "noiseNormalPosition", noise_normal_position, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseNormalQuaternion", noise_normal_quaternion, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseNormalLinearVelocity", noise_normal_linear_velocity, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseNormalAngularVelocity", noise_normal_angular_velocity, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseUniformPosition", noise_uniform_position, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseUniformQuaternion", noise_uniform_quaternion, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseUniformLinearVelocity", noise_uniform_linear_velocity, zeros3);
-  getSdfParam<Vector3d>(_sdf, "noiseUniformAngularVelocity", noise_uniform_angular_velocity, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseNormalPosition", noise_normal_position, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseNormalQuaternion", noise_normal_quaternion, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseNormalLinearVelocity", noise_normal_linear_velocity, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseNormalAngularVelocity", noise_normal_angular_velocity, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseUniformPosition", noise_uniform_position, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseUniformQuaternion", noise_uniform_quaternion, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseUniformLinearVelocity", noise_uniform_linear_velocity, zeros3);
+  getSdfParam<ignition::math::Vector3d>(_sdf, "noiseUniformAngularVelocity", noise_uniform_angular_velocity, zeros3);
   getSdfParam<int>(_sdf, "measurementDelay", measurement_delay_, 0);
   getSdfParam<int>(_sdf, "measurementDivisor", measurement_divisor_, 1);
   getSdfParam<double>(_sdf, "unknownDelay", unknown_delay_, 0);
@@ -103,60 +103,59 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   if (parent_link_ == NULL && parent_frame_id_ != "world") {
     gzthrow("[gazebo_odometry_plugin] Couldn't find specified parent link \"" << parent_frame_id_ << "\".");
   }
-  position_n_[0] = NormalDistribution(0, noise_normal_position.XVAL);
-  position_n_[1] = NormalDistribution(0, noise_normal_position.YVAL);
-  position_n_[2] = NormalDistribution(0, noise_normal_position.ZVAL);
+  position_n_[0] = NormalDistribution(0, noise_normal_position[0]);
+  position_n_[1] = NormalDistribution(0, noise_normal_position[1]);
+  position_n_[2] = NormalDistribution(0, noise_normal_position[2]);
 
-  attitude_n_[0] = NormalDistribution(0, noise_normal_quaternion.XVAL);
-  attitude_n_[1] = NormalDistribution(0, noise_normal_quaternion.YVAL);
-  attitude_n_[2] = NormalDistribution(0, noise_normal_quaternion.ZVAL);
+  attitude_n_[0] = NormalDistribution(0, noise_normal_quaternion[0]);
+  attitude_n_[1] = NormalDistribution(0, noise_normal_quaternion[1]);
+  attitude_n_[2] = NormalDistribution(0, noise_normal_quaternion[2]);
 
-  linear_velocity_n_[0] = NormalDistribution(0, noise_normal_linear_velocity.XVAL);
-  linear_velocity_n_[1] = NormalDistribution(0, noise_normal_linear_velocity.YVAL);
-  linear_velocity_n_[2] = NormalDistribution(0, noise_normal_linear_velocity.ZVAL);
+  linear_velocity_n_[0] = NormalDistribution(0, noise_normal_linear_velocity[0]);
+  linear_velocity_n_[1] = NormalDistribution(0, noise_normal_linear_velocity[1]);
+  linear_velocity_n_[2] = NormalDistribution(0, noise_normal_linear_velocity[2]);
 
-  angular_velocity_n_[0] = NormalDistribution(0, noise_normal_angular_velocity.XVAL);
-  angular_velocity_n_[1] = NormalDistribution(0, noise_normal_angular_velocity.YVAL);
-  angular_velocity_n_[2] = NormalDistribution(0, noise_normal_angular_velocity.ZVAL);
+  angular_velocity_n_[0] = NormalDistribution(0, noise_normal_angular_velocity[0]);
+  angular_velocity_n_[1] = NormalDistribution(0, noise_normal_angular_velocity[1]);
+  angular_velocity_n_[2] = NormalDistribution(0, noise_normal_angular_velocity[2]);
 
-  position_u_[0] = UniformDistribution(-noise_uniform_position.XVAL, noise_uniform_position.XVAL);
-  position_u_[1] = UniformDistribution(-noise_uniform_position.YVAL, noise_uniform_position.YVAL);
-  position_u_[2] = UniformDistribution(-noise_uniform_position.ZVAL, noise_uniform_position.ZVAL);
+  position_u_[0] = UniformDistribution(-noise_uniform_position[0], noise_uniform_position[0]);
+  position_u_[1] = UniformDistribution(-noise_uniform_position[1], noise_uniform_position[1]);
+  position_u_[2] = UniformDistribution(-noise_uniform_position[2], noise_uniform_position[2]);
 
-  attitude_u_[0] = UniformDistribution(-noise_uniform_quaternion.XVAL, noise_uniform_quaternion.XVAL);
-  attitude_u_[1] = UniformDistribution(-noise_uniform_quaternion.YVAL, noise_uniform_quaternion.YVAL);
-  attitude_u_[2] = UniformDistribution(-noise_uniform_quaternion.ZVAL, noise_uniform_quaternion.ZVAL);
+  attitude_u_[0] = UniformDistribution(-noise_uniform_quaternion[0], noise_uniform_quaternion[0]);
+  attitude_u_[1] = UniformDistribution(-noise_uniform_quaternion[1], noise_uniform_quaternion[1]);
+  attitude_u_[2] = UniformDistribution(-noise_uniform_quaternion[2], noise_uniform_quaternion[2]);
 
-  linear_velocity_u_[0] = UniformDistribution(-noise_uniform_linear_velocity.XVAL, noise_uniform_linear_velocity.XVAL);
-  linear_velocity_u_[1] = UniformDistribution(-noise_uniform_linear_velocity.YVAL, noise_uniform_linear_velocity.YVAL);
-  linear_velocity_u_[2] = UniformDistribution(-noise_uniform_linear_velocity.ZVAL, noise_uniform_linear_velocity.ZVAL);
+  linear_velocity_u_[0] = UniformDistribution(-noise_uniform_linear_velocity[0], noise_uniform_linear_velocity[0]);
+  linear_velocity_u_[1] = UniformDistribution(-noise_uniform_linear_velocity[1], noise_uniform_linear_velocity[1]);
+  linear_velocity_u_[2] = UniformDistribution(-noise_uniform_linear_velocity[2], noise_uniform_linear_velocity[2]);
 
-  angular_velocity_u_[0] = UniformDistribution(-noise_uniform_angular_velocity.XVAL, noise_uniform_angular_velocity.XVAL);
-  angular_velocity_u_[1] = UniformDistribution(-noise_uniform_angular_velocity.YVAL, noise_uniform_angular_velocity.YVAL);
-  angular_velocity_u_[2] = UniformDistribution(-noise_uniform_angular_velocity.ZVAL, noise_uniform_angular_velocity.ZVAL);
-
+  angular_velocity_u_[0] = UniformDistribution(-noise_uniform_angular_velocity[0], noise_uniform_angular_velocity[0]);
+  angular_velocity_u_[1] = UniformDistribution(-noise_uniform_angular_velocity[1], noise_uniform_angular_velocity[1]);
+  angular_velocity_u_[2] = UniformDistribution(-noise_uniform_angular_velocity[2], noise_uniform_angular_velocity[2]);
   // Fill in covariance. We omit uniform noise here.
   Eigen::Map<Eigen::Matrix<double, 6, 6> > pose_covariance(pose_covariance_matrix_.data());
   Eigen::Matrix<double, 6, 1> pose_covd;
 
-  pose_covd << noise_normal_position.XVAL * noise_normal_position.XVAL,
-               noise_normal_position.YVAL * noise_normal_position.YVAL,
-               noise_normal_position.ZVAL * noise_normal_position.ZVAL,
-               noise_normal_quaternion.XVAL * noise_normal_quaternion.XVAL,
-               noise_normal_quaternion.YVAL * noise_normal_quaternion.YVAL,
-               noise_normal_quaternion.ZVAL * noise_normal_quaternion.ZVAL;
+  pose_covd << noise_normal_position[0] * noise_normal_position[0],
+               noise_normal_position[1] * noise_normal_position[1],
+               noise_normal_position[2] * noise_normal_position[2],
+               noise_normal_quaternion[0] * noise_normal_quaternion[0],
+               noise_normal_quaternion[1] * noise_normal_quaternion[1],
+               noise_normal_quaternion[2] * noise_normal_quaternion[2];
   pose_covariance = pose_covd.asDiagonal();
 
   // Fill in covariance. We omit uniform noise here.
   Eigen::Map<Eigen::Matrix<double, 6, 6> > twist_covariance(twist_covariance_matrix_.data());
   Eigen::Matrix<double, 6, 1> twist_covd;
 
-  twist_covd << noise_normal_linear_velocity.XVAL * noise_normal_linear_velocity.XVAL,
-                noise_normal_linear_velocity.YVAL * noise_normal_linear_velocity.YVAL,
-                noise_normal_linear_velocity.ZVAL * noise_normal_linear_velocity.ZVAL,
-                noise_normal_angular_velocity.XVAL * noise_normal_angular_velocity.XVAL,
-                noise_normal_angular_velocity.YVAL * noise_normal_angular_velocity.YVAL,
-                noise_normal_angular_velocity.ZVAL * noise_normal_angular_velocity.ZVAL;
+  twist_covd << noise_normal_linear_velocity[0] * noise_normal_linear_velocity[0],
+                noise_normal_linear_velocity[1] * noise_normal_linear_velocity[1],
+                noise_normal_linear_velocity[2] * noise_normal_linear_velocity[2],
+                noise_normal_angular_velocity[0] * noise_normal_angular_velocity[0],
+                noise_normal_angular_velocity[1] * noise_normal_angular_velocity[1],
+                noise_normal_angular_velocity[2] * noise_normal_angular_velocity[2];
   twist_covariance = twist_covd.asDiagonal();
 
   // Listen to the update event. This event is broadcast every
