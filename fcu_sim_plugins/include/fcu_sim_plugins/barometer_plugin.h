@@ -26,8 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <sensor_msgs/Range.h>
-#include <std_msgs/Float32.h>
+#include <fcu_common/Barometer.h>
 
 #include <chrono>
 #include <cmath>
@@ -57,7 +56,7 @@ class AltimeterPlugin : public ModelPlugin {
   ros::Publisher alt_pub_;
 
   // Topic
-  std::string alt_topic_;
+  std::string message_topic_;
 
   // params
   double min_range_;
@@ -65,7 +64,7 @@ class AltimeterPlugin : public ModelPlugin {
   double error_stdev_;
   double field_of_view_;
   double pub_rate_;
-  bool alt_noise_on_;
+  bool noise_on_;
   bool publish_float_;
 
   // Random Engine
@@ -81,8 +80,6 @@ class AltimeterPlugin : public ModelPlugin {
   event::ConnectionPtr updateConnection_;
   common::Time last_time_;
 
-  // Memory
-  sensor_msgs::Range alt_message_;
 };
 }
 

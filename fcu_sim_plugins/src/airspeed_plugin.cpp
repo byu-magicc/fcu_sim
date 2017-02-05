@@ -76,11 +76,10 @@ void AirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Listen to the update event. This event is broadcast every simulation iteration.
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AirspeedPlugin::OnUpdate, this, _1));
 
-  airspeed_pub_ = nh_->advertise<sensor_msgs::FluidPressure>(airspeed_topic_, 10);
+  airspeed_pub_ = nh_->advertise<fcu_common::Airspeed>(airspeed_topic_, 10);
 
   // Fill static members of airspeed message.
   airspeed_message_.header.frame_id = frame_id_;
-  airspeed_message_.variance = pressure_noise_sigma_*pressure_noise_sigma_;
 
   standard_normal_distribution_ = std::normal_distribution<double>(0.0, 1.0);
 }
@@ -107,7 +106,9 @@ void AirspeedPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
   y = (y>max_pressure_)?max_pressure_:y;
   y = (y<min_pressure_)?min_pressure_:y;
-  airspeed_message_.fluid_pressure = y;
+  airspeed_message_.differential_pressure = y;
+  airspeed_message_.temperature = 27.0;
+  airspeed_message_.velocity = Va;
 
   airspeed_pub_.publish(airspeed_message_);
 }

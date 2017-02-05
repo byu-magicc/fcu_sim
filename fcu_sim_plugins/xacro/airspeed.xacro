@@ -2,8 +2,7 @@
 
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:property name="pi" value="3.14159265359" />
-
+  
     <!-- Configure Airspeed -->
     <xacro:macro
       name="airspeed_MPXV5004G"

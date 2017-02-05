@@ -8,7 +8,7 @@
       params="namespace
               parent_link
               camera_topic
-	      frame_rate
+	            frame_rate
               pose_topic
               command_topic
               use_slipring
