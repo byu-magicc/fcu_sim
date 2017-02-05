@@ -71,16 +71,16 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("namespace"))
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_multirotor_hil] Please specify a namespace.\n";
+    gzerr << "[ROSflight_SIL] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
-    gzerr << "[gazebo_multirotor_hil] Please specify a linkName of the forces and moments plugin.\n";
+    gzerr << "[ROSflight_SIL] Please specify a linkName of the forces and moments plugin.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
-    gzthrow("[gazebo_multirotor_hil] Couldn't find specified link \"" << link_name_ << "\".");
+    gzthrow("[ROSflight_SIL] Couldn't find specified link \"" << link_name_ << "\".");
 
   //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
   getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
@@ -96,7 +96,7 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
-  getSdfParam<std::string>(_sdf, "imuTopic", imu_topic_, "mikey/imu/data");
+  getSdfParam<std::string>(_sdf, "imuTopic", imu_topic_, "imu/data");
   getSdfParam<std::string>(_sdf, "estimateTopic", estimate_topic_, "attitude");
   getSdfParam<std::string>(_sdf, "signalsTopic", signals_topic_, "motor_signals");
 
@@ -168,12 +168,10 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Connect Publishers
   estimate_pub_ = node_handle_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
   signals_pub_ = node_handle_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
-  alt_pub_ = node_handle_->advertise<fcu_common::Command>("altitude_command", 1);
-  rate_pub_ = node_handle_->advertise<fcu_common::Command>("rate_command", 1);
-  angle_pub_ = node_handle_->advertise<fcu_common::Command>("angle_command", 1);
-  passthrough_pub_ = node_handle_->advertise<fcu_common::Command>("passthrough_command", 1);
+  command_pub_ = node_handle_->advertise<fcu_common::Command>("command", 1);
 
   // Initialize ROSflight code
+  start_time_us_ = (uint64_t)(ros::Time::now().toNSec() * 1e-3);
   init_params();
   init_mode();
   init_estimator(false, false, true);
@@ -246,7 +244,7 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
 
 void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 {
-  uint32_t now = (uint32_t)(msg.header.stamp.toSec()*1e6);
+  uint64_t now_us = (uint64_t)(msg.header.stamp.toNSec()*1e-3) - start_time_us_;
   // update IMU measurements
   _accel.x = msg.linear_acceleration.x;
   _accel.y = msg.linear_acceleration.y;
@@ -255,47 +253,46 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   _gyro.x = msg.angular_velocity.x;
   _gyro.y = msg.angular_velocity.y;
   _gyro.z = msg.angular_velocity.z;
-
-  _imu_time = now;
+  _imu_time = now_us;
 
   // update estimate
   run_estimator();
 
   // publish estimate
   fcu_common::Attitude attitude_msg;
-  attitude_msg.header.stamp = ros::Time::now();
-  attitude_msg.roll = _current_state.phi;
-  attitude_msg.pitch = _current_state.theta;
-  attitude_msg.yaw = _current_state.psi;
-  attitude_msg.p = _current_state.p;
-  attitude_msg.q = _current_state.q;
-  attitude_msg.r = _current_state.r;
+  geometry_msgs::Vector3Stamped euler_msg;
+  attitude_msg.header.stamp = msg.header.stamp;
+  attitude_msg.attitude.w = _current_state.q.w;
+  attitude_msg.attitude.x = _current_state.q.x;
+  attitude_msg.attitude.y = _current_state.q.y;
+  attitude_msg.attitude.z = _current_state.q.z;
+
+  attitude_msg.angular_velocity.x = _current_state.omega.x;
+  attitude_msg.angular_velocity.y = _current_state.omega.y;
+  attitude_msg.angular_velocity.z = _current_state.omega.z;
+
+  euler_msg.header.stamp = msg.header.stamp;
+  euler_msg.vector.x = _current_state.euler.x;
+  euler_msg.vector.y = _current_state.euler.y;
+  euler_msg.vector.z = _current_state.euler.z;
+
   estimate_pub_.publish(attitude_msg);
+  euler_pub_.publish(euler_msg);
 
   // Run Controller
   fcu_common::Command alt_msg, angle_msg, rate_msg, pt_msg;
   run_controller();
-  alt_msg.mode = fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE;
-  angle_msg.mode = fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE;
-  rate_msg.mode = fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE;
-  pt_msg.mode = fcu_common::Command::MODE_PASS_THROUGH;
-
-  rate_msg.x = _combined_control.x.value;
-  rate_msg.y = _combined_control.y.value;
-  rate_msg.z = _combined_control.z.value;
-  rate_msg.F = _combined_control.F.value;
 
   pt_msg.x = _command.x;
   pt_msg.y = _command.y;
   pt_msg.z = _command.z;
   pt_msg.F = _command.F;
 
-  rate_pub_.publish(rate_msg);
-  passthrough_pub_.publish(pt_msg);
+  command_pub_.publish(rate_msg);
 
   // Mix Outputs
   mix_output();
-  fcu_common::ServoOutputRaw ESC_signals;
+  fcu_common::OutputRaw ESC_signals;
   ESC_signals.header.stamp = ros::Time::now();
   for (int i = 0; i < 8 ; i++)
   {

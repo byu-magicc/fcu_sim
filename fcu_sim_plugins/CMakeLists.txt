@@ -44,9 +44,17 @@ add_library(ROSflight_sil_plugin
  lib/ROSflight/src/estimator.c
  lib/ROSflight/src/mixer.c
  lib/ROSflight/src/controller.c
- lib/ROSflight/src/sensors.c
+ lib/ROSflight/src/param.c
  lib/ROSflight/src/mode.c
+ lib/ROSflight/src/mavlink.c
+ lib/ROSflight/src/mavlink_stream.c
+ lib/ROSflight/src/mavlink_receive.c
+ lib/ROSflight/src/mavlink_util.c
+ lib/ROSflight/src/mavlink_param.c
+ lib/ROSflight/src/rc.c
  lib/ROSflight/src/mux.c
+ lib/ROSflight/src/sensors.c
+
  lib/ROSflight/lib/turbotrig/turbotrig.c
  lib/ROSflight/lib/turbotrig/turbovec.c
  lib/ROSflight_SIL/ROSflight_SIL.c)
