@@ -36,7 +36,7 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <fcu_common/Attitude.h>
 #include "fcu_sim_plugins/common.h"
-#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/Imu.h>
 #include <fcu_common/simple_pid.h>
 
@@ -150,14 +150,15 @@ private:
   // Time Counters
   double sampling_time_;
   double prev_sim_time_;
+  uint64_t start_time_us_;
 
   ros::NodeHandle* node_handle_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
   ros::Subscriber imu_sub_;
-  ros::Publisher estimate_pub_;
+  ros::Publisher estimate_pub_, euler_pub_;
   ros::Publisher signals_pub_;
-  ros::Publisher alt_pub_, angle_pub_, rate_pub_, passthrough_pub_;
+  ros::Publisher alt_pub_, angle_pub_, command_pub_, passthrough_pub_;
 
   fcu_common::Command command_;
 

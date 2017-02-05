@@ -6,7 +6,7 @@
 
 
 <launch>
-  <arg name="mav_name"            default="shredder"/>
+  <arg name="mav_name"            default="mikey"/>
   <arg name="enable_ground_truth" default="true" />
   <arg name="log_file"            default="$(arg mav_name)" />
   <arg name="color"               default="White"/>
@@ -36,21 +36,27 @@
     <arg name="color"               value="$(arg color)"/>
   </include>
 
-  <!-- Is Flying Publisher -->
-  <node pkg="rostopic" type="rostopic" name="is_flying_pub" args="pub /is_flying std_msgs/Bool true"/>
-
   <!-- Controller -->
-  <node name="controller" pkg="ros_copter" type="controller"/>
+  <group ns="mikey">
 
-  <!-- Waypoint Manager -->
-  <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
-    <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml"/>
-    <remap from="waypoint" to="high_level_command"/>
-    <remap from="state" to="$(arg mav_name)/ground_truth/odometry"/>
-  </node>
+    <!-- Is Flying Publisher -->
+    <node pkg="rostopic" type="rostopic" name="is_flying_pub" args="pub is_flying std_msgs/Bool true"/>
 
-  <!-- FPV -->
-  <!-- <node name="fpv" pkg="image_view" type="image_view">
-    <remap from="image" to="/$(arg mav_name)/camera/rgb"/>
-  </node> -->
+    <!-- Controller -->
+    <node name="controller" pkg="ros_copter" type="controller">
+      <remap from="estimate" to="ground_truth/odometry"/>
+    </node>
+
+    <!-- Waypoint Manager -->
+    <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
+      <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml"/>
+      <remap from="waypoint" to="high_level_command"/>
+      <remap from="state" to="ground_truth/odometry"/>
+    </node>
+
+    <!-- FPV -->
+    <!-- <node name="fpv" pkg="image_view" type="image_view">
+      <remap from="image" to="/$(arg mav_name)/camera/rgb"/>
+    </node> -->
+  </group>
 </launch>
