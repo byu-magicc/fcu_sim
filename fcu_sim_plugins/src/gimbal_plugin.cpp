@@ -41,46 +41,52 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (_sdf->HasElement("namespace")) {
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   } else {
-    gzerr << "[gazeboGimbalPlugin] Please specify a namespace";
+    gzerr << "[GimbalPlugin] Please specify a namespace";
   }
 
   if (_sdf->HasElement("commandTopic")) {
     command_topic = _sdf->GetElement("commandTopic")->Get<std::string>();
   } else {
-    gzerr << "[gazeboGimbalPlugin] Please specify a commandTopic";
+    gzerr << "[GimbalPlugin] Please specify a commandTopic";
   }
 
   if (_sdf->HasElement("poseTopic")) {
     pose_topic = _sdf->GetElement("poseTopic")->Get<std::string>();
   } else {
-    gzerr << "[gazeboGimbalPlugin] Please specify a poseTopic";
+    gzerr << "[GimbalPlugin] Please specify a poseTopic";
   }
 
   if (_sdf->HasElement("yawJoint")) {
     std::string yaw_joint_name = _sdf->GetElement("yawJoint")->Get<std::string>();
     yaw_joint_ = model_->GetJoint(yaw_joint_name);
   } else{
-    gzerr << "[gazeboGimbalPlugin] Please specify a yawJoint";
+    gzerr << "[GimbalPlugin] Please specify a yawJoint";
   }
 
   if (_sdf->HasElement("pitchJoint")) {
     std::string pitch_joint_name = _sdf->GetElement("pitchJoint")->Get<std::string>();
     pitch_joint_ = model_->GetJoint(pitch_joint_name);
   } else{
-    gzerr << "[gazeboGimbalPlugin] Please specify a pitchJoint";
+    gzerr << "[GimbalPlugin] Please specify a pitchJoint";
   }
 
   if (_sdf->HasElement("rollJoint")) {
     std::string roll_joint_name = _sdf->GetElement("rollJoint")->Get<std::string>();
     roll_joint_ = model_->GetJoint(roll_joint_name);
   } else{
-    gzerr << "[gazeboGimbalPlugin] Please specify a rollJoint";
+    gzerr << "[GimbalPlugin] Please specify a rollJoint";
   }
 
   if (_sdf->HasElement("timeConstant")) {
     time_constant_ = _sdf->GetElement("timeConstant")->Get<double>();
   } else{
-    gzerr << "[gazeboGimbalPlugin] Please specify a timeConstant";
+    gzerr << "[GimbalPlugin] Please specify a timeConstant";
+  }
+
+  if (_sdf->HasElement("useSlipring")) {
+    use_slipring_ = _sdf->GetElement("useSlipring")->Get<bool>();
+  } else{
+    gzerr << "[GimbalPlugin] Please specify whether to use a slipring";
   }
 
   // Connect Gazebo Update
@@ -89,7 +95,7 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Connect ROS
   nh_ = new ros::NodeHandle();
   command_sub_ = nh_->subscribe(command_topic, 1, &GimbalPlugin::commandCallback, this);
-  pose_pub_ = nh_->advertise<geometry_msgs::Vector3>(pose_topic, 10);
+  pose_pub_ = nh_->advertise<geometry_msgs::Vector3Stamped>(pose_topic, 10);
 
   // Initialize Commands
   yaw_desired_ = 0.0;
@@ -152,30 +158,33 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 #endif
 
   // Publish ROS message of actual angles
-  geometry_msgs::Vector3 angles_msg;
-  angles_msg.x = roll_actual_;
-  angles_msg.y = pitch_actual_;
-  angles_msg.z = yaw_actual_;
+  geometry_msgs::Vector3Stamped angles_msg;
+  angles_msg.header.stamp.sec = world_->GetSimTime().sec;
+  angles_msg.header.stamp.nsec = world_->GetSimTime().nsec;
+  angles_msg.vector.x = roll_actual_;
+  angles_msg.vector.y = pitch_actual_;
+  angles_msg.vector.z = yaw_actual_;
   pose_pub_.publish(angles_msg);
 }
 
-void GimbalPlugin::commandCallback(const geometry_msgs::Vector3ConstPtr& msg)
+void GimbalPlugin::commandCallback(const geometry_msgs::Vector3StampedConstPtr& msg)
 {
   // Pull in command from message, convert to NED
-  yaw_desired_ = -1.0*msg->z;
-  pitch_desired_ = -1.0*msg->y;
-  roll_desired_ = msg->x;
+  yaw_desired_ = -1.0*msg->vector.z;
+  pitch_desired_ = -1.0*msg->vector.y;
+  roll_desired_ = msg->vector.x;
 
-  // Wrap Commands between -PI and PI.  This may cause problems if someone wants to control
-  // Across 2 PI, but I'm not dealing with this now.
-  while (fabs(yaw_desired_) > PI) {
-    yaw_desired_ -= sign(yaw_desired_)*2.0*PI;
-  }
-  while (fabs(pitch_desired_) > PI){
-    pitch_desired_ -= sign(pitch_desired_)*2.0*PI;
-  }
-  while (fabs(roll_desired_) > PI) {
-    roll_desired_ -= sign(roll_desired_)*2.0*PI;
+  if (!use_slipring_) {
+    // Wrap Commands between -PI and PI if a slipring isn't being simulated
+    while (fabs(yaw_desired_) > PI) {
+      yaw_desired_ -= sign(yaw_desired_)*2.0*PI;
+    }
+    while (fabs(pitch_desired_) > PI){
+      pitch_desired_ -= sign(pitch_desired_)*2.0*PI;
+    }
+    while (fabs(roll_desired_) > PI) {
+      roll_desired_ -= sign(roll_desired_)*2.0*PI;
+    }
   }
 }
 

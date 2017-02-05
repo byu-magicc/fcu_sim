@@ -28,7 +28,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include <fcu_sim_plugins/common.h>
 
 #include <chrono>
@@ -47,7 +47,7 @@ class GimbalPlugin : public ModelPlugin {
 public:
   GimbalPlugin();
   ~GimbalPlugin();
-  void commandCallback(const geometry_msgs::Vector3ConstPtr &msg);
+  void commandCallback(const geometry_msgs::Vector3StampedConstPtr &msg);
 
 protected:
 
@@ -86,6 +86,9 @@ private:
   double yaw_actual_;
   double pitch_actual_;
   double roll_actual_;
+
+  // Flags
+  bool use_slipring_;
 
   // Filters on Axes
   std::unique_ptr<FirstOrderFilter<double>> yaw_filter_;

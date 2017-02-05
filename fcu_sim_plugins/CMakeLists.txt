@@ -17,6 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   fcu_common
   sensor_msgs
+  std_msgs
+  tf2_ros
+  image_transport
+  polled_camera
+  camera_info_manager
+  nav_msgs
+  gazebo_ros
 )
 
 find_package(Eigen3 REQUIRED)
@@ -30,8 +37,10 @@ include_directories(lib/ROSflight_SIL)
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
-                 fcu_sim std_srvs tf relative_nav relative_nav
-  DEPENDS eigen gazebo opencv fcu_common
+                 fcu_sim std_srvs tf relative_nav
+		 cv_bridge geometry_msgs fcu_sim rosbag roscpp
+		 tf2_ros image_transport polled_camera camera_info_manager std_msgs nav_msgs sensor_msgs
+  DEPENDS eigen gazebo opencv fcu_common SDF roscpp gazebo_ros
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -127,6 +136,16 @@ add_library(gimbal_plugin
   include/fcu_sim_plugins/gimbal_plugin.h)
 target_link_libraries(gimbal_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(gimbal_plugin ${catkin_EXPORTED_TARGETS})
+
+add_library(fcu_sim_camera_utils
+  src/gazebo_ros_camera_utils.cpp)
+target_link_libraries(fcu_sim_camera_utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(fcu_sim_camera_utils ${catkin_EXPORTED_TARGETS})
+
+add_library(fcu_sim_camera_plugin
+  src/gazebo_ros_camera.cpp)
+target_link_libraries(fcu_sim_camera_plugin fcu_sim_camera_utils ${GAZEBO_LIBRARIES} CameraPlugin ${catkin_LIBRARIES})
+add_dependencies(fcu_sim_camera_plugin ${catkin_EXPORTED_TARGETS})
 
 install(
   TARGETS
