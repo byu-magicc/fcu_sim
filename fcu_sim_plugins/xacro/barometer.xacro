@@ -33,26 +33,10 @@
     namespace parent_link baro_topic
     noise_stdev update_rate noise_on">
 
-    <!-- altimeter link -->
-    <link name="${namespace}/barometer_link">
-      <inertial>
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <mass value="0.0001"/>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </inertial>
-    </link>
-
-    <!-- altimeter joint -->
-    <joint name="${namespace}/barometer_joint" type="revolute">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <parent link="${parent_link}" />
-      <child link="${namespace}/barometer_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
     <gazebo>
       <plugin filename="libbarometer_plugin.so" name="${namespace}_barometer_plugin">
         <namespace>${namespace}</namespace>
-        <linkName>${namespace}/barometer_link</linkName>
+        <linkName>${parent_link}</linkName>
         <messageTopic>${baro_topic}</messageTopic>
         <noiseStdev>${noise_stdev}</noiseStdev>
         <publishRate>${update_rate}</publishRate>

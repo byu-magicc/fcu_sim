@@ -3,7 +3,7 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Configure GPS -->
+  <!-- Configure Aircraft Truth Macro -->
     <xacro:macro
       name="aircraft_truth"
       params="namespace parent_link wind_speed_topic">
