@@ -34,7 +34,7 @@
   </node>
   -->
   <group ns="$(arg mav_name)">
-    <rosaparam command="load" filename="$(find ros_plane)/param/aerosonde.yaml"/>
+    <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml" ns="autopilot"/>
     <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
       <remap from="state" to="truth"/>
     </node>
