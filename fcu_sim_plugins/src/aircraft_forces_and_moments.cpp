@@ -225,7 +225,6 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
      * By Randy Beard and Tim McLain.
      * Look there for a detailed explanation of each line in the rest of this function
      */
-
     double alpha = atan2(wr , ur);
     double beta = asin(vr/Va);
 
@@ -259,9 +258,6 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
     forces_.l = 0.0;
     forces_.m = 0.0;
     forces_.n = 0.0;
-  }
-  else
-  {
   }
 }
 
