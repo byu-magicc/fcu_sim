@@ -51,6 +51,7 @@ void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _s
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
     gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
+  gzerr << "using link name " << link_name_ << "\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
     gzthrow("[gazebo_aircraft_forces_and_moments] Couldn't find specified link \"" << link_name_ << "\".");
@@ -153,6 +154,10 @@ void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _s
   getSdfParam<double>(_sdf, "C_Y_delta_e", CY_.delta_e, 0.0);
   getSdfParam<double>(_sdf, "C_Y_delta_r", CY_.delta_r, -0.017);
 
+  // Initialize Wind
+  wind_.N = 0.0;
+  wind_.E = 0.0;
+  wind_.D = 0.0;
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AircraftForcesAndMoments::OnUpdate, this, _1));
@@ -178,11 +183,11 @@ void AircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &w
 
 void AircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
 {
-  /// TODO - Update to use fcu_common::Command struct
+  // This is a little bit weird.  We need to nail down why these are negative
   delta_.t = msg->F;
-  delta_.e = msg->y;
+  delta_.e = -msg->y;
   delta_.a = msg->x;
-  delta_.r = msg->z;
+  delta_.r = -msg->z;
 }
 
 
@@ -191,14 +196,6 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
   /* Get state information from Gazebo (in NED)                 *
    * C denotes child frame, P parent frame, and W world frame.  *
 //   * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
-  //  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  //  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
-  //  double pe = -W_pose_W_C.pos.y;
-  //  double pd = -W_pose_W_C.pos.z;
-  //  math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
-  //  double phi = euler_angles.x;
-  //  double theta = -euler_angles.y;
-  //  double psi = -euler_angles.z;
   math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
   double u = C_linear_velocity_W_C.x;
   double v = -C_linear_velocity_W_C.y;
@@ -252,21 +249,41 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
   }
   else
   {
-    forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0));
-    forces_.Fy = 0.0;
-    forces_.Fz = 0.0;
-    forces_.l = 0.0;
-    forces_.m = 0.0;
-    forces_.n = 0.0;
+    if(!std::isfinite(Va))
+    {
+      gzerr << "u = " << u << "\n";
+      gzerr << "v = " << v << "\n";
+      gzerr << "w = " << w << "\n";
+      gzerr << "p = " << p << "\n";
+      gzerr << "q = " << q << "\n";
+      gzerr << "r = " << r << "\n";
+      gzerr << "ur = " << ur << "\n";
+      gzerr << "vr = " << vr << "\n";
+      gzerr << "wr = " << wr << "\n";
+      gzthrow("we have a NaN or an infinity:\n");
+    }
+    else
+    {
+      forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0));
+      forces_.Fy = 0.0;
+      forces_.Fz = 0.0;
+      forces_.l = 0.0;
+      forces_.m = 0.0;
+      forces_.n = 0.0;
+    }
   }
 }
 
 
 void AircraftForcesAndMoments::SendForces()
 {
-  // apply the forces and torques to the joint
-  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
-  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
+  // Make sure we are applying reasonable forces
+  if(std::isfinite(forces_.Fx + forces_.Fy + forces_.Fz + forces_.l + forces_.m + forces_.n))
+  {
+    // apply the forces and torques to the joint
+    link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
+    link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
+  }
 }
 
 GZ_REGISTER_MODEL_PLUGIN(AircraftForcesAndMoments);

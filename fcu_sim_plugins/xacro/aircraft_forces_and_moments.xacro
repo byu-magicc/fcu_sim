@@ -100,24 +100,11 @@
         C_m_delta_a C_m_delta_e C_m_delta_r C_n_O C_n_alpha C_n_beta C_n_p C_n_q
         C_n_r C_n_delta_a C_n_delta_e C_n_delta_r C_Y_O C_Y_alpha C_Y_beta C_Y_p
         C_Y_q C_Y_r C_Y_delta_a C_Y_delta_e C_Y_delta_r">
-    <!-- link -->
-    <link name="${namespace}/aircraft_forces_and_moments_link">
-      <inertial>
-        <inertia ixx="${Jx}" ixy="0.00" ixz="${Jxz}" iyy="${Jy}" iyz="0.0" izz="${Jz}" />
-        <mass value="${mass}" />
-      </inertial>
-    </link>
-
-    <!-- odometry joint -->
-    <joint name="${namespace}/aircraft_forces_and_moments_joint" type="revolute">
-      <parent link="${parent_link}" />
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <child link="${namespace}/aircraft_forces_and_moments_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
     <gazebo>
-      <plugin filename="libaircraft_forces_and_moments_plugin.so" name="${namespace}_aircraft_forces_and_moments">
-        <linkName>${namespace}/aircraft_forces_and_moments_link</linkName>
+      <plugin
+        filename="libaircraft_forces_and_moments_plugin.so"
+        name="${namespace}_aircraft_forces_and_moments">
+        <linkName>${parent_link}</linkName>
         <namespace>${namespace}</namespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>
