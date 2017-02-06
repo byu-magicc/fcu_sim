@@ -31,7 +31,7 @@
 #include <ros/ros.h>
 
 #include <fcu_common/Command.h>
-#include <fcu_common/FW_State.h>
+#include <fcu_common/State.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
 
