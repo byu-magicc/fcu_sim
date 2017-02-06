@@ -115,32 +115,18 @@
         linear_mu angular_mu
         ground_effect_a ground_effect_b ground_effect_c ground_effect_d ground_effect_e
         num_rotors rotor_max_thrust rotor_F1 rotor_F2 rotor_F3 rotor_T1 rotor_T2 rotor_T3
-        rotor_tau_down rotor_tau_up  rotor1_distance rotor1_angle rotor1_direction rotor2_distance rotor2_angle rotor2_direction rotor3_distance rotor3_angle rotor3_direction rotor4_distance rotor4_angle
+        rotor_tau_down rotor_tau_up  rotor1_distance rotor1_angle
+        rotor1_direction rotor2_distance rotor2_angle rotor2_direction
+        rotor3_distance rotor3_angle rotor3_direction rotor4_distance rotor4_angle
         rotor4_direction rotor5_distance rotor5_angle rotor5_direction rotor6_distance
         rotor6_angle rotor6_direction rotor7_distance rotor7_angle  rotor7_direction
         rotor8_distance rotor8_angle  rotor8_direction
         *inertia *origin">
 
-    <!-- link -->
-    <link name="${namespace}/ROSflight_SIL_link">
-      <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="0.001"/>  <!-- [kg] -->
-      </inertial>
-    </link>
-
-    <!-- joint -->
-    <joint name="${namespace}/aircraft_forces_and_moments_joint" type="revolute">
-      <parent link="${parent_link}" />
-      <xacro:insert_block name="origin" />
-      <child link="${namespace}/ROSflight_SIL_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
-
     <!-- plugin -->
     <gazebo>
       <plugin filename="libROSflight_sil_plugin.so" name="multirotor_hil">
-        <linkName>${namespace}/ROSflight_SIL_link</linkName>
+        <linkName>${parent_link}</linkName>
         <robotNamespace>${namespace}</robotNamespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>

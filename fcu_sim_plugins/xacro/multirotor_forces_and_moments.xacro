@@ -36,10 +36,7 @@
         yaw_D="0.0"
         alt_P="16.0"
         alt_I="5.0"
-        alt_D="32.0">
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      </xacro:multirotor_forces_and_moments_macro>
+        alt_D="32.0"/>
     </xacro:macro>
 
     <xacro:macro
@@ -76,10 +73,7 @@
         yaw_D="0.0"
         alt_P="16.0"
         alt_I="5.0"
-        alt_D="32.0">
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      </xacro:multirotor_forces_and_moments_macro>
+        alt_D="32.0"/>
     </xacro:macro>
 
 
@@ -89,28 +83,12 @@
         namespace parent_link wind_speed_topic command_topic parent_frame_id mass
         mu max_l max_m max_n max_F tau_up_l tau_up_m tau_up_n tau_up_F tau_down_l tau_down_m
         tau_down_n tau_down_F roll_P roll_I roll_D pitch_P pitch_I pitch_D yaw_P yaw_I yaw_D alt_P
-        alt_I alt_D *inertia *origin">
-
-    <!-- link -->
-    <link name="${namespace}/multirotor_forces_and_moments_link">
-      <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="0.001"/>
-      </inertial>
-    </link>
-
-    <!-- joint -->
-    <joint name="${namespace}/multirotor_forces_and_moments_joint" type="revolute">
-      <parent link="${parent_link}" />
-      <xacro:insert_block name="origin" />
-      <child link="${namespace}/multirotor_forces_and_moments_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
+        alt_I alt_D">
 
     <!-- plugin -->
     <gazebo>
       <plugin filename="libmultirotor_forces_and_moments_plugin.so" name="multirotor_forces_and_moments">
-        <linkName>${namespace}/multirotor_forces_and_moments_link</linkName>
+        <linkName>${parent_link}</linkName>
         <namespace>${namespace}</namespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>

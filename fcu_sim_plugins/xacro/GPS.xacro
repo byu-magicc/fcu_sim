@@ -38,28 +38,11 @@
       sample_time mass_gps_sensor
       *inertia *origin">
 
-    <!-- GPS link -->
-    <link name="${namespace}/GPS_link">
-      <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="${mass_gps_sensor}" />
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </inertial>
-    </link>
-
-    <!-- GPS joint -->
-    <joint name="${namespace}/GPS_joint" type="revolute">
-      <xacro:insert_block name="origin" />
-      <parent link="${parent_link}" />
-      <child link="${namespace}/GPS_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
-
     <!-- Load Plugin -->
     <gazebo>
       <plugin filename="libGPS_plugin.so" name="fcu_sim_GPS_plugin">
       <namespace>${namespace}</namespace>
-      <linkName>${namespace}/GPS_link</linkName>
+      <linkName>${parent_link}</linkName>
       <GPSTopic>${gps_topic}</GPSTopic>
       <north_stdev>${north_stdev}</north_stdev>
       <east_stdev>${east_stdev}</east_stdev>

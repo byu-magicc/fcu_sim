@@ -14,8 +14,6 @@
       pub_rate="160"
       declination="${declination}"
       inclination="${inclination}">
-      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-      <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:magnetometer_plugin_macro>
   </xacro:macro>
 
@@ -32,26 +30,10 @@
             *inertia
             *origin">
 
-    <!-- mag link -->
-    <link name="${namespace}/magnetometer_link">
-      <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="0.0001" />
-        <origin xyz="0 0 0" rpy="0 0 0" />
-      </inertial>
-    </link>
-
-    <!-- mag joint -->
-    <joint name="${namespace}/magnetometer_joint" type="revolute">
-      <xacro:insert_block name="origin" />
-      <parent link="${parent_link}" />
-      <child link="${namespace}/magnetometer_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
     <gazebo>
       <plugin filename="magnetometer_plugin.so" name="fcu_sim_magnetometer_plugin">
       <namespace>${namespace}</namespace>
-      <linkName>${namespace}/magnetometer_link</linkName>
+      <linkName>${parent_link}</linkName>
       <mag_topic>${mag_topic}</mag_topic>
       <noise_sigma>${noise_sigma}</noise_sigma>
       <bias_sigma>${bias_sigma}</bias_sigma>
