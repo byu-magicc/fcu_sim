@@ -10,8 +10,9 @@
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/fixed_wing.world"/> <!-- auvsi.world"/> -->
-    <arg name="paused" value="true"/>
+    <arg name="paused" value="false"/>
     <arg name="verbose" value="true"/>
+    <arg name="gui" value="false"/>
   </include>
 
   <!-- Spawn MAV -->
@@ -52,7 +53,7 @@
     <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
 
     <node name="current_path_publisher" pkg="rostopic" type="rostopic"
-      args="pub current_path ros_plane/Current_Path 'true' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/>
+      args="pub current_path ros_plane/Current_Path 'false' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/>
 
   </group>
 </launch>

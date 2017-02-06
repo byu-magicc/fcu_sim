@@ -24,9 +24,9 @@
   <!-- Instantiate Link and Visual -->
   <link name="${namespace}/base_link">
     <inertial>
-      <mass value="0.001" />
+      <mass value="${mass}" />
       <origin xyz="0 0 0" />
-      <inertia ixx="0.001" ixy="0.00" ixz="0.00" iyy="0.001" iyz="0.00" izz="0.001" />
+      <inertia ixx="${Jx}" ixy="0.00" ixz="${Jxz}" iyy="${Jy}" iyz="0.00" izz="${Jz}" />
     </inertial>
     <visual name="plane_visual">
       <origin xyz="0 0 0" rpy="1.570796 0 1.570796" />
@@ -62,6 +62,13 @@
     </xacro:caster>
   </link>
 
+  <!-- Aerodynamics -->
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/aircraft_forces_and_moments.xacro"/>
+  <xacro:aerosonde
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    command_topic="command"/>
+
   <!-- Chase Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/camera.xacro"/>
   <xacro:simple_camera
@@ -78,13 +85,6 @@
   <gazebo reference="${namespace}/base_link">
     <material>Gazebo/Blue</material>
   </gazebo>
-
-  <!-- Aerodynamics -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/aircraft_forces_and_moments.xacro"/>
-  <xacro:aerosonde
-    namespace="${namespace}"
-    parent_link="${namespace}/base_link"
-    command_topic="command"/>
 
   <!-- Sensors -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/aircraft_truth.xacro"/>
