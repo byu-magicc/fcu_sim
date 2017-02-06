@@ -47,7 +47,7 @@ void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _s
     gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
- if (_sdf->HasElement("linkName"))
+  if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
   else
     gzerr << "[gazebo_aircraft_forces_and_moments] Please specify a linkName of the forces and moments plugin.\n";
@@ -190,15 +190,15 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
 {
   /* Get state information from Gazebo (in NED)                 *
    * C denotes child frame, P parent frame, and W world frame.  *
-   * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
-  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
-  double pe = -W_pose_W_C.pos.y;
-  double pd = -W_pose_W_C.pos.z;
-  math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
-  double phi = euler_angles.x;
-  double theta = -euler_angles.y;
-  double psi = -euler_angles.z;
+//   * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
+  //  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
+  //  double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
+  //  double pe = -W_pose_W_C.pos.y;
+  //  double pd = -W_pose_W_C.pos.z;
+  //  math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
+  //  double phi = euler_angles.x;
+  //  double theta = -euler_angles.y;
+  //  double psi = -euler_angles.z;
   math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
   double u = C_linear_velocity_W_C.x;
   double v = -C_linear_velocity_W_C.y;
@@ -214,43 +214,35 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
   double vr = v - wind_.E;
   double wr = w - wind_.D;
 
-  /*
-   * THe following math follows the method described in chapter 4 of
-   * Small Unmanned Aircraft: Theory and Practice
-   * By Randy Beard and Tim McLain.
-   * Look there for a detailed explanation of each line in the rest of this function
-   */
   double Va = sqrt(pow(ur,2.0) + pow(vr,2.0) + pow(wr,2.0));
-  double alpha = atan2(wr , ur);
-  double beta = asin(vr/Va);
 
-  double sign = (alpha >= 0? 1: -1);//Sigmoid function
-  double sigma_a = (1 + exp(-(wing_.M*(alpha - wing_.alpha0))) + exp((wing_.M*(alpha + wing_.alpha0))))/((1 + exp(-(wing_.M*(alpha - wing_.alpha0))))*(1 + exp((wing_.M*(alpha + wing_.alpha0)))));
-  double CL_a = (1 - sigma_a)*(CL_.O + CL_.alpha*alpha) + sigma_a*(2*sign*pow(sin(alpha),2.0)*cos(alpha));
-  double AR = (pow(wing_.b, 2.0))/wing_.S;
-  double CD_a = CD_.p + ((pow((CL_.O + CL_.alpha*(alpha)),2.0))/(3.14159*0.9*AR));//the const 0.9 in this equation replaces the e (Oswald Factor) variable and may be inaccurate
+  // Don't divide by zero, and don't let NaN's get through (sometimes GetRelativeLinearVel returns NaNs)
+  if(Va > 0.000001 && std::isfinite(Va))
+  {
+    /*
+     * The following math follows the method described in chapter 4 of
+     * Small Unmanned Aircraft: Theory and Practice
+     * By Randy Beard and Tim McLain.
+     * Look there for a detailed explanation of each line in the rest of this function
+     */
 
-  double CX_a = -CD_a*cos(alpha) + CL_a*sin(alpha);
-  double CX_q_a = -CD_.q*cos(alpha) + CL_.q*sin(alpha);
-  double CX_deltaE_a = -CD_.delta_e*cos(alpha) + CL_.delta_e*sin(alpha);
+    double alpha = atan2(wr , ur);
+    double beta = asin(vr/Va);
 
-  double CZ_a = -CD_a*sin(alpha) - CL_a*cos(alpha);
-  double CZ_q_a = -CD_.q*sin(alpha) - CL_.q*cos(alpha);
-  double CZ_deltaE_a = -CD_.delta_e*sin(alpha) - CL_.delta_e*cos(alpha);
+    double sign = (alpha >= 0? 1: -1);//Sigmoid function
+    double sigma_a = (1 + exp(-(wing_.M*(alpha - wing_.alpha0))) + exp((wing_.M*(alpha + wing_.alpha0))))/((1 + exp(-(wing_.M*(alpha - wing_.alpha0))))*(1 + exp((wing_.M*(alpha + wing_.alpha0)))));
+    double CL_a = (1 - sigma_a)*(CL_.O + CL_.alpha*alpha) + sigma_a*(2*sign*pow(sin(alpha),2.0)*cos(alpha));
+    double AR = (pow(wing_.b, 2.0))/wing_.S;
+    double CD_a = CD_.p + ((pow((CL_.O + CL_.alpha*(alpha)),2.0))/(3.14159*0.9*AR));//the const 0.9 in this equation replaces the e (Oswald Factor) variable and may be inaccurate
 
-  // calculate forces
-  /*
-   * Pack Forces and Moments into the forces_ member for publishing in
-   * SendForces()
-   */
-  if(Va < 0.1){ // not moving (we need this check to make sure we don't divide by zero)
-    forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
-    forces_.Fy = 0.0;
-    forces_.Fz = 0.0;
-    forces_.l = 0.0;
-    forces_.m = 0.0;
-    forces_.n = 0.0;
-  }else{
+    double CX_a = -CD_a*cos(alpha) + CL_a*sin(alpha);
+    double CX_q_a = -CD_.q*cos(alpha) + CL_.q*sin(alpha);
+    double CX_deltaE_a = -CD_.delta_e*cos(alpha) + CL_.delta_e*sin(alpha);
+
+    double CZ_a = -CD_a*sin(alpha) - CL_a*cos(alpha);
+    double CZ_q_a = -CD_.q*sin(alpha) - CL_.q*cos(alpha);
+    double CZ_deltaE_a = -CD_.delta_e*sin(alpha) - CL_.delta_e*cos(alpha);
+
     forces_.Fx = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CX_a + (CX_q_a*wing_.c*q)/(2.0*Va) + CX_deltaE_a * delta_.e) + 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0) - pow(Va,2.0));
     forces_.Fy = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CY_.O + CY_.beta*beta + ((CY_.p*wing_.b*p)/(2.0*Va)) + ((CY_.r*wing_.b*r)/(2.0*Va)) + CY_.delta_a*delta_.a + CY_.delta_r*delta_.r);
     forces_.Fz = 0.5*(rho_)*pow(Va,2.0)*wing_.S*(CZ_a + (CZ_q_a*wing_.c*q)/(2.0*Va) + CZ_deltaE_a * delta_.e);
@@ -258,6 +250,18 @@ void AircraftForcesAndMoments::UpdateForcesAndMoments()
     forces_.l = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cell_.O + Cell_.beta*beta + (Cell_.p*wing_.b*p)/(2.0*Va) + (Cell_.r*wing_.b*r)/(2.0*Va) + Cell_.delta_a*delta_.a + Cell_.delta_r*delta_.r) - prop_.k_T_P*pow((prop_.k_Omega*delta_.t),2.0);
     forces_.m = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.c*(Cm_.O + Cm_.alpha*alpha + (Cm_.q*wing_.c*q)/(2.0*Va) + Cm_.delta_e*delta_.e);
     forces_.n = 0.5*(rho_)*pow(Va,2.0)*wing_.S*wing_.b*(Cn_.O + Cn_.beta*beta + (Cn_.p*wing_.b*p)/(2.0*Va) + (Cn_.r*wing_.b*r)/(2.0*Va) + Cn_.delta_a*delta_.a + Cn_.delta_r*delta_.r);
+  }
+  else
+  {
+    forces_.Fx = 0.5*rho_*prop_.S*prop_.C*(pow((prop_.k_motor*delta_.t),2.0));
+    forces_.Fy = 0.0;
+    forces_.Fz = 0.0;
+    forces_.l = 0.0;
+    forces_.m = 0.0;
+    forces_.n = 0.0;
+  }
+  else
+  {
   }
 }
 

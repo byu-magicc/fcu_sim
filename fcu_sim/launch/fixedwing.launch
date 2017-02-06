@@ -11,6 +11,7 @@
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/fixed_wing.world"/> <!-- auvsi.world"/> -->
     <arg name="paused" value="true"/>
+    <arg name="verbose" value="true"/>
   </include>
 
   <!-- Spawn MAV -->
@@ -32,29 +33,26 @@
     <param name="dev" value="/dev/input/js0"/>
   </node>
   -->
+  <group ns="$(arg mav_name)">
+    <rosaparam command="load" filename="$(find ros_plane)/param/aerosonde.yaml"/>
+    <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
+      <remap from="state" to="truth"/>
+    </node>
 
-  <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
-    <!-- <remap from="command" to="autopilot_command"/> -->
-    <remap from="state" to="/junker/truth"/>
-  </node>
+    <node name="estimator" pkg="ros_plane" type="ros_plane_estimator" output="screen"/>
 
-  <node name="estimator" pkg="ros_plane" type="ros_plane_estimator" output="screen">
-    <remap from="/baro/data" to="/junker/baro/data"/>
-    <remap from="/imu/data" to="/junker/imu/data"/>
-    <remap from="/airspeed/data" to="/junker/airspeed/data"/>
-  </node>
+    <node name="pathfollower" pkg="ros_plane" type="ros_plane_path_follower">
+       <remap from="state" to="truth"/>
+    </node>
 
-  <node name="pathfollower" pkg="ros_plane" type="ros_plane_path_follower">
-     <remap from="state" to="/junker/truth"/>
-  </node>
+    <node name="chase" pkg="image_view" type="image_view">
+      <remap from="image" to="chase/camera/rgb"/>
+    </node>
 
-  <node name="chase" pkg="image_view" type="image_view">
-    <remap from="image" to="/junker/chase/camera/rgb"/>
-  </node>
+    <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
 
-  <!--<node name="reconfig" pkg="rqt_reconfigure" type="rqt_reconfigure"/> -->
+    <node name="current_path_publisher" pkg="rostopic" type="rostopic"
+      args="pub current_path ros_plane/Current_Path 'true' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/>
 
-  <node name="current_path_publisher" pkg="rostopic" type="rostopic"
-    args="pub /current_path fcu_common/FW_Current_Path 'false' '30.0'  '[0.0, 0.0, -100.0]'  '[1.0, 0.0, 0.0]'  '[0.0, 0.0, -100.0]'  '100.0' '1'"/>
-
+  </group>
 </launch>

@@ -8,7 +8,7 @@
       name="GPS_BYU"
       params="namespace parent_link GPS_topic">
     <xacro:gps_plugin_macro
-      namespace=""
+      namespace="${namespace}"
       parent_link="${parent_link}"
       gps_topic="${GPS_topic}"
       mass_gps_sensor="0.001"
