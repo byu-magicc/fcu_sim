@@ -6,12 +6,12 @@
       name="aerosonde"
       params="namespace parent_link command_topic">
       <xacro:aircraft_forces_and_moments_macro
-        namespace="${namespace}/aircraft_forces_and_moments"
+        namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
-        command_topic="command_topic"
+        command_topic="${command_topic}"
         parent_frame_id="${namespace}/base_link"
-        mass="13.5"
+        mass="1.5"
         Jx="0.8244"
         Jy="1.135"
         Jz="1.759"
@@ -104,9 +104,10 @@
     <link name="${namespace}/aircraft_forces_and_moments_link">
       <inertial>
         <inertia ixx="${Jx}" ixy="0.00" ixz="${Jxz}" iyy="${Jy}" iyz="0.0" izz="${Jz}" />
-        <mass value="${mass}" />  <!-- [kg] -->
+        <mass value="${mass}" />
       </inertial>
     </link>
+
     <!-- odometry joint -->
     <joint name="${namespace}/aircraft_forces_and_moments_joint" type="revolute">
       <parent link="${parent_link}" />
@@ -115,9 +116,9 @@
       <limit upper="0" lower="0" effort="0" velocity="0" />
     </joint>
     <gazebo>
-      <plugin filename="libaircraft_and_moments_plugin.so" name="aircraft_forces_and_moments">
+      <plugin filename="libaircraft_forces_and_moments_plugin.so" name="${namespace}_aircraft_forces_and_moments">
         <linkName>${namespace}/aircraft_forces_and_moments_link</linkName>
-        <robotNamespace>${namespace}</robotNamespace>
+        <namespace>${namespace}</namespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>
         <parentFrameId>${parent_frame_id}</parentFrameId>

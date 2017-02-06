@@ -112,19 +112,16 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   pitch_filter_.reset(new FirstOrderFilter<double>(time_constant_, time_constant_, pitch_actual_));
   roll_filter_.reset(new FirstOrderFilter<double>(time_constant_, time_constant_, roll_actual_));
 
-  // Set the max force allowed to set the angle, they are really big because we are using the filter instead
-  // of controlling actual forces
+  // Set the max force allowed to set the angle
 #if GAZEBO_MAJOR_VERSION > 5
-  pitch_joint_->SetParam("max_force", 0, 10000);
-  yaw_joint_->SetParam("max_force", 0, 10000);
-  roll_joint_->SetParam("max_force", 0, 10000);
+//  pitch_joint_->SetParam("max_force", 0, 10);
+//  yaw_joint_->SetParam("max_force", 0, 10);
+//  roll_joint_->SetParam("max_force", 0, 10);
 #else
-  pitch_joint_->SetMaxForce(0, 10000);
-  yaw_joint_->SetMaxForce(0, 10000);
-  roll_joint_->SetMaxForce(0, 10000);
+  pitch_joint_->SetMaxForce(0, 10);
+  yaw_joint_->SetMaxForce(0, 10);
+  roll_joint_->SetMaxForce(0, 10);
 #endif
-
-
 
   // Set the axes of the gimbal
   yaw_joint_->SetAxis(0, math::Vector3(0, 0, 1));
