@@ -40,7 +40,6 @@
 #include <sensor_msgs/Imu.h>
 #include <fcu_common/simple_pid.h>
 
-#include "param.h"
 
 namespace gazebo {
 static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
@@ -52,7 +51,6 @@ public:
 
   ~ROSflightSIL();
 
-  void InitializeParams();
   void SendForces();
 
 
@@ -64,6 +62,7 @@ protected:
 
 private:
   std::string command_topic_;
+  std::string rc_topic_;
   std::string wind_speed_topic_;
   std::string imu_topic_;
   std::string estimate_topic_;
@@ -154,6 +153,7 @@ private:
 
   ros::NodeHandle* node_handle_;
   ros::Subscriber command_sub_;
+  ros::Subscriber rc_sub_;
   ros::Subscriber wind_speed_sub_;
   ros::Subscriber imu_sub_;
   ros::Publisher estimate_pub_, euler_pub_;
@@ -163,15 +163,12 @@ private:
   fcu_common::Command command_;
 
   boost::thread callback_queue_thread_;
-  void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
   void CommandCallback(const fcu_common::Command& msg);
+  void RCCallback(const fcu_common::OutputRaw& msg);
   void imuCallback(const sensor_msgs::Imu& msg);
   double sat(double x, double max, double min);
   double max(double x, double y);
-  void initialize_params();
-  void init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value);
-  void init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value);
   math::Vector3 W_wind_speed_;
 
   Eigen::MatrixXd force_allocation_matrix_;

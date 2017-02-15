@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -12,6 +13,7 @@ extern "C" {
 
 //======================================================================
 // drv_pwm.h
+extern uint16_t _rc_signals[8];
 void     pwmInit(bool useCPPM, bool usePwmFilter, bool fastPWM, uint32_t motorPwmRate, uint16_t idlePulseUsec);
 void     pwmWriteMotor(uint8_t index, uint16_t value);
 uint16_t pwmRead(uint8_t channel);
@@ -57,8 +59,8 @@ uint8_t serialRead(uint8_t serial);
 
 //===================================================================
 // printf.h
-#define sprintf tpf_sprintf
-void tpf_sprintf(char* s, const char *fmt, ...);
+//#define sprintf tpf_sprintf
+//void tpf_sprintf(char* s, const char *fmt, ...);
 
 //===================================================================
 // drv_ms5611.h

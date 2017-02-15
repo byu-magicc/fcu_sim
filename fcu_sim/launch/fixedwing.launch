@@ -13,6 +13,7 @@
     <arg name="paused" value="false"/>
     <arg name="verbose" value="true"/>
     <arg name="gui" value="false"/>
+    <arg name="debug" value="true"/>
   </include>
 
   <!-- Spawn MAV -->

@@ -4,12 +4,12 @@
     <!-- Forces And Moments Plugin -->
     <xacro:macro
       name="square_quad_SIL"
-      params="namespace parent_link">
+      params="namespace parent_link command_topic">
       <xacro:ROSflight_sil_plugin
-        namespace="${namespace}/hil"
+        namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
-        command_topic="extended_command"
+        command_topic="${command_topic}"
         parent_frame_id="${parent_link}"
         linear_mu="1"
         angular_mu="0.3"
@@ -25,16 +25,16 @@
         num_rotors="4"
         rotor1_distance="0.30"
         rotor1_angle="2.35619449019"
-        rotor1_direction="1"
+        rotor1_direction="-1"
         rotor2_distance="0.30"
         rotor2_angle="0.78539816339"
-        rotor2_direction="-1"
+        rotor2_direction="1"
         rotor3_distance="0.30"
         rotor3_angle="-2.35619449019"
-        rotor3_direction="-1"
+        rotor3_direction="1"
         rotor4_distance="0.30"
         rotor4_angle="-0.78539816339"
-        rotor4_direction="1"
+        rotor4_direction="-1"
         rotor5_distance="0"
         rotor5_angle="0"
         rotor5_direction="1"
@@ -46,20 +46,17 @@
         rotor7_direction="1"
         rotor8_distance="0"
         rotor8_angle="0"
-        rotor8_direction="1">
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      </xacro:ROSflight_sil_plugin>
+        rotor8_direction="1"/>
     </xacro:macro>
 
     <xacro:macro
       name="mikey_ROSflight_SIL"
-      params="namespace parent_link">
+      params="namespace parent_link command_topic">
       <xacro:ROSflight_sil_plugin
-        namespace="${namespace}/hil"
+        namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
-        command_topic="extended_command"
+        command_topic="${command_topic}"
         parent_frame_id="${parent_link}"
         linear_mu="1"
         angular_mu="0.3"
@@ -80,7 +77,7 @@
         num_rotors="4"
         rotor1_distance="0.28"
         rotor1_angle="2.3201"
-        rotor1_direction="1"
+        rotor1_direction="1"    
         rotor2_distance="0.30"
         rotor2_angle="0.8736"
         rotor2_direction="-1"
@@ -101,10 +98,7 @@
         rotor7_direction="1"
         rotor8_distance="0"
         rotor8_angle="0"
-        rotor8_direction="1">
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      </xacro:ROSflight_sil_plugin>
+        rotor8_direction="1"/>
     </xacro:macro>
 
 
@@ -120,19 +114,17 @@
         rotor3_distance rotor3_angle rotor3_direction rotor4_distance rotor4_angle
         rotor4_direction rotor5_distance rotor5_angle rotor5_direction rotor6_distance
         rotor6_angle rotor6_direction rotor7_distance rotor7_angle  rotor7_direction
-        rotor8_distance rotor8_angle  rotor8_direction
-        *inertia *origin">
+        rotor8_distance rotor8_angle  rotor8_direction">
 
     <!-- plugin -->
     <gazebo>
       <plugin filename="libROSflight_sil_plugin.so" name="multirotor_hil">
         <linkName>${parent_link}</linkName>
-        <robotNamespace>${namespace}</robotNamespace>
+        <namespace>${namespace}</namespace>
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>
-        <parentFrameId>${parent_frame_id}</parentFrameId>
-        <mass>${mass}</mass>
-        <linear_mu>${linear_mu}</linear_mu>
+        <parentFrameId>${parent_frame_id}</parentFrameId
+>        <linear_mu>${linear_mu}</linear_mu>
         <angular_mu>${angular_mu}</angular_mu>
         <ground_effect_a>${ground_effect_a}</ground_effect_a>
         <ground_effect_b>${ground_effect_b}</ground_effect_b>
