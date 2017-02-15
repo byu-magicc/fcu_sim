@@ -56,11 +56,11 @@ Author: James Jackson
 
   <!-- ROSflight_SIL -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/ROSflight_SIL.xacro"/>
-  <!-- <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link"/> -->
+  <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
 
   <!-- Simplified Dynamics -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
-  <xacro:mikey_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
+  <!-- <xacro:mikey_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/> -->
 
   <!-- ***************** SENSORS ******************* -->
   <!-- Ground Truth -->

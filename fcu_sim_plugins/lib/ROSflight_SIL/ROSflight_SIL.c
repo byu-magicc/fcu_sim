@@ -23,9 +23,13 @@ extern "C" {
 
 //======================================================================
 // drv_pwm.h
+uint16_t _rc_signals[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 void     pwmInit(bool useCPPM, bool usePwmFilter, bool fastPWM, uint32_t motorPwmRate, uint16_t idlePulseUsec) {}
 void     pwmWriteMotor(uint8_t index, uint16_t value) {}
-uint16_t pwmRead(uint8_t channel) {}
+uint16_t pwmRead(uint8_t channel)
+{
+  return _rc_signals[channel];
+}
 
 //======================================================================
 // drv_system.h
@@ -45,7 +49,7 @@ void systemReset(bool toBootloader) {}
 //===================================================================
 // flash.h
 void initEEPROM() {}
-bool readEEPROM() {return true;}
+bool readEEPROM() {return false;}
 bool writeEEPROM() {return true;}
 
 //===================================================================

@@ -18,7 +18,7 @@
   <!-- Start Simulator -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find fcu_sim)/worlds/$(arg world_file)"/>
-    <arg name="paused" value="true"/>
+    <arg name="paused" value="false"/>
     <arg name="gui" value="true"/>
     <arg name="verbose" value="true"/>
   </include>
@@ -41,13 +41,14 @@
     <node pkg="rostopic" type="rostopic" name="is_flying_pub" args="pub is_flying std_msgs/Bool true"/>
 
     <!-- Controller -->
+    <rosparam command="load" file="$(find ros_copter)/params/mikey.yaml" ns="controller"/>
     <node name="controller" pkg="ros_copter" type="controller">
       <remap from="estimate" to="ground_truth/odometry"/>
     </node>
 
     <!-- Waypoint Manager -->
     <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
-      <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml"/>
+      <rosparam command="load" file="$(find ros_copter)/params/waypoints_small.yaml"/>
       <remap from="waypoint" to="high_level_command"/>
       <remap from="state" to="ground_truth/odometry"/>
     </node>

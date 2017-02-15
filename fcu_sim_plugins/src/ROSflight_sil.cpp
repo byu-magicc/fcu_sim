@@ -1,18 +1,18 @@
 /*
- * Copyright  2016 James Jackson, Brigham Young University, Provo UT
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+   * Copyright  2016 James Jackson, Brigham Young University, Provo UT
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *     http://www.apache.org/licenses/LICENSE-2.0
 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -22,6 +22,9 @@
 
 #include <stdio.h>
 
+extern "C"
+{
+#include <breezystm32/breezystm32.h>
 #include "sensors.h"
 #include "estimator.h"
 #include "param.h"
@@ -29,6 +32,7 @@
 #include "mixer.h"
 #include "mux.h"
 #include "controller.h"
+}
 
 
 namespace gazebo
@@ -36,7 +40,6 @@ namespace gazebo
 
 ROSflightSIL::ROSflightSIL() :
   ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {
-  printf("STARTING");
 }
 
 
@@ -49,15 +52,6 @@ ROSflightSIL::~ROSflightSIL()
   }
 }
 
-
-void ROSflightSIL::SendForces()
-{
-  // apply the forces and torques to the joint
-  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, forces_.Fz));
-  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
-}
-
-
 void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   model_ = _model;
@@ -66,8 +60,8 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   namespace_.clear();
 
   /*
-   * Connect the Plugin to the Robot and Save pointers to the various elements in the simulation
-   */
+     * Connect the Plugin to the Robot and Save pointers to the various elements in the simulation
+     */
   if (_sdf->HasElement("namespace"))
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
@@ -96,6 +90,7 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
+  getSdfParam<std::string>(_sdf, "rcTopic", rc_topic_, "rc");
   getSdfParam<std::string>(_sdf, "imuTopic", imu_topic_, "imu/data");
   getSdfParam<std::string>(_sdf, "estimateTopic", estimate_topic_, "attitude");
   getSdfParam<std::string>(_sdf, "signalsTopic", signals_topic_, "motor_signals");
@@ -162,40 +157,65 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Connect Subscribers
   command_sub_ = node_handle_->subscribe(command_topic_, 1, &ROSflightSIL::CommandCallback, this);
+  rc_sub_ = node_handle_->subscribe(rc_topic_, 1, &ROSflightSIL::RCCallback, this);
   wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &ROSflightSIL::WindSpeedCallback, this);
   imu_sub_ = node_handle_->subscribe(imu_topic_, 1, &ROSflightSIL::imuCallback, this);
 
   // Connect Publishers
   estimate_pub_ = node_handle_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
+  euler_pub_ = node_handle_->advertise<geometry_msgs::Vector3Stamped>(estimate_topic_ + "/euler", 1);
   signals_pub_ = node_handle_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
-  command_pub_ = node_handle_->advertise<fcu_common::Command>("command", 1);
+  command_pub_ = node_handle_->advertise<fcu_common::Command>("output/command", 1);
 
   // Initialize ROSflight code
   start_time_us_ = (uint64_t)(ros::Time::now().toNSec() * 1e-3);
-  init_params();
+  init_param();
   init_mode();
-  init_estimator(false, false, true);
+  init_estimator(true, true, true);
+  init_controller();
   init_mixing();
 }
 
 
 // This gets called by the world update event.
-void ROSflightSIL::OnUpdate(const common::UpdateInfo& _info) {
-
+void ROSflightSIL::OnUpdate(const common::UpdateInfo& _info)
+{
   sampling_time_ = _info.simTime.Double() - prev_sim_time_;
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
   SendForces();
 }
 
-void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
+void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind)
+{
   W_wind_speed_.x = wind.x;
   W_wind_speed_.y = wind.y;
   W_wind_speed_.z = wind.z;
 }
 
+void ROSflightSIL::RCCallback(const fcu_common::OutputRaw &msg)
+{
+  for (int i = 0; i < 8; i++)
+  {
+    _rc_signals[i] = msg.values[i];
+  }
+}
+
+void ROSflightSIL::SendForces()
+{
+  // apply the forces and torques to the joint
+  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, forces_.Fz));
+  link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
+}
+
+
 void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
 {
+  // For now, just arm whenever we get our first command message
+  _armed_state = ARMED;
+
+  // Also, notice that we are manually specifying _combined_control
+  /// TODO: populate _offboard_control, and use mux_inputs to combine RC and offboard
   _combined_control.F.active = true;
   _combined_control.x.active = true;
   _combined_control.y.active = true;
@@ -279,19 +299,25 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   estimate_pub_.publish(attitude_msg);
   euler_pub_.publish(euler_msg);
 
+
   // Run Controller
   fcu_common::Command alt_msg, angle_msg, rate_msg, pt_msg;
   run_controller();
+
+  gzmsg << "_command.x " << _command.x << "\n";
+  gzmsg << "_command.y " << _command.y << "\n";
+  gzmsg << "_command.z " << _command.z << "\n";
+  gzmsg << "_command.F " << _command.F << "\n";
 
   pt_msg.x = _command.x;
   pt_msg.y = _command.y;
   pt_msg.z = _command.z;
   pt_msg.F = _command.F;
-
   command_pub_.publish(rate_msg);
-
   // Mix Outputs
   mix_output();
+
+
   fcu_common::OutputRaw ESC_signals;
   ESC_signals.header.stamp = ros::Time::now();
   for (int i = 0; i < 8 ; i++)
@@ -310,8 +336,8 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 void ROSflightSIL::UpdateForcesAndMoments()
 {
   /* Get state information from Gazebo                          *
-   * C denotes child frame, P parent frame, and W world frame.  *
-   * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
+     * C denotes child frame, P parent frame, and W world frame.  *
+     * Further C_pose_W_P denotes pose of P wrt. W expressed in C.*/
   math::Pose W_pose_W_C = link_->GetWorldCoGPose();
   double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
   double pe = -W_pose_W_C.pos.y;
@@ -342,7 +368,7 @@ void ROSflightSIL::UpdateForcesAndMoments()
     // First, figure out the desired force output from passing the signal into the quadratic approximation
     double signal = motor_signals_(i);
     desired_forces_(i,0) = motors_[i].rotor.F1*signal*signal + motors_[i].rotor.F2*signal + motors_[i].rotor.F3;
-    desired_torques_(i,0) = -1.0*motors_[i].rotor.T1*signal*signal + motors_[i].rotor.T2*signal + motors_[i].rotor.T3;
+    desired_torques_(i,0) = motors_[i].rotor.T1*signal*signal + motors_[i].rotor.T2*signal + motors_[i].rotor.T3;
 
     // Then, Calculate Actual force and torque for each rotor using first-order dynamics
     double tau = (desired_forces_(i,0) > actual_forces_(i,0)) ? motors_[i].rotor.tau_up : motors_[i].rotor.tau_down;
@@ -350,6 +376,11 @@ void ROSflightSIL::UpdateForcesAndMoments()
     actual_forces_(i,0) = sat((1-alpha)*actual_forces_(i) + alpha*desired_forces_(i), motors_[i].rotor.max, 0.0);
     actual_torques_(i,0) = sat((1-alpha)*actual_torques_(i) + alpha*desired_torques_(i), motors_[i].rotor.max, 0.0);
   }
+
+  gzmsg << "actual_forces_ = " << actual_forces_(0, 0) << "signal = " << motor_signals_(0) << "\n";
+  gzmsg << "actual_forces_ = " << actual_forces_(1, 0) << "signal = " << motor_signals_(1) << "\n";
+  gzmsg << "actual_forces_ = " << actual_forces_(2, 0) << "signal = " << motor_signals_(2) << "\n";
+  gzmsg << "actual_forces_ = " << actual_forces_(3, 0) << "signal = " << motor_signals_(3) << "\n";
 
   // Use the allocation matrix to calculate the body-fixed force and torques
   Eigen::Vector4d output_forces_and_torques = force_allocation_matrix_*actual_forces_ + torque_allocation_matrix_*actual_torques_;
@@ -362,10 +393,17 @@ void ROSflightSIL::UpdateForcesAndMoments()
   //  // By Rob Leishman et al.
   forces_.Fx = -linear_mu_*ur;
   forces_.Fy = -linear_mu_*vr;
-  forces_.Fz = linear_mu_*wr + ground_effect + output_forces_and_torques(3);
+  forces_.Fz = linear_mu_*wr + /*ground_effect +*/ output_forces_and_torques(3);
   forces_.l = -angular_mu_*p + output_forces_and_torques(0);
   forces_.m = -angular_mu_*q + output_forces_and_torques(1);
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
+
+  gzmsg << "forces_.Fx " << forces_.Fx << "\n";
+  gzmsg << "forces_.Fy " << forces_.Fy << "\n";
+  gzmsg << "forces_.Fz " << forces_.Fz << "\n";
+  gzmsg << "forces_.l " << forces_.l << "\n";
+  gzmsg << "forces_.m " << forces_.m << "\n";
+  gzmsg << "forces_.n " << forces_.n << "\n";
 }
 
 double ROSflightSIL::sat(double x, double max, double min)
@@ -382,21 +420,6 @@ double ROSflightSIL::max(double x, double y)
 {
   return (x > y) ? x : y;
 }
-
-void ROSflightSIL::init_param_int(param_id_t id, char name[PARAMS_NAME_LENGTH], int32_t value)
-{
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = value;
-  _params.types[id] = PARAM_TYPE_INT32;
-}
-
-void ROSflightSIL::init_param_float(param_id_t id, char name[PARAMS_NAME_LENGTH], float value)
-{
-  memcpy(_params.names[id], name, PARAMS_NAME_LENGTH);
-  _params.values[id] = *((int32_t *) &value);
-  _params.types[id] = PARAM_TYPE_FLOAT;
-}
-
 
 
 GZ_REGISTER_MODEL_PLUGIN(ROSflightSIL);
