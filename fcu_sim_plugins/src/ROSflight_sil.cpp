@@ -304,11 +304,6 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   fcu_common::Command alt_msg, angle_msg, rate_msg, pt_msg;
   run_controller();
 
-  gzmsg << "_command.x " << _command.x << "\n";
-  gzmsg << "_command.y " << _command.y << "\n";
-  gzmsg << "_command.z " << _command.z << "\n";
-  gzmsg << "_command.F " << _command.F << "\n";
-
   pt_msg.x = _command.x;
   pt_msg.y = _command.y;
   pt_msg.z = _command.z;
@@ -377,11 +372,6 @@ void ROSflightSIL::UpdateForcesAndMoments()
     actual_torques_(i,0) = sat((1-alpha)*actual_torques_(i) + alpha*desired_torques_(i), motors_[i].rotor.max, 0.0);
   }
 
-  gzmsg << "actual_forces_ = " << actual_forces_(0, 0) << "signal = " << motor_signals_(0) << "\n";
-  gzmsg << "actual_forces_ = " << actual_forces_(1, 0) << "signal = " << motor_signals_(1) << "\n";
-  gzmsg << "actual_forces_ = " << actual_forces_(2, 0) << "signal = " << motor_signals_(2) << "\n";
-  gzmsg << "actual_forces_ = " << actual_forces_(3, 0) << "signal = " << motor_signals_(3) << "\n";
-
   // Use the allocation matrix to calculate the body-fixed force and torques
   Eigen::Vector4d output_forces_and_torques = force_allocation_matrix_*actual_forces_ + torque_allocation_matrix_*actual_torques_;
 
@@ -397,13 +387,6 @@ void ROSflightSIL::UpdateForcesAndMoments()
   forces_.l = -angular_mu_*p + output_forces_and_torques(0);
   forces_.m = -angular_mu_*q + output_forces_and_torques(1);
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
-
-  gzmsg << "forces_.Fx " << forces_.Fx << "\n";
-  gzmsg << "forces_.Fy " << forces_.Fy << "\n";
-  gzmsg << "forces_.Fz " << forces_.Fz << "\n";
-  gzmsg << "forces_.l " << forces_.l << "\n";
-  gzmsg << "forces_.m " << forces_.m << "\n";
-  gzmsg << "forces_.n " << forces_.n << "\n";
 }
 
 double ROSflightSIL::sat(double x, double max, double min)
