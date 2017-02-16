@@ -105,7 +105,11 @@ void GazeboRosCameraUtils::Load(sensors::SensorPtr _parent,
   const std::string &_camera_name_suffix)
 {
   // Get the world name.
-  std::string world_name = _parent->WorldName();
+  # if GAZEBO_MAJOR_VERSION >= 7
+    std::string world_name = _parent->WorldName();
+  # else
+    std::string world_name = _parent->GetWorldName();
+  # endif
 
   // Get the world_
   this->world_ = physics::get_world(world_name);
@@ -471,8 +475,12 @@ void GazeboRosCameraUtils::Init()
   if (this->cy_ == 0)
     this->cy_ = (static_cast<double>(this->height_) + 1.0) /2.0;
 
+  # if GAZEBO_MAJOR_VERSION >= 7
+    double hfov = this->camera_->HFOV().Radian();
+  # else
+    double hfov = this->camera_->GetHFOV().Radian();
+  # endif
 
-  double hfov = this->camera_->HFOV().Radian();
   double computed_focal_length =
     (static_cast<double>(this->width_)) /
     (2.0 * tan(hfov / 2.0));
@@ -492,7 +500,12 @@ void GazeboRosCameraUtils::Init()
                " focal_length = width_ / (2.0 * tan(HFOV/2.0)),"
                " the explected focal_lengtth value is [%f],"
                " please update your camera_ model description accordingly.",
-                this->focal_length_, this->parentSensor_->Name().c_str(),
+                # if GAZEBO_MAJOR_VERSION >= 7
+                    this->focal_length_, this->parentSensor_->Name().c_str(),
+                # else
+                    this->focal_length_, this->parentSensor_->GetName().c_str(),
+                # endif
+
                 this->width_, hfov,
                 computed_focal_length);
     }
@@ -614,7 +627,13 @@ void GazeboRosCameraUtils::PublishCameraInfo()
 
   if (this->camera_info_pub_.getNumSubscribers() > 0)
   {
-    this->sensor_update_time_ = this->parentSensor_->LastUpdateTime();
+
+    # if GAZEBO_MAJOR_VERSION >= 7
+        this->sensor_update_time_ = this->parentSensor_->LastUpdateTime();
+    # else
+        this->sensor_update_time_ = this->parentSensor_->GetLastUpdateTime();
+    # endif
+
     common::Time cur_time = this->world_->GetSimTime();
     if (cur_time - this->last_info_update_time_ >= this->update_period_)
     {
