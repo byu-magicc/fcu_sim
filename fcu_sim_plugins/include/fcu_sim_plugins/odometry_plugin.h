@@ -32,12 +32,12 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/PointStamped.h>
+//#include <geometry_msgs/Point.h>
+//#include <geometry_msgs/PointStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovariance.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+//#include <geometry_msgs/PoseWithCovariance.h>
+//#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -45,7 +45,7 @@
 #include <geometry_msgs/TwistWithCovariance.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <nav_msgs/Odometry.h>
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <fcu_sim_plugins/common.h>
@@ -53,24 +53,11 @@
 #include <tf/tf.h>
 #include <chrono>
 #include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/highgui/highgui.hpp>
 
 
 namespace gazebo {
-
-#if GAZEBO_MAJOR_VERSION > 5
-  typedef ignition::math::Vector3d Vector3d;
-  #define XVAL X()
-  #define YVAL Y()
-  #define ZVAL Z()
-#else
-  typedef sdf::Vector3 Vector3d;
-  #define XVAL .x
-  #define YVAL .y
-  #define ZVAL .z
-#endif
-
 
 class OdometryPlugin : public ModelPlugin {
  public:
@@ -101,33 +88,33 @@ class OdometryPlugin : public ModelPlugin {
   std::string parent_frame_id_;
   std::string link_name_;
 
-  NormalDistribution position_n_[3];
-  NormalDistribution attitude_n_[3];
-  NormalDistribution linear_velocity_n_[3];
-  NormalDistribution angular_velocity_n_[3];
-  UniformDistribution position_u_[3];
-  UniformDistribution attitude_u_[3];
-  UniformDistribution linear_velocity_u_[3];
-  UniformDistribution angular_velocity_u_[3];
+//  NormalDistribution position_n_[3];
+//  NormalDistribution attitude_n_[3];
+//  NormalDistribution linear_velocity_n_[3];
+//  NormalDistribution angular_velocity_n_[3];
+//  UniformDistribution position_u_[3];
+//  UniformDistribution attitude_u_[3];
+//  UniformDistribution linear_velocity_u_[3];
+//  UniformDistribution angular_velocity_u_[3];
 
-  geometry_msgs::PoseWithCovariance::_covariance_type pose_covariance_matrix_;
-  geometry_msgs::TwistWithCovariance::_covariance_type twist_covariance_matrix_;
+//  geometry_msgs::PoseWithCovariance::_covariance_type pose_covariance_matrix_;
+//  geometry_msgs::TwistWithCovariance::_covariance_type twist_covariance_matrix_;
 
-  int measurement_delay_;
-  int measurement_divisor_;
+//  int measurement_delay_;
+//  int measurement_divisor_;
   int gazebo_sequence_;
   int odometry_sequence_;
-  double unknown_delay_;
-  double covariance_image_scale_;
-  cv::Mat covariance_image_;
+//  double unknown_delay_;
+//  double covariance_image_scale_;
+//  cv::Mat covariance_image_;
 
-  std::random_device random_device_;
-  std::mt19937 random_generator_;
+//  std::random_device random_device_;
+//  std::mt19937 random_generator_;
 
   ros::NodeHandle* node_handle_;
   ros::Publisher pose_pub_;
-  ros::Publisher pose_with_covariance_pub_;
-  ros::Publisher position_pub_;
+//  ros::Publisher pose_with_covariance_pub_;
+//  ros::Publisher position_pub_;
   ros::Publisher transform_pub_;
   ros::Publisher odometry_pub_;
   ros::Publisher euler_pub_;

@@ -145,6 +145,18 @@ add_library(fcu_sim_camera_plugin
 target_link_libraries(fcu_sim_camera_plugin fcu_sim_camera_utils ${GAZEBO_LIBRARIES} CameraPlugin ${catkin_LIBRARIES})
 add_dependencies(fcu_sim_camera_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(step_camera
+  src/step_camera.cpp
+  include/fcu_sim_plugins/step_camera.h)
+target_link_libraries(step_camera ${catkin_LIBRARIES} ${GAZEBO_libraries} CameraPlugin)
+add_dependencies(step_camera ${catkin_EXPORTED_TARGETS})
+
+add_library(step_world
+  src/step_world.cpp
+  include/fcu_sim_plugins/step_world.h)
+target_link_libraries(step_world ${catkin_LIBRARIES} ${GAZEBO_libraries})
+add_dependencies(step_world ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     odometry_plugin
@@ -158,6 +170,8 @@ install(
     multirotor_forces_and_moments_plugin
     aircraft_forces_and_moments_plugin
     magnetometer_plugin
+    step_camera
+    step_world
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
