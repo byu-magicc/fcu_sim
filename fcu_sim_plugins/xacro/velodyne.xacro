@@ -6,6 +6,7 @@
     params="namespace
             parent_link
             visualize
+            update_rate
             *origin">
     <xacro:laser_scanner
       namespace="${namespace}"
