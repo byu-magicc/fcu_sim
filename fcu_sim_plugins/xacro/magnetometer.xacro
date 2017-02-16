@@ -14,6 +14,8 @@
       pub_rate="160"
       declination="${declination}"
       inclination="${inclination}">
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:magnetometer_plugin_macro>
   </xacro:macro>
 
@@ -31,7 +33,7 @@
             *origin">
 
     <gazebo>
-      <plugin filename="magnetometer_plugin.so" name="fcu_sim_magnetometer_plugin">
+      <plugin filename="libmagnetometer_plugin.so" name="fcu_sim_magnetometer_plugin">
       <namespace>${namespace}</namespace>
       <linkName>${parent_link}</linkName>
       <mag_topic>${mag_topic}</mag_topic>
