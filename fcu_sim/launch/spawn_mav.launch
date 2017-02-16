@@ -8,13 +8,20 @@
   <arg name="y" default="0.0"/>
   <arg name="yaw" default="0.0"/>
   <arg name="z" default="1.0"/>
+  <arg name="enable_logging" default="false"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="log_file" default="$(arg mav_name)"/>
+  <arg name="enable_wind" default="true"/>
   <arg name="color" default="Black"/>
+  <arg name="namespace_arg" default="spawn_mav"/>
+
 
   <!-- send the robot XML to param server -->
   <param name="robot_description" command="
-    $(find xacro)/xacro '$(arg model)'
+    $(find xacro)/xacro.py '$(arg model)'
     mav_name:=$(arg mav_name)
-    color:=$(arg color)"
+    color:=$(arg color)
+    namespace_arg:=$(arg namespace_arg)"
   />
   <param name="tf_prefix" type="string" value="$(arg tf_prefix)" />
 
@@ -26,6 +33,8 @@
          -y $(arg y)
          -z $(arg z)
          -Y $(arg yaw)
+         -gazebo_namespace $(arg namespace_arg)/gazebo
+         -robot_namespace $(arg namespace_arg)
          -model $(arg mav_name)"
    respawn="false" output="screen">
   </node>
