@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
   nav_msgs
   gazebo_ros
+  gazebo_plugins
 )
 
 find_package(Eigen3 REQUIRED)
@@ -38,7 +39,7 @@ catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
                  fcu_sim std_srvs tf relative_nav
-		 cv_bridge geometry_msgs fcu_sim rosbag roscpp
+		 cv_bridge geometry_msgs fcu_sim rosbag roscpp gazebo_plugins gazebo_ros
 		 tf2_ros image_transport polled_camera camera_info_manager std_msgs nav_msgs sensor_msgs
   DEPENDS eigen gazebo opencv fcu_common SDF roscpp gazebo_ros
 )
