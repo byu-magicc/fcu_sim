@@ -1,7 +1,7 @@
 #include <gazebo/common/Plugin.hh>
 #include <ros/ros.h>
 #include "fcu_sim_plugins/step_camera.h"
-// #include "gazebo_plugins/gazebo_ros_camera.h"
+#include "gazebo_plugins/gazebo_ros_camera.h"
 
 #include <string>
 
