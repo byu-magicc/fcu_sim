@@ -19,7 +19,7 @@
   <!-- Spawn MAV -->
   <include file="$(find fcu_sim)/launch/spawn_mav.launch">
     <arg name="mav_name"            value="$(arg mav_name)" />
-    <arg name="model"               value="$(find fcu_sim)/urdf/$(arg mav_name)/$(arg mav_name)_base.xacro" />
+    <arg name="model"               value="$(find fcu_sim)/agents/$(arg mav_name)/$(arg mav_name).xacro" />
   </include>
 <!--
   <node name="joy" pkg="fcu_common" type="fcu_common_joy">
@@ -36,6 +36,9 @@
   </node>
   -->
   <group ns="$(arg mav_name)">
+    <!-- Load Global Parameters for this MAV -->
+    <rosparam command="load" file="$(find fcu_sim)/agents/$(arg mav_name)/$(arg mav_name).yaml"/>
+    
     <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml" ns="autopilot"/>
     <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
       <remap from="state" to="truth"/>

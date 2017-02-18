@@ -29,6 +29,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
 #include <fcu_common/Command.h>
 #include <fcu_common/OutputRaw.h>
@@ -170,6 +171,10 @@ private:
   double sat(double x, double max, double min);
   double max(double x, double y);
   math::Vector3 W_wind_speed_;
+
+  Eigen::MatrixXd rotor_position_;
+  Eigen::MatrixXd rotor_plane_normal_;
+  Eigen::VectorXd rotor_rotation_direction_;
 
   Eigen::MatrixXd force_allocation_matrix_;
   Eigen::MatrixXd torque_allocation_matrix_;

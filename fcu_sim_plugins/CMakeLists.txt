@@ -65,7 +65,7 @@ add_library(ROSflight_sil_plugin
  lib/ROSflight/lib/turbotrig/turbotrig.c
  lib/ROSflight/lib/turbotrig/turbovec.c
  lib/ROSflight_SIL/ROSflight_SIL.c)
-target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
 add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
 #set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -w )
 
