@@ -76,16 +76,63 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (link_ == NULL)
     gzthrow("[ROSflight_SIL] Couldn't find specified link \"" << link_name_ << "\".");
 
-  //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
-  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
-  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
+  // Load the rotor_configuration_file
+  if (_sdf->HasElement("configFilename"))
+  {
+    std::string filename = _sdf->GetElement("configFilename")->Get<std::string>();
+    YAML::Node config = YAML::LoadFile(filename);
+    num_rotors_ = config["num_rotors"].as<int>();
+
+    // Initialize the Class Variables
+    rotor_position_.resize(num_rotors_, 3);
+    rotor_plane_normal_.resize(num_rotors_, 3);
+    rotor_rotation_direction_.resize(num_rotors_);
+
+    // Pull data out of YAML file
+    int i(0), j(0);
+    for (YAML::Node row : config["position"]) {
+      for (YAML::Node col : row) {
+        rotor_position_(i,j) = col.as<double>();
+        j++;
+      }
+      i++;
+      j = 0;
+    }
+    i = j = 0;
+    for (YAML::Node row : config["orientation"]) {
+      for (YAML::Node col : row)  {
+        rotor_plane_normal_(i,j) = col.as<double>();
+        j++;
+      }
+      i++;
+      j = 0;
+    }
+    i = j = 0;
+    for (YAML::Node col : config["direction"]) {
+      rotor_rotation_direction_(j) = col.as<int>();
+      j++;
+    }
+
+    linear_mu_ = config["linear_drag"].as<double>();
+
+    ///// CONTINUE HERE
+
+
+  }
+  else
+    gzerr << "[ROSflight_SIL] Please specify a configuration yaml file.\n";
+
+
+  //  //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
+  //  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
+  //  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
 
   /* Ground Effect Coefficients */
-  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
-  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
-  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
-  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
-  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
+  //  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
+  //  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
+  //  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
+  //  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
+  //  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
@@ -96,20 +143,19 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   getSdfParam<std::string>(_sdf, "signalsTopic", signals_topic_, "motor_signals");
 
   /* Load Rotor Configuration */
-  getSdfParam<int>(_sdf, "numRotors", num_rotors_, 4);
   motors_.resize(num_rotors_);
 
   // For now, just assume all rotors are the same
   Rotor rotor;
-  getSdfParam<double>(_sdf, "rotorMaxThrust", rotor.max, 14.961);
-  getSdfParam<double>(_sdf, "rotorF1", rotor.F1, -1e-05f);
-  getSdfParam<double>(_sdf, "rotorF2", rotor.F2, 0.0452);
-  getSdfParam<double>(_sdf, "rotorF3", rotor.F3, -35.117);
-  getSdfParam<double>(_sdf, "rotorT1", rotor.T1, -2e-08f);
-  getSdfParam<double>(_sdf, "rotorT2", rotor.T2, 8e-05);
-  getSdfParam<double>(_sdf, "rotorT3", rotor.T3, -0.0586);
-  getSdfParam<double>(_sdf, "rotorTauUp", rotor.tau_up, 0.1644);
-  getSdfParam<double>(_sdf, "rotorTauDown", rotor.tau_down, 0.2164);
+  //  getSdfParam<double>(_sdf, "rotorMaxThrust", rotor.max, 14.961);
+  //  getSdfParam<double>(_sdf, "rotorF1", rotor.F1, -1e-05f);
+  //  getSdfParam<double>(_sdf, "rotorF2", rotor.F2, 0.0452);
+  //  getSdfParam<double>(_sdf, "rotorF3", rotor.F3, -35.117);
+  //  getSdfParam<double>(_sdf, "rotorT1", rotor.T1, -2e-08f);
+  //  getSdfParam<double>(_sdf, "rotorT2", rotor.T2, 8e-05);
+  //  getSdfParam<double>(_sdf, "rotorT3", rotor.T3, -0.0586);
+  //  getSdfParam<double>(_sdf, "rotorTauUp", rotor.tau_up, 0.1644);
+  //  getSdfParam<double>(_sdf, "rotorTauDown", rotor.tau_down, 0.2164);
 
   force_allocation_matrix_.resize(4,num_rotors_);
   torque_allocation_matrix_.resize(4,num_rotors_);
@@ -407,5 +453,6 @@ double ROSflightSIL::max(double x, double y)
 
 GZ_REGISTER_MODEL_PLUGIN(ROSflightSIL);
 }
+
 
 
