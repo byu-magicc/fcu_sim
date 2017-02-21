@@ -20,16 +20,16 @@ namespace gazebo
 {
 
 MultiRotorForcesAndMoments::MultiRotorForcesAndMoments() :
-  ModelPlugin(), node_handle_(nullptr),
+  ModelPlugin(), nh_(nullptr),
   prev_sim_time_(0)  {}
 
 
 MultiRotorForcesAndMoments::~MultiRotorForcesAndMoments()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
-  if (node_handle_) {
-    node_handle_->shutdown();
-    delete node_handle_;
+  if (nh_) {
+    nh_->shutdown();
+    delete nh_;
   }
 }
 
@@ -57,7 +57,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
     gzerr << "[multirotor_forces_and_moments] Please specify a namespace.\n";
-  node_handle_ = new ros::NodeHandle(namespace_);
+  nh_ = new ros::NodeHandle(namespace_);
 
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
@@ -70,50 +70,54 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
-  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
+
+  /* Load Params from ROS Server */
+  mass_ = nh_->param<double>("mass", 3.856);
+  linear_mu_ = nh_->param<double>("linear_mu", 0.1);
+  angular_mu_ = nh_->param<double>("angular_mu", 0.5);
 
   // Drag Constant
-  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
-  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
+  linear_mu_ = nh_->param<double>( "linear_mu", 0.8);
+  angular_mu_ = nh_->param<double>( "angular_mu", 0.5);
 
   /* Ground Effect Coefficients */
-  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
-  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
-  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
-  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
-  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
+  ground_effect_.a = nh_->param<double>("ground_effect_a", -55.3516);
+  ground_effect_.b = nh_->param<double>("ground_effect_b", 181.8265);
+  ground_effect_.c = nh_->param<double>("ground_effect_c", -203.9874);
+  ground_effect_.d = nh_->param<double>("ground_effect_d", 85.3735);
+  ground_effect_.e = nh_->param<double>("ground_effect_e", -7.6619);
 
   // Build Actuators Container
-  getSdfParam<double>(_sdf, "max_l", actuators_.l.max, .2); // N-m
-  getSdfParam<double>(_sdf, "max_m", actuators_.m.max, .2); // N-m
-  getSdfParam<double>(_sdf, "max_n", actuators_.n.max, .2); // N-m
-  getSdfParam<double>(_sdf, "max_F", actuators_.F.max, 100); // N
-  getSdfParam<double>(_sdf, "tau_up_l", actuators_.l.tau_up, .25);
-  getSdfParam<double>(_sdf, "tau_up_m", actuators_.m.tau_up, .25);
-  getSdfParam<double>(_sdf, "tau_up_n", actuators_.n.tau_up, .25);
-  getSdfParam<double>(_sdf, "tau_up_F", actuators_.F.tau_up, 0.25);
-  getSdfParam<double>(_sdf, "tau_down_l", actuators_.l.tau_down, .25);
-  getSdfParam<double>(_sdf, "tau_down_m", actuators_.m.tau_down, .25);
-  getSdfParam<double>(_sdf, "tau_down_n", actuators_.n.tau_down, .25);
-  getSdfParam<double>(_sdf, "tau_down_F", actuators_.F.tau_down, 0.35);
+  actuators_.l.max = nh_->param<double>("max_l", .2); // N-m
+  actuators_.m.max = nh_->param<double>("max_m", .2); // N-m
+  actuators_.n.max = nh_->param<double>("max_n", .2); // N-m
+  actuators_.F.max = nh_->param<double>("max_F", 100); // N
+  actuators_.l.tau_up = nh_->param<double>("tau_up_l", .25);
+  actuators_.m.tau_up = nh_->param<double>("tau_up_m", .25);
+  actuators_.n.tau_up = nh_->param<double>("tau_up_n", .25);
+  actuators_.F.tau_up = nh_->param<double>("tau_up_F", 0.25);
+  actuators_.l.tau_down = nh_->param<double>("tau_down_l", .25);
+  actuators_.m.tau_down = nh_->param<double>("tau_down_m", .25);
+  actuators_.n.tau_down = nh_->param<double>("tau_down_n", .25);
+  actuators_.F.tau_down = nh_->param<double>("tau_down_F", 0.35);
 
   // Get PID Gains
   double rollP, rollI, rollD;
   double pitchP, pitchI, pitchD;
   double yawP, yawI, yawD;
   double altP, altI, altD;
-  getSdfParam<double>(_sdf, "roll_P", rollP, 0.1);
-  getSdfParam<double>(_sdf, "roll_I", rollI, 0.0);
-  getSdfParam<double>(_sdf, "roll_D", rollD, 0.0);
-  getSdfParam<double>(_sdf, "pitch_P", pitchP, 0.1);
-  getSdfParam<double>(_sdf, "pitch_I", pitchI, 0.0);
-  getSdfParam<double>(_sdf, "pitch_D", pitchD, 0.0);
-  getSdfParam<double>(_sdf, "yaw_P", yawP, 0.1);
-  getSdfParam<double>(_sdf, "yaw_I", yawI, 0.0);
-  getSdfParam<double>(_sdf, "yaw_D", yawD, 0.0);
-  getSdfParam<double>(_sdf, "alt_P", altP, 0.1);
-  getSdfParam<double>(_sdf, "alt_I", altI, 0.0);
-  getSdfParam<double>(_sdf, "alt_D", altD, 0.0);
+  rollP = nh_->param<double>("roll_P", 0.1);
+  rollI = nh_->param<double>("roll_I", 0.0);
+  rollD = nh_->param<double>("roll_D", 0.0);
+  pitchP = nh_->param<double>("pitch_P", 0.1);
+  pitchI = nh_->param<double>("pitch_I", 0.0);
+  pitchD = nh_->param<double>("pitch_D", 0.0);
+  yawP = nh_->param<double>("yaw_P", 0.1);
+  yawI = nh_->param<double>("yaw_I", 0.0);
+  yawD = nh_->param<double>("yaw_D", 0.0);
+  altP = nh_->param<double>("alt_P", 0.1);
+  altI = nh_->param<double>("alt_I", 0.0);
+  altD = nh_->param<double>("alt_D", 0.0);
   roll_controller_.setGains(rollP, rollI, rollD);
   pitch_controller_.setGains(pitchP, pitchI, pitchD);
   yaw_controller_.setGains(yawP, yawI, yawD);
@@ -126,10 +130,10 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&MultiRotorForcesAndMoments::OnUpdate, this, _1));
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
+  command_sub_ = nh_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
+  wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
 
-  debug_ = node_handle_->advertise<std_msgs::Float32>("debug", 1);
+  debug_ = nh_->advertise<std_msgs::Float32>("debug", 1);
 
   // Initialize Variables
   applied_forces_.Fx = 0;
