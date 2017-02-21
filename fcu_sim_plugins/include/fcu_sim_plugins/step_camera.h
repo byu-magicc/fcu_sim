@@ -26,11 +26,15 @@ namespace gazebo
   class StepCamera : public CameraPlugin, GazeboRosCameraUtils
   {
     event::ConnectionPtr _updateConnection;
+    event::ConnectionPtr _sensorUpdateConnection;
+
+    boost::timed_mutex _updateLock;
 
     public: StepCamera();
     public: ~StepCamera();
     public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
     public: void OnUpdate(const common::UpdateInfo&);
+    public: void OnUpdateParentSensor();
     public: void OnRender();
 
     protected: virtual void OnNewFrame(const unsigned char *_image,

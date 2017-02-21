@@ -67,22 +67,25 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     // I think putting this at the end helps improve the consistency of "render-then-update-function", but I don't have
     // any super good evidence for that, only trial and error
     _updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&StepCamera::OnUpdate, this, _1));
+    _sensorUpdateConnection = this->parentSensor_->ConnectUpdated(boost::bind(&StepCamera::OnUpdateParentSensor, this));
+}
+
+
+void StepCamera::OnUpdateParentSensor(){
+    this->_updateLock.unlock();
 }
 
 void StepCamera::OnUpdate(const common::UpdateInfo&){
-  static common::Time timeout_start;
-
   # if GAZEBO_MAJOR_VERSION >= 7
     float updateRate = this->parentSensor_->UpdateRate();
   # else
     float updateRate = this->parentSensor_->GetUpdateRate();
   # endif
 
-  timeout_start = common::Time::GetWallTime();
-  while(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (1.0 / updateRate) ){
-    if(common::Time::GetWallTime() - timeout_start > 0.10){ // Timeout in seconds
-        gzerr << "Update loop timed out waiting for the renderer." << "\n";
-        break;
+  if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (1.0 / updateRate) ){
+    // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
+    if(!this->_updateLock.timed_lock(boost::posix_time::seconds(1.0))){
+        ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
     }
   }
 }
