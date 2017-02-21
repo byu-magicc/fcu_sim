@@ -38,7 +38,7 @@ void MultiRotorForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   // Gazebo is in NWU, while we calculate forces in NED, hence the negatives
-  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, actual_forces_.Fy, actual_forces_.Fz));
+  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, -actual_forces_.Fy, -actual_forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(actual_forces_.l, -actual_forces_.m, -actual_forces_.n));
 }
 
@@ -91,7 +91,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actuators_.l.max = nh_->param<double>("max_l", .2); // N-m
   actuators_.m.max = nh_->param<double>("max_m", .2); // N-m
   actuators_.n.max = nh_->param<double>("max_n", .2); // N-m
-  actuators_.F.max = nh_->param<double>("max_F", 100); // N
+  actuators_.F.max = nh_->param<double>("max_F", 1.0); // N
   actuators_.l.tau_up = nh_->param<double>("tau_up_l", .25);
   actuators_.m.tau_up = nh_->param<double>("tau_up_m", .25);
   actuators_.n.tau_up = nh_->param<double>("tau_up_n", .25);
@@ -226,6 +226,10 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
     double p1 = alt_controller_.computePIDDirect(command_.F, -pd, hdot, sampling_time_);
     desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
   }
+  else
+  {
+    gzerr << "[MULTIROTOR_FORCES_AND_MOMENTS] Incorrect Command::MODE" << "\n";
+  }
 
   // calculate the actual output force using low-pass-filters to introduce a first-order
   // approximation of delay in motor reponse
@@ -254,10 +258,10 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double ground_effect = max(ground_effect_.a*z*z*z*z + ground_effect_.b*z*z*z + ground_effect_.c*z*z + ground_effect_.d*z + ground_effect_.e, 0);
 
   // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
-  // By Rob Leishman et al.
+  // By Rob Leishman et al. (Remember NED)
   actual_forces_.Fx = -1.0*linear_mu_*ur;
-  actual_forces_.Fy = 1.0*linear_mu_*vr;
-  actual_forces_.Fz = 1.0*linear_mu_*wr + applied_forces_.Fz + ground_effect;
+  actual_forces_.Fy = -1.0*linear_mu_*vr;
+  actual_forces_.Fz = -1.0*linear_mu_*wr - applied_forces_.Fz - ground_effect;
   actual_forces_.l = -1.0*angular_mu_*p + applied_forces_.l;
   actual_forces_.m = -1.0*angular_mu_*q + applied_forces_.m;
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
