@@ -168,7 +168,7 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   command_pub_ = nh_->advertise<fcu_common::Command>("output/command", 1);
 
   // Initialize ROSflight code
-  start_time_us_ = (uint64_t)(ros::Time::now().toNSec() * 1e-3);
+  start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
   init_param();
   init_mode();
   init_estimator(true, true, true);
@@ -314,7 +314,7 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 
 
   fcu_common::OutputRaw ESC_signals;
-  ESC_signals.header.stamp = ros::Time::now();
+  ESC_signals.header.stamp.fromSec(world_->GetSimTime().Double());
   for (int i = 0; i < 8 ; i++)
   {
     // Put signal into message for debug

@@ -143,8 +143,7 @@ void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
       GPS_message_.ground_course = chi + chi_error;
 
       // Publish
-      ros::Time t;
-      GPS_message_.header.stamp = t.now();
+      GPS_message_.header.stamp.fromSec(world_->GetSimTime().Double());
       GPS_pub_.publish(GPS_message_);
 
       last_time_ = current_time;
