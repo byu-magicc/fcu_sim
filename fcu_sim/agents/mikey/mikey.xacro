@@ -11,7 +11,7 @@ Author: James Jackson
   <xacro:property name="namespace" value="mikey" />
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/firefly.dae" />
-  <xacro:property name="mass" value="3.562" />
+  <xacro:property name="mass" value="2.856" />
   <xacro:property name="body_width" value="0.505" />
   <xacro:property name="body_height" value="0.1" />
   <xacro:property name="body_inertia">
