@@ -1,5 +1,6 @@
 /*
  * Copyright 2016 James Jackson, MAGICC Lab, Brigham Young University, Provo, UT
+ * Copyright 2016 Gary Ellingson, MAGICC Lab, Brigham Young University, Provo, UT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
