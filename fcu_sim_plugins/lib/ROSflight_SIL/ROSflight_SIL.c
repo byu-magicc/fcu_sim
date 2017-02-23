@@ -54,6 +54,7 @@ bool writeEEPROM() {return true;}
 
 //===================================================================
 // drv_uart.h
+uint8_t uartOpen(int a, int b, int c, int d){return 0;}
 uint8_t Serial1 = 0;
 void serialWrite(uint8_t serial, uint8_t ch) {}
 bool serialTotalBytesWaiting(uint8_t serial) {return false;}
