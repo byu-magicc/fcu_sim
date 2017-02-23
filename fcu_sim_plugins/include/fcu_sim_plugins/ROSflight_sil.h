@@ -152,7 +152,7 @@ private:
   double prev_sim_time_;
   uint64_t start_time_us_;
 
-  ros::NodeHandle* node_handle_;
+  ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
   ros::Subscriber rc_sub_;
   ros::Subscriber wind_speed_sub_;

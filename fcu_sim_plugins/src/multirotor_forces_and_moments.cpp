@@ -71,6 +71,8 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
 
+  gzmsg << "[multirotor_forces_and_moments] Loading parameters from " << namespace_ << " Namespace\n";
+
   /* Load Params from ROS Server */
   mass_ = nh_->param<double>("mass", 3.856);
   linear_mu_ = nh_->param<double>("linear_mu", 0.1);
@@ -100,6 +102,8 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actuators_.m.tau_down = nh_->param<double>("tau_down_m", .25);
   actuators_.n.tau_down = nh_->param<double>("tau_down_n", .25);
   actuators_.F.tau_down = nh_->param<double>("tau_down_F", 0.35);
+
+  gzmsg << "[multirotor_forces_and_moments] max_F = " << actuators_.F.max << "\n";
 
   // Get PID Gains
   double rollP, rollI, rollD;
@@ -212,18 +216,18 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   }
   else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
-    desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);
+    desired_forces_.l = roll_controller_.computePID(command_.x, phi, p, sampling_time_);
+    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max;
   }
   else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
-    desired_forces_.l = roll_controller_.computePIDDirect(command_.x, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePIDDirect(command_.y, theta, q, sampling_time_);
+    desired_forces_.l = roll_controller_.computePID(command_.x, phi, p, sampling_time_);
+    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     double hdot = sin(theta)*u - sin(phi)*cos(theta)*v - cos(phi)*cos(theta)*w;
-    double p1 = alt_controller_.computePIDDirect(command_.F, -pd, hdot, sampling_time_);
+    double p1 = alt_controller_.computePID(command_.F, -pd, hdot, sampling_time_);
     desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
   }
 

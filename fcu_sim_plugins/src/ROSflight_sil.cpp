@@ -39,16 +39,16 @@ namespace gazebo
 {
 
 ROSflightSIL::ROSflightSIL() :
-  ModelPlugin(), node_handle_(nullptr), prev_sim_time_(0)  {
+  ModelPlugin(), nh_(nullptr), prev_sim_time_(0)  {
 }
 
 
 ROSflightSIL::~ROSflightSIL()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
-  if (node_handle_) {
-    node_handle_->shutdown();
-    delete node_handle_;
+  if (nh_) {
+    nh_->shutdown();
+    delete nh_;
   }
 }
 
@@ -66,7 +66,7 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
     gzerr << "[ROSflight_SIL] Please specify a namespace.\n";
-  node_handle_ = new ros::NodeHandle(namespace_);
+  nh_ = new ros::NodeHandle(namespace_);
 
   if (_sdf->HasElement("linkName"))
     link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
@@ -75,52 +75,6 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
     gzthrow("[ROSflight_SIL] Couldn't find specified link \"" << link_name_ << "\".");
-
-  // Load the rotor_configuration_file
-  if (_sdf->HasElement("configFilename"))
-  {
-    std::string filename = _sdf->GetElement("configFilename")->Get<std::string>();
-    YAML::Node config = YAML::LoadFile(filename);
-    num_rotors_ = config["num_rotors"].as<int>();
-
-    // Initialize the Class Variables
-    rotor_position_.resize(num_rotors_, 3);
-    rotor_plane_normal_.resize(num_rotors_, 3);
-    rotor_rotation_direction_.resize(num_rotors_);
-
-    // Pull data out of YAML file
-    int i(0), j(0);
-    for (YAML::Node row : config["position"]) {
-      for (YAML::Node col : row) {
-        rotor_position_(i,j) = col.as<double>();
-        j++;
-      }
-      i++;
-      j = 0;
-    }
-    i = j = 0;
-    for (YAML::Node row : config["orientation"]) {
-      for (YAML::Node col : row)  {
-        rotor_plane_normal_(i,j) = col.as<double>();
-        j++;
-      }
-      i++;
-      j = 0;
-    }
-    i = j = 0;
-    for (YAML::Node col : config["direction"]) {
-      rotor_rotation_direction_(j) = col.as<int>();
-      j++;
-    }
-
-    linear_mu_ = config["linear_drag"].as<double>();
-
-    ///// CONTINUE HERE
-
-
-  }
-  else
-    gzerr << "[ROSflight_SIL] Please specify a configuration yaml file.\n";
 
 
   //  //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
@@ -202,16 +156,16 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&ROSflightSIL::OnUpdate, this, _1));
 
   // Connect Subscribers
-  command_sub_ = node_handle_->subscribe(command_topic_, 1, &ROSflightSIL::CommandCallback, this);
-  rc_sub_ = node_handle_->subscribe(rc_topic_, 1, &ROSflightSIL::RCCallback, this);
-  wind_speed_sub_ = node_handle_->subscribe(wind_speed_topic_, 1, &ROSflightSIL::WindSpeedCallback, this);
-  imu_sub_ = node_handle_->subscribe(imu_topic_, 1, &ROSflightSIL::imuCallback, this);
+  command_sub_ = nh_->subscribe(command_topic_, 1, &ROSflightSIL::CommandCallback, this);
+  rc_sub_ = nh_->subscribe(rc_topic_, 1, &ROSflightSIL::RCCallback, this);
+  wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &ROSflightSIL::WindSpeedCallback, this);
+  imu_sub_ = nh_->subscribe(imu_topic_, 1, &ROSflightSIL::imuCallback, this);
 
   // Connect Publishers
-  estimate_pub_ = node_handle_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
-  euler_pub_ = node_handle_->advertise<geometry_msgs::Vector3Stamped>(estimate_topic_ + "/euler", 1);
-  signals_pub_ = node_handle_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
-  command_pub_ = node_handle_->advertise<fcu_common::Command>("output/command", 1);
+  estimate_pub_ = nh_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
+  euler_pub_ = nh_->advertise<geometry_msgs::Vector3Stamped>(estimate_topic_ + "/euler", 1);
+  signals_pub_ = nh_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
+  command_pub_ = nh_->advertise<fcu_common::Command>("output/command", 1);
 
   // Initialize ROSflight code
   start_time_us_ = (uint64_t)(ros::Time::now().toNSec() * 1e-3);
