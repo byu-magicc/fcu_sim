@@ -39,7 +39,6 @@
 #include "fcu_sim_plugins/common.h"
 
 namespace gazebo {
-static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
 
 
 class MultiRotorForcesAndMoments : public ModelPlugin {
