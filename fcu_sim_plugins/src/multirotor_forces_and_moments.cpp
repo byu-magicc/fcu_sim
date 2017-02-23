@@ -19,9 +19,10 @@
 namespace gazebo
 {
 
-MultiRotorForcesAndMoments::MultiRotorForcesAndMoments() :
-  ModelPlugin(), nh_(nullptr),
-  prev_sim_time_(0)  {}
+MultiRotorForcesAndMoments::MultiRotorForcesAndMoments()
+{
+
+}
 
 
 MultiRotorForcesAndMoments::~MultiRotorForcesAndMoments()
@@ -91,7 +92,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actuators_.l.max = nh_->param<double>("max_l", .2); // N-m
   actuators_.m.max = nh_->param<double>("max_m", .2); // N-m
   actuators_.n.max = nh_->param<double>("max_n", .2); // N-m
-  actuators_.F.max = nh_->param<double>("max_F", 100); // N
+  actuators_.F.max = nh_->param<double>("max_F", 1.0); // N
   actuators_.l.tau_up = nh_->param<double>("tau_up_l", .25);
   actuators_.m.tau_up = nh_->param<double>("tau_up_m", .25);
   actuators_.n.tau_up = nh_->param<double>("tau_up_n", .25);
@@ -126,7 +127,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   alt_controller_.setGains(altP, altI, altD);
 
   // start time clock for controller
-  prev_control_time_ = ros::Time::now().toSec();
+  prev_control_time_ = world_->GetSimTime().Double();
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&MultiRotorForcesAndMoments::OnUpdate, this, _1));
@@ -151,6 +152,9 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actual_forces_.l = 0;
   actual_forces_.m = 0;
   actual_forces_.n = 0;
+
+  // Pull off initial state so we can reset to it
+  initial_pose_ = link_->GetWorldCoGPose();
 }
 
 // This gets called by the world update event.
@@ -171,6 +175,28 @@ void MultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 
 void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::Command msg)
 {
   command_ = msg;
+}
+
+void MultiRotorForcesAndMoments::Reset()
+{
+  // Re-Initialize Memory Variables
+  applied_forces_.Fx = 0;
+  applied_forces_.Fy = 0;
+  applied_forces_.Fz = 0;
+  applied_forces_.l = 0;
+  applied_forces_.m = 0;
+  applied_forces_.n = 0;
+
+  actual_forces_.Fx = 0;
+  actual_forces_.Fy = 0;
+  actual_forces_.Fz = 0;
+  actual_forces_.l = 0;
+  actual_forces_.m = 0;
+  actual_forces_.n = 0;
+
+  // teleport the MAV to the initial position and reset it
+  link_->SetWorldPose(initial_pose_);
+  link_->ResetPhysicsStates();
 }
 
 
@@ -228,6 +254,10 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
     double p1 = alt_controller_.computePID(command_.F, -pd, sampling_time_, -pddot);
     desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
   }
+  else
+  {
+    gzerr << "[MULTIROTOR_FORCES_AND_MOMENTS] Incorrect Command::MODE" << "\n";
+  }
 
   // calculate the actual output force using low-pass-filters to introduce a first-order
   // approximation of delay in motor reponse
@@ -256,7 +286,7 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double ground_effect = max(ground_effect_.a*z*z*z*z + ground_effect_.b*z*z*z + ground_effect_.c*z*z + ground_effect_.d*z + ground_effect_.e, 0);
 
   // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
-  // By Rob Leishman et al.
+  // By Rob Leishman et al. (Remember NED)
   actual_forces_.Fx = -1.0*linear_mu_*ur;
   actual_forces_.Fy = -1.0*linear_mu_*vr;
   actual_forces_.Fz = -1.0*linear_mu_*wr - applied_forces_.Fz - ground_effect;

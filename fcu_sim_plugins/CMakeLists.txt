@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fcu_sim_plugins)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 # To enable assertions when compiled in release mode.
 add_definitions(-DROS_ASSERT_ENABLED)
@@ -24,11 +25,12 @@ find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
   nav_msgs
   gazebo_ros
+  gazebo_plugins
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(gazebo REQUIRED)
-find_package(OpenCV REQUIRED)
+# find_package(OpenCV REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
 include_directories(${GAZEBO_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -38,7 +40,7 @@ catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
   CATKIN_DEPENDS cv_bridge geometry_msgs fcu_sim rosbag roscpp
                  fcu_sim std_srvs tf relative_nav
-		 cv_bridge geometry_msgs fcu_sim rosbag roscpp
+		 cv_bridge geometry_msgs fcu_sim rosbag roscpp gazebo_plugins gazebo_ros
 		 tf2_ros image_transport polled_camera camera_info_manager std_msgs nav_msgs sensor_msgs
   DEPENDS eigen gazebo opencv fcu_common SDF roscpp gazebo_ros
 )
