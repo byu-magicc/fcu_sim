@@ -91,7 +91,7 @@ void AltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
 
 
     // publish message
-    message.header.stamp = ros::Time::now();
+    message.header.stamp.fromSec(world_->GetSimTime().Double());
     alt_pub_.publish(message);
   }
 }
