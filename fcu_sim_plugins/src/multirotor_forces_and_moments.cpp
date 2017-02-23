@@ -124,7 +124,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   alt_controller_.setGains(altP, altI, altD);
 
   // start time clock for controller
-  prev_control_time_ = ros::Time::now().toSec();
+  prev_control_time_ = world_->GetSimTime().Double();
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&MultiRotorForcesAndMoments::OnUpdate, this, _1));
