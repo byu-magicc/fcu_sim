@@ -19,9 +19,10 @@
 namespace gazebo
 {
 
-MultiRotorForcesAndMoments::MultiRotorForcesAndMoments() :
-  ModelPlugin(), nh_(nullptr),
-  prev_sim_time_(0)  {}
+MultiRotorForcesAndMoments::MultiRotorForcesAndMoments()
+{
+
+}
 
 
 MultiRotorForcesAndMoments::~MultiRotorForcesAndMoments()
@@ -149,6 +150,9 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actual_forces_.l = 0;
   actual_forces_.m = 0;
   actual_forces_.n = 0;
+
+  // Pull off initial state so we can reset to it
+  initial_pose_ = link_->GetWorldCoGPose();
 }
 
 // This gets called by the world update event.
@@ -169,6 +173,28 @@ void MultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 
 void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::Command msg)
 {
   command_ = msg;
+}
+
+void MultiRotorForcesAndMoments::Reset()
+{
+  // Re-Initialize Memory Variables
+  applied_forces_.Fx = 0;
+  applied_forces_.Fy = 0;
+  applied_forces_.Fz = 0;
+  applied_forces_.l = 0;
+  applied_forces_.m = 0;
+  applied_forces_.n = 0;
+
+  actual_forces_.Fx = 0;
+  actual_forces_.Fy = 0;
+  actual_forces_.Fz = 0;
+  actual_forces_.l = 0;
+  actual_forces_.m = 0;
+  actual_forces_.n = 0;
+
+  // teleport the MAV to the initial position and reset it
+  link_->SetWorldPose(initial_pose_);
+  link_->ResetPhysicsStates();
 }
 
 

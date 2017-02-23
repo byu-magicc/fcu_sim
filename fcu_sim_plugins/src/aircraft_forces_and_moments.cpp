@@ -19,8 +19,7 @@
 namespace gazebo
 {
 
-AircraftForcesAndMoments::AircraftForcesAndMoments() :
-  ModelPlugin(), nh_(nullptr), prev_sim_time_(0)  {}
+AircraftForcesAndMoments::AircraftForcesAndMoments(){}
 
 
 AircraftForcesAndMoments::~AircraftForcesAndMoments()
@@ -80,12 +79,12 @@ void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _s
   wing_.alpha0 = nh_->param<double>("wing_alpha0", 0.18994);
 
   // Propeller Coefficients
-   prop_.k_motor = nh_->param<double>("k_motor", 80.0);
-   prop_.k_T_P = nh_->param<double>("k_T_P", 0.0);
-   prop_.k_Omega = nh_->param<double>("k_Omega", 0.0);
-   prop_.e = nh_->param<double>("prop_e", 0.9);
-   prop_.S = nh_->param<double>("prop_S", 0.202);
-   prop_.C = nh_->param<double>("prop_C", 1.0);
+  prop_.k_motor = nh_->param<double>("k_motor", 80.0);
+  prop_.k_T_P = nh_->param<double>("k_T_P", 0.0);
+  prop_.k_Omega = nh_->param<double>("k_Omega", 0.0);
+  prop_.e = nh_->param<double>("prop_e", 0.9);
+  prop_.S = nh_->param<double>("prop_S", 0.202);
+  prop_.C = nh_->param<double>("prop_C", 1.0);
 
   // Lift Params
   CL_.O = nh_->param<double>("C_L_O", 0.28);
@@ -164,6 +163,9 @@ void AircraftForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr _s
   // Connect Subscribers
   command_sub_ = nh_->subscribe(command_topic_, 1, &AircraftForcesAndMoments::CommandCallback, this);
   wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &AircraftForcesAndMoments::WindSpeedCallback, this);
+
+  // Pull off initial pose so we can reset to it
+  initial_pose_ = link_->GetWorldCoGPose();
 }
 
 // This gets called by the world update event.
@@ -172,6 +174,19 @@ void AircraftForcesAndMoments::OnUpdate(const common::UpdateInfo& _info) {
   prev_sim_time_ = _info.simTime.Double();
   UpdateForcesAndMoments();
   SendForces();
+}
+
+void AircraftForcesAndMoments::Reset()
+{
+  forces_.Fx = 0.0;
+  forces_.Fy = 0.0;
+  forces_.Fz = 0.0;
+  forces_.l = 0.0;
+  forces_.m = 0.0;
+  forces_.n = 0.0;
+
+  link_->SetWorldPose(initial_pose_);
+  link_->ResetPhysicsStates();
 }
 
 void AircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &wind){
