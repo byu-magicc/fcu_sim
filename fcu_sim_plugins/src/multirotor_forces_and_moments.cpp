@@ -38,7 +38,7 @@ void MultiRotorForcesAndMoments::SendForces()
 {
   // apply the forces and torques to the joint
   // Gazebo is in NWU, while we calculate forces in NED, hence the negatives
-  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, actual_forces_.Fy, actual_forces_.Fz));
+  link_->AddRelativeForce(math::Vector3(actual_forces_.Fx, -actual_forces_.Fy, -actual_forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(actual_forces_.l, -actual_forces_.m, -actual_forces_.n));
 }
 
@@ -71,8 +71,6 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
 
-  gzmsg << "[multirotor_forces_and_moments] Loading parameters from " << namespace_ << " Namespace\n";
-
   /* Load Params from ROS Server */
   mass_ = nh_->param<double>("mass", 3.856);
   linear_mu_ = nh_->param<double>("linear_mu", 0.1);
@@ -103,8 +101,6 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   actuators_.n.tau_down = nh_->param<double>("tau_down_n", .25);
   actuators_.F.tau_down = nh_->param<double>("tau_down_F", 0.35);
 
-  gzmsg << "[multirotor_forces_and_moments] max_F = " << actuators_.F.max << "\n";
-
   // Get PID Gains
   double rollP, rollI, rollD;
   double pitchP, pitchI, pitchD;
@@ -122,6 +118,8 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   altP = nh_->param<double>("alt_P", 0.1);
   altI = nh_->param<double>("alt_I", 0.0);
   altD = nh_->param<double>("alt_D", 0.0);
+
+  gzmsg << "roll_P " << rollP;
   roll_controller_.setGains(rollP, rollI, rollD);
   pitch_controller_.setGains(pitchP, pitchI, pitchD);
   yaw_controller_.setGains(yawP, yawI, yawD);
@@ -216,18 +214,18 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   }
   else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
-    desired_forces_.l = roll_controller_.computePID(command_.x, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, q, sampling_time_);
+    desired_forces_.l = roll_controller_.computePID(command_.x, phi, sampling_time_, p);
+    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, sampling_time_, q);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max;
   }
   else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
-    desired_forces_.l = roll_controller_.computePID(command_.x, phi, p, sampling_time_);
-    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, q, sampling_time_);
+    desired_forces_.l = roll_controller_.computePID(command_.x, phi,  sampling_time_, p);
+    desired_forces_.m = pitch_controller_.computePID(command_.y, theta, sampling_time_, q);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
-    double hdot = sin(theta)*u - sin(phi)*cos(theta)*v - cos(phi)*cos(theta)*w;
-    double p1 = alt_controller_.computePID(command_.F, -pd, hdot, sampling_time_);
+    double pddot = -sin(theta)*u + sin(phi)*cos(theta)*v + cos(phi)*cos(theta)*w;
+    double p1 = alt_controller_.computePID(command_.F, -pd, sampling_time_, -pddot);
     desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
   }
 
@@ -260,8 +258,8 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
   // By Rob Leishman et al.
   actual_forces_.Fx = -1.0*linear_mu_*ur;
-  actual_forces_.Fy = 1.0*linear_mu_*vr;
-  actual_forces_.Fz = 1.0*linear_mu_*wr + applied_forces_.Fz + ground_effect;
+  actual_forces_.Fy = -1.0*linear_mu_*vr;
+  actual_forces_.Fz = -1.0*linear_mu_*wr - applied_forces_.Fz - ground_effect;
   actual_forces_.l = -1.0*angular_mu_*p + applied_forces_.l;
   actual_forces_.m = -1.0*angular_mu_*q + applied_forces_.m;
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
@@ -272,6 +270,7 @@ double MultiRotorForcesAndMoments::sat(double x, double max, double min)
   if(x > max)
     return max;
   else if(x < min)
+
     return min;
   else
     return x;
