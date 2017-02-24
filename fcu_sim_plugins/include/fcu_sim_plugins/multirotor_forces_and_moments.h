@@ -129,7 +129,6 @@ private:
   ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
-  ros::Publisher debug_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();

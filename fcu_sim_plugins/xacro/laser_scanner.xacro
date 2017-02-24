@@ -6,7 +6,8 @@
     name="hokuyo_UTM-30LX"
     params="namespace
             parent_link
-            visualize">
+            visualize
+            *origin">
     <xacro:laser_scanner
       namespace="${namespace}"
       parent_link="${parent_link}"
@@ -18,7 +19,7 @@
       min_angle="-pi/2"
       max_angle="pi/2"
       update_rate="40">
-      <origin xyz="0.09525 0 -0.0127" rpy="0 0 0" />
+      <xacro:insert_block name="origin"/>
     </xacro:laser_scanner>
   </xacro:macro>
 

@@ -120,7 +120,6 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   altI = nh_->param<double>("alt_I", 0.0);
   altD = nh_->param<double>("alt_D", 0.0);
 
-  gzmsg << "roll_P " << rollP;
   roll_controller_.setGains(rollP, rollI, rollD);
   pitch_controller_.setGains(pitchP, pitchI, pitchD);
   yaw_controller_.setGains(yawP, yawI, yawD);
@@ -135,8 +134,6 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   // Connect Subscribers
   command_sub_ = nh_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
   wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
-
-  debug_ = nh_->advertise<std_msgs::Float32>("debug", 1);
 
   // Initialize Variables
   applied_forces_.Fx = 0;
@@ -155,6 +152,9 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
 
   // Pull off initial state so we can reset to it
   initial_pose_ = link_->GetWorldCoGPose();
+
+  // signal that we haven't received a command yet
+  command_.mode = -1;
 }
 
 // This gets called by the world update event.
@@ -231,7 +231,11 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   double wr = w - C_wind_speed.z;
 
   // calculate the appropriate control <- Depends on Control type (which block is being controlled)
-  if (command_.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+  if (command_.mode < 0)
+  {
+    // We have not received a command yet.  This is not an error, but needs to be handled
+  }
+  else if (command_.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
     desired_forces_.l = roll_controller_.computePID(command_.x, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePID(command_.y, q, sampling_time_);
@@ -253,10 +257,6 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
     double pddot = -sin(theta)*u + sin(phi)*cos(theta)*v + cos(phi)*cos(theta)*w;
     double p1 = alt_controller_.computePID(command_.F, -pd, sampling_time_, -pddot);
     desired_forces_.Fz = p1  + (mass_*9.80665)/(cos(command_.x)*cos(command_.y));
-  }
-  else
-  {
-    gzerr << "[MULTIROTOR_FORCES_AND_MOMENTS] Incorrect Command::MODE" << "\n";
   }
 
   // calculate the actual output force using low-pass-filters to introduce a first-order
