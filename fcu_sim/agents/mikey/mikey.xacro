@@ -11,7 +11,7 @@ Author: James Jackson
   <xacro:property name="namespace" value="mikey" />
   <xacro:property name="use_mesh_file" value="true" />
   <xacro:property name="mesh_file" value="package://fcu_sim/meshes/firefly.dae" />
-  <xacro:property name="mass" value="3.562" />
+  <xacro:property name="mass" value="2.856" />
   <xacro:property name="body_width" value="0.505" />
   <xacro:property name="body_height" value="0.1" />
   <xacro:property name="body_inertia">
@@ -60,20 +60,20 @@ Author: James Jackson
 
   <!-- Simplified Dynamics -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
-  <xacro:mikey_forces_and_moments namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
-
+  <xacro:multirotor namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
+  
   <!-- ***************** SENSORS ******************* -->
   <!-- Ground Truth -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/odometry_sensor.xacro"/>
   <xacro:ground_truth namespace="${namespace}" parent_link="${namespace}/base_link" />
 
   <!-- Mount an IMU -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
+<!--   <xacro:include filename="$(find fcu_sim_plugins)/xacro/imu.xacro"/>
   <xacro:IMU_MPU6050
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
     imu_topic="imu/data"/>
-
+ -->
   <!--Enable Wind -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/>
   <xacro:wind_param
@@ -95,11 +95,13 @@ Author: James Jackson
     parent_link="${namespace}/base_link"/>
 
   <!-- Laser Scanner -->
-  <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
-  <xacro:hokuyo_UTM-30LX
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/laser_scanner.xacro"/>
+  <xacro:RPLIDAR-A2
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    visualize="false"/> -->
+    visualize="false">
+    <origin xyz="0.0 0.0 0.2" rpy="0 0 0" />
+  </xacro:RPLIDAR-A2>
 
     <!-- Collision Sensor -->
     <!-- TODO  http://gazebosim.org/tutorials?tut=contact_sensor-->
