@@ -72,10 +72,8 @@ void WorldUtilities::loadModelsCommandCallback(const std_msgs::String &msg)
     for (auto const &m : this->world_->GetModels()){
         if(m->GetName().find("obstacle_") == 0){
             m->SetWorldPose(math::Pose(0,0,0,0,0,0));
-            gzerr << m->GetWorldPose() << "\n";
         }
     }
-    gzerr << "Message recieved" << "\n";
 
 
 
