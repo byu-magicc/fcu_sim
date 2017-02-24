@@ -112,6 +112,8 @@ class ImuPlugin : public ModelPlugin {
  protected:
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
 
+  void Reset();
+
   void addNoise(
       Eigen::Vector3d* linear_acceleration,
       Eigen::Vector3d* angular_velocity,
