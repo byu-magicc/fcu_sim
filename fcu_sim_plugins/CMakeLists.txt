@@ -152,11 +152,11 @@ add_library(step_camera
 target_link_libraries(step_camera ${catkin_LIBRARIES} ${GAZEBO_libraries} CameraPlugin)
 add_dependencies(step_camera ${catkin_EXPORTED_TARGETS})
 
-add_library(step_world
-  src/step_world.cpp
-  include/fcu_sim_plugins/step_world.h)
-target_link_libraries(step_world ${catkin_LIBRARIES} ${GAZEBO_libraries})
-add_dependencies(step_world ${catkin_EXPORTED_TARGETS})
+add_library(world_utilities
+  src/world_utilities.cpp
+  include/fcu_sim_plugins/world_utilities.h)
+target_link_libraries(world_utilities ${catkin_LIBRARIES} ${GAZEBO_libraries})
+add_dependencies(world_utilities ${catkin_EXPORTED_TARGETS})
 
 install(
   TARGETS
@@ -172,7 +172,7 @@ install(
     aircraft_forces_and_moments_plugin
     magnetometer_plugin
     step_camera
-    step_world
+    world_utilities
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
