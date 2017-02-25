@@ -69,7 +69,7 @@ add_library(ROSflight_sil_plugin
  lib/ROSflight_SIL/ROSflight_SIL.c)
 target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
 add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
-#set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -w )
+set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
 
 add_library(aircraft_forces_and_moments_plugin
   src/aircraft_forces_and_moments.cpp
