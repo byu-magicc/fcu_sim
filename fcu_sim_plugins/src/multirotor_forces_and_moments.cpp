@@ -125,9 +125,6 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   yaw_controller_.setGains(yawP, yawI, yawD);
   alt_controller_.setGains(altP, altI, altD);
 
-  // start time clock for controller
-  prev_control_time_ = world_->GetSimTime().Double();
-
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&MultiRotorForcesAndMoments::OnUpdate, this, _1));
 
@@ -135,26 +132,8 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   command_sub_ = nh_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
   wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
 
-  // Initialize Variables
-  applied_forces_.Fx = 0;
-  applied_forces_.Fy = 0;
-  applied_forces_.Fz = 0;
-  applied_forces_.l = 0;
-  applied_forces_.m = 0;
-  applied_forces_.n = 0;
-
-  actual_forces_.Fx = 0;
-  actual_forces_.Fy = 0;
-  actual_forces_.Fz = 0;
-  actual_forces_.l = 0;
-  actual_forces_.m = 0;
-  actual_forces_.n = 0;
-
-  // Pull off initial state so we can reset to it
-  initial_pose_ = link_->GetWorldCoGPose();
-
-  // signal that we haven't received a command yet
-  command_.mode = -1;
+  // Initialize State
+  this->Reset();
 }
 
 // This gets called by the world update event.
@@ -194,9 +173,14 @@ void MultiRotorForcesAndMoments::Reset()
   actual_forces_.m = 0;
   actual_forces_.n = 0;
 
+  prev_sim_time_ = -1.0;
+  sampling_time_ = -1.0;
+
+  command_.mode = -1;
+
   // teleport the MAV to the initial position and reset it
-  link_->SetWorldPose(initial_pose_);
-  link_->ResetPhysicsStates();
+  // link_->SetWorldPose(initial_pose_);
+  // link_->ResetPhysicsStates();
 }
 
 
