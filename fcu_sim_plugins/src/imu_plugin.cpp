@@ -161,7 +161,10 @@ void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
                                const double dt) {
   ROS_ASSERT(linear_acceleration != nullptr);
   ROS_ASSERT(angular_velocity != nullptr);
-  ROS_ASSERT(dt > 0.0);
+  if(dt <= 0.0)
+  {
+    return;
+  }
 
   // Gyrosocpe
   double tau_g = imu_parameters_.gyroscope_bias_correlation_time;
