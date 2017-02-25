@@ -72,9 +72,6 @@ private:
   physics::EntityPtr parent_link_;
   event::ConnectionPtr updateConnection_; // Pointer to the update event connection.
 
-  // So we can reset to the initial position
-  math::Pose initial_pose_;
-
   // physical parameters
   double linear_mu_;
   double angular_mu_;
@@ -123,8 +120,7 @@ private:
 
   // Time Counters
   double sampling_time_;
-  double prev_sim_time_ = 0;
-  double prev_control_time_ = 0;
+  double prev_sim_time_;
 
   ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;

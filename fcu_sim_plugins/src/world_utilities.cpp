@@ -37,58 +37,28 @@ void WorldUtilities::Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   // Connect ROS
   nh_ = new ros::NodeHandle("~");
   step_command_sub_ = nh_->subscribe("step", 1, &WorldUtilities::stepCommandCallback, this);
-  load_models_command_sub_ = nh_->subscribe("load_models", 1, &WorldUtilities::loadModelsCommandCallback, this);
+  randomize_obstacles_service_sub_ = nh_->advertiseService("randomize_obstacles", &WorldUtilities::randomizeObstaclesCommandCallback, this);
 
   this->world_ = _parent;
 }
-
-void WorldUtilities::loadModelsCommandCallback(const std_msgs::String &msg)
+bool WorldUtilities::randomizeObstaclesCommandCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response)
 {
-//    //   Load the world file
-//    sdf::SDFPtr sdf(new sdf::SDF);
-//    if (!sdf::init(sdf))
-//    {
-//        gzerr << "Unable to initialize sdf\n";
-//        return;
-//    }
-//
-//    // Find the file.
-//    std::string fullFile = gazebo::common::find_file(msg.data);
-//
-//    if (fullFile.empty())
-//    {
-//        gzerr << "Unable to find file[" << msg.data << "]\n";
-//        return;
-//    }
-//
-//    if (!sdf::readFile(fullFile, sdf))
-//    {
-//        gzerr << "Unable to read sdf file[" << msg.data  << "]\n";
-//        return;
-//    }
-
-    this->world_->SetPaused(true);
-
+    double max_x = 15;
+    double min_x = -15;
+    double max_y = 40;
+    double min_y = -40;
     for (auto const &m : this->world_->GetModels()){
         if(m->GetName().find("obstacle_") == 0){
-            m->SetWorldPose(math::Pose(0,0,0,0,0,0));
+            math::Pose randomPose(
+              (max_x - min_x) * ( (double)rand() / (double)RAND_MAX ) + min_x,
+              (max_y - min_y) * ( (double)rand() / (double)RAND_MAX ) + min_y,
+              0, 0, 0, 0);
+            
+            m->SetInitialRelativePose(randomPose);
         }
     }
 
-
-
-//    sdf::ElementPtr childElem = sdf->Root()->GetElement("model");
-//
-//    this->world_->GetByName(this->world_->GetName());
-//
-//    while (childElem)
-//    {
-//        sdf::SDF r = sdf::SDF();
-//        r.Root(childElem);
-//        this->world_->InsertModelString(r.ToString());
-//        childElem = childElem->GetNextElement("model");
-//    }
-
+    return true;
 }
 
 void WorldUtilities::stepCommandCallback(const std_msgs::Int16 &msg)

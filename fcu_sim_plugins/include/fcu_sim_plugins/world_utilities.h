@@ -31,6 +31,7 @@
 
 #include <std_msgs/Int16.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
 #include <boost/bind.hpp>
 
 
@@ -42,7 +43,7 @@ public:
   WorldUtilities();
   ~WorldUtilities();
   void stepCommandCallback(const std_msgs::Int16 &msg);
-  void loadModelsCommandCallback(const std_msgs::String &msg);
+  bool randomizeObstaclesCommandCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response);
 
 protected:
 
@@ -55,7 +56,7 @@ private:
   // ROS variables
   ros::NodeHandle* nh_;
   ros::Subscriber step_command_sub_;
-  ros::Subscriber load_models_command_sub_;
+  ros::ServiceServer randomize_obstacles_service_sub_;
   ros::Publisher pose_pub_;
 
   std::string namespace_;

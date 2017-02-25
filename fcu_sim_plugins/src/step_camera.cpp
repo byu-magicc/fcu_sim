@@ -70,34 +70,37 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     _sensorUpdateConnection = this->parentSensor_->ConnectUpdated(boost::bind(&StepCamera::OnUpdateParentSensor, this));
 }
 
-
 void StepCamera::OnUpdateParentSensor(){
-    this->_updateLock.unlock();
+    this->_updateLock.unlock(); // We need both of these to get maximial speed.
 }
 
 void StepCamera::OnUpdate(const common::UpdateInfo&){
-  # if GAZEBO_MAJOR_VERSION >= 7
-    float updateRate = this->parentSensor_->UpdateRate();
-  # else
-    float updateRate = this->parentSensor_->GetUpdateRate();
-  # endif
+   # if GAZEBO_MAJOR_VERSION >= 7
+     float updateRate = this->parentSensor_->UpdateRate();
+   # else
+     float updateRate = this->parentSensor_->GetUpdateRate();
+   # endif
 
-  if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (1.0 / updateRate) ){
-    // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
-    if(!this->_updateLock.timed_lock(boost::posix_time::seconds(1.0))){
-        ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
-    }
-  }
+   if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (1.0 / updateRate) ){
+     // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
+     if(!this->_updateLock.timed_lock(boost::posix_time::seconds(1.0))){
+         ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
+     }
+   }
 }
+
+
 
 void StepCamera::OnNewFrame(const unsigned char *_image,
     unsigned int _width, unsigned int _height, unsigned int _depth,
     const std::string &_format)
 {
+    this->_updateLock.unlock(); // We need both of these to get maximial speed.
     this->sensor_update_time_ = this->world_->GetSimTime();
 
     this->PutCameraData(_image);
     this->PublishCameraInfo();
 
     this->last_update_time_ = this->world_->GetSimTime();
+    
 }
