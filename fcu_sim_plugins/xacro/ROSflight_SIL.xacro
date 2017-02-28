@@ -10,63 +10,25 @@
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
         command_topic="${command_topic}"
-        parent_frame_id="${parent_link}"
-        linear_mu="1"
-        angular_mu="0.3"
-        rotor_max_thrust="14.961"
-        rotor_F1="1.5e-5"
-        rotor_F2="-0.024451"
-        rotor_F3="9.00225"
-        rotor_T1="-2.22e-7"
-        rotor_T2="3.51e-4"
-        rotor_T3="-0.12531"
-        rotor_tau_down="0.1644"
-        rotor_tau_up="0.2164"
-        num_rotors="4"
-        rotor1_distance="0.30"
-        rotor1_angle="2.35619449019"
-        rotor1_direction="-1"
-        rotor2_distance="0.30"
-        rotor2_angle="0.78539816339"
-        rotor2_direction="1"
-        rotor3_distance="0.30"
-        rotor3_angle="-2.35619449019"
-        rotor3_direction="1"
-        rotor4_distance="0.30"
-        rotor4_angle="-0.78539816339"
-        rotor4_direction="-1"
-        rotor5_distance="0"
-        rotor5_angle="0"
-        rotor5_direction="1"
-        rotor6_distance="0"
-        rotor6_angle="0"
-        rotor6_direction="1"
-        rotor7_distance="0"
-        rotor7_angle="0"
-        rotor7_direction="1"
-        rotor8_distance="0"
-        rotor8_angle="0"
-        rotor8_direction="1"/>
+        parent_frame_id="${parent_link}"/>
     </xacro:macro>
 
     <xacro:macro
       name="mikey_ROSflight_SIL"
       params="namespace parent_link command_topic">
-      <xacro:property name="filename" value="$(find fcu_sim_plugins)/xacro/mikey_rotor_configuration.yaml"/>
       <xacro:ROSflight_sil_plugin
         namespace="${namespace}"
         parent_link="${namespace}/base_link"
         wind_speed_topic="gazebo/wind_speed"
         command_topic="${command_topic}"
-        parent_frame_id="${parent_link}"
-        rotor_config_file="${filename}"/>
+        parent_frame_id="${parent_link}"/>
     </xacro:macro>
 
 
   <!-- Macro to add a generic multirotor forces and moments plugin. -->
   <xacro:macro name="ROSflight_sil_plugin"
     params="
-        namespace parent_link wind_speed_topic command_topic parent_frame_id rotor_config_file">
+        namespace parent_link wind_speed_topic command_topic parent_frame_id">
 
     <!-- plugin -->
     <gazebo>
@@ -76,7 +38,6 @@
         <windSpeedTopic>${wind_speed_topic}</windSpeedTopic>
         <commandTopic>${command_topic}</commandTopic>
         <parentFrameId>${parent_frame_id}</parentFrameId>
-        <configFilename>${rotor_config_file}</configFilename>
       </plugin>
     </gazebo>
   </xacro:macro>

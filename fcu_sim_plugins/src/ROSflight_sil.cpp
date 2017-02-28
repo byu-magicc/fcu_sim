@@ -76,18 +76,6 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   if (link_ == NULL)
     gzthrow("[ROSflight_SIL] Couldn't find specified link \"" << link_name_ << "\".");
 
-
-  //  //  getSdfParam<double>(_sdf, "mass", mass_, 3.856);
-  //  getSdfParam<double> (_sdf, "linear_mu", linear_mu_, 0.8);
-  //  getSdfParam<double> (_sdf, "angular_mu", angular_mu_, 0.5);
-
-  /* Ground Effect Coefficients */
-  //  getSdfParam<double>(_sdf, "ground_effect_a", ground_effect_.a, -55.3516);
-  //  getSdfParam<double>(_sdf, "ground_effect_b", ground_effect_.b, 181.8265);
-  //  getSdfParam<double>(_sdf, "ground_effect_c", ground_effect_.c, -203.9874);
-  //  getSdfParam<double>(_sdf, "ground_effect_d", ground_effect_.d, 85.3735);
-  //  getSdfParam<double>(_sdf, "ground_effect_e", ground_effect_.e, -7.6619);
-
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
@@ -96,41 +84,68 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   getSdfParam<std::string>(_sdf, "estimateTopic", estimate_topic_, "attitude");
   getSdfParam<std::string>(_sdf, "signalsTopic", signals_topic_, "motor_signals");
 
-  /* Load Rotor Configuration */
-  motors_.resize(num_rotors_);
+  gzmsg << "loading parameters from " << namespace_ << " ns\n";
+
+  // Pull Parameters off of rosparam server
+  bool got_params = true;
+  num_rotors_ = 0;
+  ROS_ASSERT(nh_->getParam("ground_effect", ground_effect_));
+  ROS_ASSERT(nh_->getParam("mass", mass_));
+  ROS_ASSERT(nh_->getParam("linear_mu", linear_mu_));
+  ROS_ASSERT(nh_->getParam("angular_mu", angular_mu_));
+  ROS_ASSERT(nh_->getParam("num_rotors", num_rotors_));
+
+  std::vector<double> rotor_positions(3 * num_rotors_);
+  std::vector<double> rotor_vector_normal(3 * num_rotors_);
+  std::vector<int> rotor_rotation_directions(num_rotors_);
+  double rotor_max_thrust;
+  std::vector<double> rotor_F(3);
+  std::vector<double> rotor_T(3);
+  double rotor_tau_up;
+  double rotor_tau_down;
 
   // For now, just assume all rotors are the same
   Rotor rotor;
-  //  getSdfParam<double>(_sdf, "rotorMaxThrust", rotor.max, 14.961);
-  //  getSdfParam<double>(_sdf, "rotorF1", rotor.F1, -1e-05f);
-  //  getSdfParam<double>(_sdf, "rotorF2", rotor.F2, 0.0452);
-  //  getSdfParam<double>(_sdf, "rotorF3", rotor.F3, -35.117);
-  //  getSdfParam<double>(_sdf, "rotorT1", rotor.T1, -2e-08f);
-  //  getSdfParam<double>(_sdf, "rotorT2", rotor.T2, 8e-05);
-  //  getSdfParam<double>(_sdf, "rotorT3", rotor.T3, -0.0586);
-  //  getSdfParam<double>(_sdf, "rotorTauUp", rotor.tau_up, 0.1644);
-  //  getSdfParam<double>(_sdf, "rotorTauDown", rotor.tau_down, 0.2164);
+
+  ROS_ASSERT(nh_->getParam("rotor_positions", rotor_positions));
+  ROS_ASSERT(nh_->getParam("rotor_vector_normal", rotor_vector_normal));
+  ROS_ASSERT(nh_->getParam("rotor_rotation_directions", rotor_rotation_directions));
+  ROS_ASSERT(nh_->getParam("rotor_max_thrust", rotor.max));
+  ROS_ASSERT(nh_->getParam("rotor_F", rotor.F_poly));
+  ROS_ASSERT(nh_->getParam("rotor_T", rotor.T_poly));
+  ROS_ASSERT(nh_->getParam("rotor_tau_up", rotor.tau_up));
+  ROS_ASSERT(nh_->getParam("rotor_tau_down", rotor.tau_down));
+
+  /* Load Rotor Configuration */
+  motors_.resize(num_rotors_);
 
   force_allocation_matrix_.resize(4,num_rotors_);
   torque_allocation_matrix_.resize(4,num_rotors_);
   for(int i = 0; i < num_rotors_; i++)
   {
-    std::stringstream int_strm;
-    int_strm << i+1;
-    getSdfParam<double>(_sdf, "rotor" + int_strm.str() + "Distance", motors_[i].distance, 0);
-    getSdfParam<double>(_sdf, "rotor" + int_strm.str() + "Angle",    motors_[i].angle, 0);
-    getSdfParam<int>(_sdf, "rotor" + int_strm.str() + "Direction", motors_[i].direction, 0);
     motors_[i].rotor = rotor;
+    motors_[i].position.resize(3);
+    motors_[i].normal.resize(3);
+    for (int j = 0; j < 3; j++)
+    {
+      motors_[i].position(j) = rotor_positions[3*i + j];
+      motors_[i].normal(j) = rotor_vector_normal[3*i + j];
+    }
+    motors_[i].normal.normalize();
+    motors_[i].direction = rotor_rotation_directions[i];
+
+    Eigen::Vector3d moment_from_thrust = motors_[i].position.cross(motors_[i].normal);
+    Eigen::Vector3d moment_from_torque = motors_[i].direction * motors_[i].normal;
 
     // build allocation_matrices
-    force_allocation_matrix_(0,i) = -1.0*sin(motors_[i].angle)*motors_[i].distance; // l
-    force_allocation_matrix_(1,i) = cos(motors_[i].angle)*motors_[i].distance; // m
-    force_allocation_matrix_(2,i) = 0.0; // n
-    force_allocation_matrix_(3,i) = 1.0; // F
+    force_allocation_matrix_(0,i) = moment_from_thrust(0); // l
+    force_allocation_matrix_(1,i) = moment_from_thrust(1); // m
+    force_allocation_matrix_(2,i) = moment_from_thrust(2); // n
+    force_allocation_matrix_(3,i) = motors_[i].normal(2); // F
 
-    torque_allocation_matrix_(0,i) = 0.0; // l
-    torque_allocation_matrix_(1,i) = 0.0; // m
-    torque_allocation_matrix_(2,i) = motors_[i].direction; //n
+    torque_allocation_matrix_(0,i) = moment_from_torque(0); // l
+    torque_allocation_matrix_(1,i) = moment_from_torque(1); // m
+    torque_allocation_matrix_(2,i) = moment_from_torque(2); // n
     torque_allocation_matrix_(3,i) = 0.0; // F
   }
 
@@ -167,9 +182,14 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   signals_pub_ = nh_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
   command_pub_ = nh_->advertise<fcu_common::Command>("output/command", 1);
 
+  // Connect Services
+  calibrate_imu_srv_ = nh_->advertiseService("calibrate_imu_bias", &ROSflightSIL::calibrateImuBiasSrvCallback, this);
+
   // Initialize ROSflight code
   start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
   init_param();
+  init_sensors();
+  gzmsg << "sensors " << _baro_present << _mag_present << _sonar_present << _diff_pressure_present << "\n";
   init_mode();
   init_estimator(true, true, true);
   init_controller();
@@ -193,6 +213,18 @@ void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind)
   W_wind_speed_.z = wind.z;
 }
 
+void ROSflightSIL::Reset()
+{
+  start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
+  gzmsg << "Reset called, time is now " << start_time_us_ << " us \n";
+  init_param();
+  init_sensors();
+  init_mode();
+  init_estimator(true, true, true);
+  init_controller();
+  init_mixing();
+}
+
 void ROSflightSIL::RCCallback(const fcu_common::OutputRaw &msg)
 {
   for (int i = 0; i < 8; i++)
@@ -204,7 +236,7 @@ void ROSflightSIL::RCCallback(const fcu_common::OutputRaw &msg)
 void ROSflightSIL::SendForces()
 {
   // apply the forces and torques to the joint
-  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, forces_.Fz));
+  link_->AddRelativeForce(math::Vector3(forces_.Fx, -forces_.Fy, -forces_.Fz));
   link_->AddRelativeTorque(math::Vector3(forces_.l, -forces_.m, -forces_.n));
 }
 
@@ -264,19 +296,38 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
 
 void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 {
-  uint64_t now_us = (uint64_t)(msg.header.stamp.toNSec()*1e-3) - start_time_us_;
-  // update IMU measurements
-  _accel.x = msg.linear_acceleration.x;
-  _accel.y = msg.linear_acceleration.y;
-  _accel.z = msg.linear_acceleration.z;
+  // Update the micros Timer in ROSflight
+  SIL_now_us = (uint64_t)(msg.header.stamp.toNSec()*1e-3) - start_time_us_;
 
-  _gyro.x = msg.angular_velocity.x;
-  _gyro.y = msg.angular_velocity.y;
-  _gyro.z = msg.angular_velocity.z;
-  _imu_time = now_us;
+  // Load IMU measurements into the read_raw variables to simulate I2C communication
+  // Make sure to put measurements in the NWU (the way the IMU is actually mounted)
+  static uint16_t acc1G = 512 * 8;
+  static float gyro_scale = (1.0f / 16.4f) * (M_PI / 180.0f);
+  static float accel_scale = 9.80665f/acc1G;
 
-  // update estimate
-  run_estimator();
+  accel_read_raw[0] = msg.linear_acceleration.x / accel_scale;
+  accel_read_raw[1] = -msg.linear_acceleration.y / accel_scale;
+  accel_read_raw[2] = -msg.linear_acceleration.z / accel_scale;
+
+  gyro_read_raw[0] = msg.angular_velocity.x / gyro_scale;
+  gyro_read_raw[1] = -msg.angular_velocity.y / gyro_scale;
+  gyro_read_raw[2] = -msg.angular_velocity.z / gyro_scale;
+
+  temp_read_raw = (25.0 - 36.53) * 340.0;
+
+  // Simulate a read on the IMU
+  SIL_call_IMU_ISR();
+
+  /*********************/
+  /***  Control Loop ***/
+  /*********************/
+  if (update_sensors())
+  {
+    // If I have new IMU data, then perform control
+    run_estimator();
+    run_controller();
+    mix_output();
+  }
 
   // publish estimate
   fcu_common::Attitude attitude_msg;
@@ -301,16 +352,13 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 
 
   // Run Controller
-  fcu_common::Command alt_msg, angle_msg, rate_msg, pt_msg;
-  run_controller();
+  fcu_common::Command rate_msg, pt_msg;
 
   pt_msg.x = _command.x;
   pt_msg.y = _command.y;
   pt_msg.z = _command.z;
   pt_msg.F = _command.F;
   command_pub_.publish(rate_msg);
-  // Mix Outputs
-  mix_output();
 
 
   fcu_common::OutputRaw ESC_signals;
@@ -362,8 +410,8 @@ void ROSflightSIL::UpdateForcesAndMoments()
   {
     // First, figure out the desired force output from passing the signal into the quadratic approximation
     double signal = motor_signals_(i);
-    desired_forces_(i,0) = motors_[i].rotor.F1*signal*signal + motors_[i].rotor.F2*signal + motors_[i].rotor.F3;
-    desired_torques_(i,0) = motors_[i].rotor.T1*signal*signal + motors_[i].rotor.T2*signal + motors_[i].rotor.T3;
+    desired_forces_(i,0) = motors_[i].rotor.F_poly[0]*signal*signal + motors_[i].rotor.F_poly[1]*signal + motors_[i].rotor.F_poly[2];
+    desired_torques_(i,0) = motors_[i].rotor.T_poly[0]*signal*signal + motors_[i].rotor.T_poly[1]*signal + motors_[i].rotor.T_poly[2];
 
     // Then, Calculate Actual force and torque for each rotor using first-order dynamics
     double tau = (desired_forces_(i,0) > actual_forces_(i,0)) ? motors_[i].rotor.tau_up : motors_[i].rotor.tau_down;
@@ -373,20 +421,36 @@ void ROSflightSIL::UpdateForcesAndMoments()
   }
 
   // Use the allocation matrix to calculate the body-fixed force and torques
-  Eigen::Vector4d output_forces_and_torques = force_allocation_matrix_*actual_forces_ + torque_allocation_matrix_*actual_torques_;
+  Eigen::Vector4d output_forces = force_allocation_matrix_*actual_forces_;
+  Eigen::Vector4d output_torques = torque_allocation_matrix_*actual_torques_;
+  Eigen::Vector4d output_forces_and_torques = output_forces + output_torques;
+
+//  gzmsg << "signals = " << actual_torques_[0] << " " << actual_torques_[1] << " " << actual_torques_[2] << " " << actual_torques_[3] << "\n";
+//  gzmsg << "signals = " << motor_signals_[0] << " " << motor_signals_[1] << " " << motor_signals_[2] << " " << motor_signals_[3] << "\n";
+//  gzmsg << "output forces = " << output_forces(0) << " " << output_forces(1) << " " << output_forces(2) << " " << output_forces(3) << "\n";
+//  gzmsg << "output forces = " << output_torques(0) << " " << output_torques(1) << " " << output_torques(2) << " " << output_torques(3) << "\n";
+//  gzmsg << "output forces = " << output_forces_and_torques(0) << " " << output_forces_and_torques(1) << " " << output_forces_and_torques(2) << " " << output_forces_and_torques(3) << "\n";
+//  gzmsg << "\n\n";
+
 
   // Calculate Ground Effect
   double z = -pd;
-  double ground_effect = max(ground_effect_.a*z*z*z*z + ground_effect_.b*z*z*z + ground_effect_.c*z*z + ground_effect_.d*z + ground_effect_.e, 0);
+  double ground_effect = max(ground_effect_[0]*z*z*z*z + ground_effect_[1]*z*z*z + ground_effect_[2]*z*z + ground_effect_[3]*z + ground_effect_[4], 0);
 
   //  // Apply other forces (wind) <- follows "Quadrotors and Accelerometers - State Estimation With an Improved Dynamic Model"
   //  // By Rob Leishman et al.
   forces_.Fx = -linear_mu_*ur;
   forces_.Fy = -linear_mu_*vr;
-  forces_.Fz = linear_mu_*wr + /*ground_effect +*/ output_forces_and_torques(3);
+  forces_.Fz = -linear_mu_*wr + /*ground_effect +*/ output_forces_and_torques(3);
   forces_.l = -angular_mu_*p + output_forces_and_torques(0);
   forces_.m = -angular_mu_*q + output_forces_and_torques(1);
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
+}
+
+
+bool ROSflightSIL::calibrateImuBiasSrvCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+  return start_imu_calibration();
 }
 
 double ROSflightSIL::sat(double x, double max, double min)

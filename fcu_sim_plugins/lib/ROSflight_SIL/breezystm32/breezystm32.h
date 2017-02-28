@@ -31,6 +31,7 @@ void systemInit(void);
 void delayMicroseconds(uint32_t us);
 void delay(uint32_t ms);
 
+extern uint64_t SIL_now_us;
 uint64_t micros(void);
 uint32_t millis(void);
 
@@ -55,7 +56,7 @@ bool writeEEPROM();
 #define USART1 0
 #define MODE_RXTX 0
 
-uint8_t uartOpen(int a, int b, int c, int d);
+uint8_t uartOpen(int a, int* b, int c, int d);
 
 extern uint8_t Serial1;
 void serialWrite(uint8_t serial, uint8_t ch);
@@ -93,6 +94,10 @@ void ms4525_read(float *differential_pressure, float *temp, float* velocity);
 
 //===================================================================
 // drv_mpu6050.h
+extern int16_t accel_read_raw[3];
+extern int16_t gyro_read_raw[3];
+extern int16_t temp_read_raw;
+void SIL_call_IMU_ISR(void);
 void mpu6050_init(bool enableInterrupt, uint16_t * acc1G, float * gyroScale, int boardVersion);
 void mpu6050_register_interrupt_cb(void (*functionPtr)(void));
 
@@ -100,6 +105,11 @@ void mpu6050_register_interrupt_cb(void (*functionPtr)(void));
 void mpu6050_read_accel(int16_t *accData);
 void mpu6050_read_gyro(int16_t *gyroData);
 void mpu6050_read_temperature(int16_t * tempData);
+
+//===================================================================
+// drv_i2c.h
+bool i2cWrite(int a, int b, int c);
+
 
 
 #ifdef __cplusplus
