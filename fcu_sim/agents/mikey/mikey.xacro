@@ -56,11 +56,11 @@ Author: James Jackson
 
   <!-- ROSflight_SIL -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/ROSflight_SIL.xacro"/>
-  <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>
+  <!-- <xacro:mikey_ROSflight_SIL namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/> -->
 
   <!-- Simplified Dynamics -->
-<!--   <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
-  <xacro:multirotor namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/> -->  
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/multirotor_forces_and_moments.xacro"/>
+  <xacro:multirotor namespace="${namespace}" parent_link="${namespace}/base_link" command_topic="command"/>  
 
 
   <!-- ***************** SENSORS ******************* -->
@@ -83,11 +83,13 @@ Author: James Jackson
     wind_pub_topic="wind"/>
 
   <!-- Mount an Altimeter -->
-  <xacro:include filename="$(find fcu_sim_plugins)/xacro/altimeter.xacro"/>
+  <xacro:include filename="$(find fcu_sim_plugins)/xacro/sonar.xacro"/>
   <xacro:Sonar_MB1030
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    altimeter_topic="altimeter"/>
+    sonar_topic="alt">
+    <origin xyz="0.4 0.1 -0.21" rpy="0 0 0" />
+  </xacro:Sonar_MB1030>
 
   <!-- Mount an RGBD Camera -->
   <xacro:include filename="$(find fcu_sim_plugins)/xacro/rgbd.xacro"/>

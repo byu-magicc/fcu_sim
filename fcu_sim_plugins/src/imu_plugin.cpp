@@ -161,10 +161,7 @@ void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
                                const double dt) {
   ROS_ASSERT(linear_acceleration != nullptr);
   ROS_ASSERT(angular_velocity != nullptr);
-<<<<<<< HEAD
-  
-=======
->>>>>>> bb88c9df8b93d446a93fc14fdca95cf956e3e0b1
+
   if(dt <= 0.0)
   {
     return;
