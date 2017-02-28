@@ -27,16 +27,19 @@ namespace gazebo
   {
     event::ConnectionPtr _updateConnection;
     event::ConnectionPtr _sensorUpdateConnection;
+    event::ConnectionPtr _resetConnection;
+    float _updateRate;
 
     boost::timed_mutex _updateLock;
 
     public: StepCamera();
     public: ~StepCamera();
-    public: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
     public: void OnUpdate(const common::UpdateInfo&);
     public: void OnUpdateParentSensor();
     public: void OnRender();
 
+    protected: void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf);
+    protected: void Reset();
     protected: virtual void OnNewFrame(const unsigned char *_image,
                                         unsigned int _width, unsigned int _height,
                                         unsigned int _depth, const std::string &_format);
