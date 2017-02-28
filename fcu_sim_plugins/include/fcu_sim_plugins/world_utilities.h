@@ -30,17 +30,20 @@
 #include <stdio.h>
 
 #include <std_msgs/Int16.h>
+#include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
 #include <boost/bind.hpp>
 
 
 namespace gazebo {
 
 
-class StepWorld : public WorldPlugin {
+class WorldUtilities : public WorldPlugin {
 public:
-  StepWorld();
-  ~StepWorld();
-  void commandCallback(const std_msgs::Int16 &msg);
+  WorldUtilities();
+  ~WorldUtilities();
+  void stepCommandCallback(const std_msgs::Int16 &msg);
+  bool randomizeObstaclesCommandCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response);
 
 protected:
 
@@ -52,7 +55,8 @@ private:
 
   // ROS variables
   ros::NodeHandle* nh_;
-  ros::Subscriber command_sub_;
+  ros::Subscriber step_command_sub_;
+  ros::ServiceServer randomize_obstacles_service_sub_;
   ros::Publisher pose_pub_;
 
   std::string namespace_;

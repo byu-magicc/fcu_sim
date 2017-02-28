@@ -6,7 +6,8 @@
     name="hokuyo_UTM-30LX"
     params="namespace
             parent_link
-            visualize">
+            visualize
+            *origin">
     <xacro:laser_scanner
       namespace="${namespace}"
       parent_link="${parent_link}"
@@ -18,7 +19,29 @@
       min_angle="-pi/2"
       max_angle="pi/2"
       update_rate="40">
-      <origin xyz="0.09525 0 -0.0127" rpy="0 0 0" />
+      <xacro:insert_block name="origin"/>
+    </xacro:laser_scanner>
+  </xacro:macro>
+
+    <!-- RPLIDAR-A2 -->
+  <xacro:macro
+    name="RPLIDAR-A2"
+    params="namespace
+            parent_link
+            visualize
+            *origin">
+    <xacro:laser_scanner
+      namespace="${namespace}"
+      parent_link="${parent_link}"
+      num_samples="400"
+      visualize="${visualize}"
+      min_range="0.15"
+      max_range="6"
+      res_range="0.01"
+      min_angle="-3.14159"
+      max_angle="3.14159"
+      update_rate="10">
+      <xacro:insert_block name="origin"/>
     </xacro:laser_scanner>
   </xacro:macro>
 
@@ -67,8 +90,8 @@
           <horizontal>
             <samples>720</samples>
             <resolution>1</resolution>
-            <min_angle>-1.570796</min_angle>
-            <max_angle>1.570796</max_angle>
+            <min_angle>${min_angle}</min_angle>
+            <max_angle>${max_angle}</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -83,8 +106,8 @@
         </noise>
       </ray>
       <plugin name="${namespace}_laser" filename="libgazebo_ros_laser.so">
-        <topicName>scan</topicName>
-        <frameName>laser_link</frameName>
+        <topicName>${namespace}/scan</topicName>
+        <frameName>${namespace}/base_laser_link</frameName>
       </plugin>
     </sensor>
   </gazebo>

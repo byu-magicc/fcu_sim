@@ -29,6 +29,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
 #include <fcu_common/Command.h>
 #include <fcu_common/OutputRaw.h>
@@ -38,6 +39,7 @@
 #include "fcu_sim_plugins/common.h"
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/Imu.h>
+#include <std_srvs/Trigger.h>
 #include <fcu_common/simple_pid.h>
 
 
@@ -57,6 +59,7 @@ public:
 protected:
   void UpdateForcesAndMoments();
   void UpdateEstimator();
+  void Reset();
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
@@ -82,20 +85,16 @@ private:
 
   struct Rotor{
     double max;
-    double F1;  // constants in quadratic fit for force
-    double F2;
-    double F3;
-    double T1;  // constants in quadratic fit for torque
-    double T2;
-    double T3;
+    std::vector<double> F_poly;
+    std::vector<double> T_poly;
     double tau_up; // time constants for response
     double tau_down;
   };
 
   struct Motor{
     Rotor rotor;
-    double angle;  // angle from forward (-PI <-> PI)
-    double distance; // distance from center to center of motor
+    Eigen::Vector3d position;
+    Eigen::Vector3d normal;
     int direction; // 1 for CW -1 for CCW
   };
 
@@ -104,13 +103,7 @@ private:
 
   double linear_mu_;
   double angular_mu_;
-  struct GE_constants{
-    double a;
-    double b;
-    double c;
-    double d;
-    double e;
-  } ground_effect_;
+  std::vector<double> ground_effect_;
 
   double mass_;
 
@@ -151,7 +144,7 @@ private:
   double prev_sim_time_;
   uint64_t start_time_us_;
 
-  ros::NodeHandle* node_handle_;
+  ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
   ros::Subscriber rc_sub_;
   ros::Subscriber wind_speed_sub_;
@@ -159,6 +152,7 @@ private:
   ros::Publisher estimate_pub_, euler_pub_;
   ros::Publisher signals_pub_;
   ros::Publisher alt_pub_, angle_pub_, command_pub_, passthrough_pub_;
+  ros::ServiceServer calibrate_imu_srv_;
 
   fcu_common::Command command_;
 
@@ -167,9 +161,15 @@ private:
   void CommandCallback(const fcu_common::Command& msg);
   void RCCallback(const fcu_common::OutputRaw& msg);
   void imuCallback(const sensor_msgs::Imu& msg);
+
+  bool calibrateImuBiasSrvCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);
   double sat(double x, double max, double min);
   double max(double x, double y);
   math::Vector3 W_wind_speed_;
+
+  Eigen::MatrixXd rotor_position_;
+  Eigen::MatrixXd rotor_plane_normal_;
+  Eigen::VectorXd rotor_rotation_direction_;
 
   Eigen::MatrixXd force_allocation_matrix_;
   Eigen::MatrixXd torque_allocation_matrix_;
