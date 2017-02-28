@@ -52,13 +52,13 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
 
     # if GAZEBO_MAJOR_VERSION >= 7
         std::string sensor_name = this->parentSensor_->Name();
-        float updateRate = 1.0 / this->parentSensor_->UpdateRate();
+        this->_updateRate = 1.0 / this->parentSensor_->UpdateRate();
     # else
         std::string sensor_name = this->parentSensor_->GetName();
-        float updateRate = 1.0 / this->parentSensor_->GetUpdateRate();
+        this->_updateRate  = 1.0 / this->parentSensor_->GetUpdateRate();
     # endif
 
-    if(std::ceil(updateRate / worldRate) != updateRate / worldRate){
+    if(std::ceil(this->_updateRate / worldRate) != this->_updateRate / worldRate){
         gzwarn << "The update rate of sensor " << sensor_name << " does not evenly divide into the "
                << "MaxStepSize of the world. This will result in an actual framerate that is slower than requested. "
                << "Consider decreasing the MaxStepSize, or changing the FrameRate or UpdateRate" << "\n";
@@ -68,6 +68,10 @@ void StepCamera::Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
     // any super good evidence for that, only trial and error
     _updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&StepCamera::OnUpdate, this, _1));
     _sensorUpdateConnection = this->parentSensor_->ConnectUpdated(boost::bind(&StepCamera::OnUpdateParentSensor, this));
+
+    // I am not sure why Reset() wasn't being called on it's own. I can only guess that I have it set up
+    // wrong somewhere.
+    _resetConnection = event::Events::ConnectWorldReset(boost::bind(&StepCamera::Reset, this));
 }
 
 void StepCamera::OnUpdateParentSensor(){
@@ -75,13 +79,7 @@ void StepCamera::OnUpdateParentSensor(){
 }
 
 void StepCamera::OnUpdate(const common::UpdateInfo&){
-   # if GAZEBO_MAJOR_VERSION >= 7
-     float updateRate = this->parentSensor_->UpdateRate();
-   # else
-     float updateRate = this->parentSensor_->GetUpdateRate();
-   # endif
-
-   if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (1.0 / updateRate) ){
+   if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (this->_updateRate) ){
      // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
      if(!this->_updateLock.timed_lock(boost::posix_time::seconds(1.0))){
          ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
@@ -89,18 +87,27 @@ void StepCamera::OnUpdate(const common::UpdateInfo&){
    }
 }
 
+void StepCamera::Reset(){
+    this->last_update_time_ = 0;
+    this->sensor_update_time_ = 0;
+}
 
 
 void StepCamera::OnNewFrame(const unsigned char *_image,
     unsigned int _width, unsigned int _height, unsigned int _depth,
     const std::string &_format)
 {
-    this->_updateLock.unlock(); // We need both of these to get maximial speed.
-    this->sensor_update_time_ = this->world_->GetSimTime();
+    common::Time current_time = this->world_->GetSimTime();
 
-    this->PutCameraData(_image);
-    this->PublishCameraInfo();
+    if (this->parentSensor->IsActive() && (current_time - this->last_update_time_) >= (this->_updateRate))
+    {
+        this->_updateLock.unlock(); // We need both of these to get maximial speed.
+        this->sensor_update_time_ = current_time;
 
-    this->last_update_time_ = this->world_->GetSimTime();
-    
+        this->PutCameraData(_image);
+        this->PublishCameraInfo();
+
+        this->last_update_time_ = current_time;
+    }
+
 }
