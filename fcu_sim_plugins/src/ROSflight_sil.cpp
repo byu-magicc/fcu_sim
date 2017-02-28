@@ -87,7 +87,6 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   gzmsg << "loading parameters from " << namespace_ << " ns\n";
 
   // Pull Parameters off of rosparam server
-  bool got_params = true;
   num_rotors_ = 0;
   ROS_ASSERT(nh_->getParam("ground_effect", ground_effect_));
   ROS_ASSERT(nh_->getParam("mass", mass_));
@@ -98,11 +97,6 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   std::vector<double> rotor_positions(3 * num_rotors_);
   std::vector<double> rotor_vector_normal(3 * num_rotors_);
   std::vector<int> rotor_rotation_directions(num_rotors_);
-  double rotor_max_thrust;
-  std::vector<double> rotor_F(3);
-  std::vector<double> rotor_T(3);
-  double rotor_tau_up;
-  double rotor_tau_down;
 
   // For now, just assume all rotors are the same
   Rotor rotor;
@@ -425,14 +419,6 @@ void ROSflightSIL::UpdateForcesAndMoments()
   Eigen::Vector4d output_torques = torque_allocation_matrix_*actual_torques_;
   Eigen::Vector4d output_forces_and_torques = output_forces + output_torques;
 
-//  gzmsg << "signals = " << actual_torques_[0] << " " << actual_torques_[1] << " " << actual_torques_[2] << " " << actual_torques_[3] << "\n";
-//  gzmsg << "signals = " << motor_signals_[0] << " " << motor_signals_[1] << " " << motor_signals_[2] << " " << motor_signals_[3] << "\n";
-//  gzmsg << "output forces = " << output_forces(0) << " " << output_forces(1) << " " << output_forces(2) << " " << output_forces(3) << "\n";
-//  gzmsg << "output forces = " << output_torques(0) << " " << output_torques(1) << " " << output_torques(2) << " " << output_torques(3) << "\n";
-//  gzmsg << "output forces = " << output_forces_and_torques(0) << " " << output_forces_and_torques(1) << " " << output_forces_and_torques(2) << " " << output_forces_and_torques(3) << "\n";
-//  gzmsg << "\n\n";
-
-
   // Calculate Ground Effect
   double z = -pd;
   double ground_effect = max(ground_effect_[0]*z*z*z*z + ground_effect_[1]*z*z*z + ground_effect_[2]*z*z + ground_effect_[3]*z + ground_effect_[4], 0);
@@ -441,7 +427,7 @@ void ROSflightSIL::UpdateForcesAndMoments()
   //  // By Rob Leishman et al.
   forces_.Fx = -linear_mu_*ur;
   forces_.Fy = -linear_mu_*vr;
-  forces_.Fz = -linear_mu_*wr + /*ground_effect +*/ output_forces_and_torques(3);
+  forces_.Fz = -linear_mu_*wr - ground_effect + output_forces_and_torques(3);
   forces_.l = -angular_mu_*p + output_forces_and_torques(0);
   forces_.m = -angular_mu_*q + output_forces_and_torques(1);
   forces_.n = -angular_mu_*r + output_forces_and_torques(2);
