@@ -149,6 +149,11 @@ void ImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   accelerometer_bias_.setZero();
 }
 
+void ImuPlugin::Reset()
+{
+  last_time_ = world_->GetSimTime();
+}
+
 /// \brief This function adds noise to acceleration and angular rates for
 ///        accelerometer and gyroscope measurement simulation.
 void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
@@ -156,7 +161,7 @@ void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
                                const double dt) {
   ROS_ASSERT(linear_acceleration != nullptr);
   ROS_ASSERT(angular_velocity != nullptr);
-  ROS_ASSERT(dt > 0.0);
+  // ROS_ASSERT(dt > 0.0);
 
   // Gyrosocpe
   double tau_g = imu_parameters_.gyroscope_bias_correlation_time;
@@ -250,10 +255,10 @@ void ImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
   imu_message_.orientation.x = 0;
   imu_message_.orientation.y = 0;
   imu_message_.orientation.z = 0;
-//  imu_message_.orientation.w = C_W_I.w;
-//  imu_message_.orientation.x = C_W_I.x;
-//  imu_message_.orientation.y = C_W_I.y;
-//  imu_message_.orientation.z = C_W_I.z;
+  imu_message_.orientation.w = C_W_I.w;
+  imu_message_.orientation.x = C_W_I.x;
+  imu_message_.orientation.y = C_W_I.y;
+  imu_message_.orientation.z = C_W_I.z;
 
   imu_message_.linear_acceleration.x = linear_acceleration_I[0];
   imu_message_.linear_acceleration.y = -linear_acceleration_I[1];

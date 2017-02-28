@@ -52,6 +52,7 @@ class AircraftForcesAndMoments : public ModelPlugin {
 
  protected:
   void UpdateForcesAndMoments();
+  void Reset();
   void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf);
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
@@ -146,10 +147,13 @@ class AircraftForcesAndMoments : public ModelPlugin {
   } forces_;
 
   // Time Counters
-  double sampling_time_;
-  double prev_sim_time_;
+  double sampling_time_ = 0;
+  double prev_sim_time_ = 0;
 
-  ros::NodeHandle* node_handle_;
+  // For reset handling
+  math::Pose initial_pose_;
+
+  ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
 

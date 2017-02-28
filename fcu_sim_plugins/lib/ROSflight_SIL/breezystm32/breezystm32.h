@@ -52,6 +52,11 @@ bool writeEEPROM();
 
 //===================================================================
 // drv_uart.h
+#define USART1 0
+#define MODE_RXTX 0
+
+uint8_t uartOpen(int a, int b, int c, int d);
+
 extern uint8_t Serial1;
 void serialWrite(uint8_t serial, uint8_t ch);
 bool serialTotalBytesWaiting(uint8_t serial);
