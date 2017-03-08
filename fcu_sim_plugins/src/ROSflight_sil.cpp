@@ -22,16 +22,18 @@
 
 #include <stdio.h>
 
+
+// includde the ROSflight headers
 extern "C"
 {
-#include <breezystm32/breezystm32.h>
-#include "sensors.h"
+#include "ROSflight_SIL.h"
+#include "board.h"
+#include "rosflight.h"
 #include "estimator.h"
-#include "param.h"
-#include "mode.h"
 #include "mixer.h"
-#include "mux.h"
+#include "mode.h"
 #include "controller.h"
+#include "sensors.h"
 }
 
 
@@ -181,13 +183,9 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Initialize ROSflight code
   start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
-  init_param();
-  init_sensors();
-  gzmsg << "sensors " << _baro_present << _mag_present << _sonar_present << _diff_pressure_present << "\n";
-  init_mode();
-  init_estimator(true, true, true);
-  init_controller();
-  init_mixing();
+  gzmsg << "initializing rosflight\n";
+  rosflight_init();
+  gzmsg << "initialized rosflight\n";
 }
 
 
@@ -210,13 +208,7 @@ void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind)
 void ROSflightSIL::Reset()
 {
   start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
-  gzmsg << "Reset called, time is now " << start_time_us_ << " us \n";
-  init_param();
-  init_sensors();
-  init_mode();
-  init_estimator(true, true, true);
-  init_controller();
-  init_mixing();
+  rosflight_init();
 }
 
 void ROSflightSIL::RCCallback(const fcu_common::OutputRaw &msg)
@@ -295,33 +287,21 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 
   // Load IMU measurements into the read_raw variables to simulate I2C communication
   // Make sure to put measurements in the NWU (the way the IMU is actually mounted)
-  static uint16_t acc1G = 512 * 8;
-  static float gyro_scale = (1.0f / 16.4f) * (M_PI / 180.0f);
-  static float accel_scale = 9.80665f/acc1G;
+  accel_read_raw[0] = msg.linear_acceleration.x;
+  accel_read_raw[1] = msg.linear_acceleration.y;
+  accel_read_raw[2] = msg.linear_acceleration.z;
 
-  accel_read_raw[0] = msg.linear_acceleration.x / accel_scale;
-  accel_read_raw[1] = -msg.linear_acceleration.y / accel_scale;
-  accel_read_raw[2] = -msg.linear_acceleration.z / accel_scale;
+  gyro_read_raw[0] = msg.angular_velocity.x;
+  gyro_read_raw[1] = msg.angular_velocity.y;
+  gyro_read_raw[2] = msg.angular_velocity.z;
 
-  gyro_read_raw[0] = msg.angular_velocity.x / gyro_scale;
-  gyro_read_raw[1] = -msg.angular_velocity.y / gyro_scale;
-  gyro_read_raw[2] = -msg.angular_velocity.z / gyro_scale;
-
-  temp_read_raw = (25.0 - 36.53) * 340.0;
+  temp_read_raw = 25.0;
 
   // Simulate a read on the IMU
   SIL_call_IMU_ISR();
 
-  /*********************/
-  /***  Control Loop ***/
-  /*********************/
-  if (update_sensors())
-  {
-    // If I have new IMU data, then perform control
-    run_estimator();
-    run_controller();
-    mix_output();
-  }
+  // Run the main rosflight loop
+  rosflight_run();
 
   // publish estimate
   fcu_common::Attitude attitude_msg;
@@ -337,9 +317,9 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   attitude_msg.angular_velocity.z = _current_state.omega.z;
 
   euler_msg.header.stamp = msg.header.stamp;
-  euler_msg.vector.x = _current_state.euler.x;
-  euler_msg.vector.y = _current_state.euler.y;
-  euler_msg.vector.z = _current_state.euler.z;
+  euler_msg.vector.x = _current_state.roll;
+  euler_msg.vector.y = _current_state.pitch;
+  euler_msg.vector.z = _current_state.yaw;
 
   estimate_pub_.publish(attitude_msg);
   euler_pub_.publish(euler_msg);
