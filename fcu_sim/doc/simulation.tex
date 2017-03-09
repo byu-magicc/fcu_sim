@@ -47,6 +47,17 @@ The position and orientation of each propeller is also carefully measured and fo
 
 We used the RCBenchmark Dynamometer to actually determine these constants used in simulation with the actual hardware we used on the multirotor.
 
+In both simulation styles, a constant $\mu$ is used to simulate a ``drag force'' on the multirotor.  This is simply calculated as 
+
+\begin{equation}
+\begin{aligned}
+	f_{drag,linear} &= -\mu_{linear} V \\
+	f_{drag,angular} &= -\mu_{angular} \omega
+	\end{aligned}
+\end{equation}
+
+where $V$ is the current linear velocity and $\omega$ is the current angular velocity.
+
 \section{Simple Forces And Moments}
 The simplified method for simulation multirotors instead of simulating individual motors and propellers, simulates applied torques about the $x$, $y$, and $z$ axes, and a single force vector in the negative $z$ (upwards) direction.
 
