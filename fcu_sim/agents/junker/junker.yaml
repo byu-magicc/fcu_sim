@@ -13,12 +13,12 @@ wing_M: 0.55
 wing_epsilon: 2.8956
 wing_alpha0: 0.18994
 
-k_motor: 80.0
+k_motor: 40.0
 k_T_P: 0.0
 k_Omega: 0.0
 
 prop_e: 0.9
-prop_S: 0.202
+prop_S: 0.03
 prop_C: 1.0
 
 C_L_O: 0.28
