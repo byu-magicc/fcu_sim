@@ -89,12 +89,30 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     gzerr << "[GimbalPlugin] Please specify whether to use a slipring";
   }
 
+  getSdfParam<bool>(_sdf, "autoStabilize", auto_stabilize_, false);
+
+  // To perform auto stabilization, we need a pointer to the main link
+  if(auto_stabilize_)
+  {
+    std::string link_name;
+    if (_sdf->HasElement("linkName"))
+      link_name = _sdf->GetElement("linkName")->Get<std::string>();
+    else
+      gzerr << "[ROSflight_SIL] Please specify a linkName of the forces and moments plugin.\n";
+    link_ = model_->GetLink(link_name);
+    if (link_ == NULL)
+      gzthrow("[ROSflight_SIL] Couldn't find specified link \"" << link_name << "\".");
+  }
+
   // Connect Gazebo Update
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GimbalPlugin::OnUpdate, this, _1));
 
   // Connect ROS
   nh_ = new ros::NodeHandle();
-  command_sub_ = nh_->subscribe(command_topic, 1, &GimbalPlugin::commandCallback, this);
+  if(!auto_stabilize_)
+  {
+    command_sub_ = nh_->subscribe(command_topic, 1, &GimbalPlugin::commandCallback, this);
+  }
   pose_pub_ = nh_->advertise<geometry_msgs::Vector3Stamped>(pose_topic, 10);
 
   // Initialize Commands
@@ -137,6 +155,19 @@ void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
   // Update time
   double dt = _info.simTime.Double() - previous_time_;
   previous_time_ = _info.simTime.Double();
+
+  // Perform Control if auto stabilize flag is on
+  if(auto_stabilize_)
+  {
+    math::Pose W_pose_W_C = link_->GetWorldCoGPose();
+    math::Vector3 euler_angles = W_pose_W_C.rot.GetAsEuler();
+    double phi = euler_angles.x;
+    double theta = -euler_angles.y;
+    double psi = -euler_angles.z;
+    yaw_desired_ = 0;
+    pitch_desired_ = theta;
+    roll_desired_ = -phi;
+  }
 
   // Use the Filters to figure out the actual angles
   yaw_actual_ = yaw_filter_->updateFilter(yaw_desired_, dt);

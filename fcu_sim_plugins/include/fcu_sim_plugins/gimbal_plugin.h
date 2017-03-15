@@ -62,6 +62,7 @@ private:
   ros::Publisher pose_pub_;
 
   // Pointer to the gazebo items.
+  physics::LinkPtr link_;
   physics::JointControllerPtr joint_controller_;
   physics::JointPtr yaw_joint_;
   physics::JointPtr roll_joint_;
@@ -89,6 +90,7 @@ private:
 
   // Flags
   bool use_slipring_;
+  bool auto_stabilize_;
 
   // Filters on Axes
   std::unique_ptr<FirstOrderFilter<double>> yaw_filter_;
