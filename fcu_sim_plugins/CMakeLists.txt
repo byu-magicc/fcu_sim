@@ -141,6 +141,13 @@ add_library(gimbal_plugin
 target_link_libraries(gimbal_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_dependencies(gimbal_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(autolevel_plugin
+  src/autolevel_plugin.cpp
+  include/fcu_sim_plugins/autolevel_plugin.h)
+target_link_libraries(autolevel_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(autolevel_plugin ${catkin_EXPORTED_TARGETS})
+
+
 add_library(fcu_sim_camera_utils
   src/gazebo_ros_camera_utils.cpp)
 target_link_libraries(fcu_sim_camera_utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
@@ -163,6 +170,7 @@ add_library(world_utilities
 target_link_libraries(world_utilities ${catkin_LIBRARIES} ${GAZEBO_libraries})
 add_dependencies(world_utilities ${catkin_EXPORTED_TARGETS})
 
+
 install(
   TARGETS
     odometry_plugin
@@ -178,6 +186,7 @@ install(
     magnetometer_plugin
     step_camera
     world_utilities
+    autolevel_plugin
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
