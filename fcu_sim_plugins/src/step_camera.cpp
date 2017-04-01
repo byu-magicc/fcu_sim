@@ -81,7 +81,7 @@ void StepCamera::OnUpdateParentSensor(){
 void StepCamera::OnUpdate(const common::UpdateInfo&){
    if(this->parentSensor->IsActive() && (this->world_->GetSimTime() - this->last_update_time_) >= (this->_updateRate) ){
      // If we should have published a message, try and get a lock to wait for onUpdateParentSensor
-     if(!this->_updateLock.timed_lock(boost::posix_time::seconds(1.0))){
+     if(!this->_updateLock.timed_lock(boost::posix_time::seconds(this->_updateRate))){
          ROS_FATAL_STREAM("Update loop timed out waiting for the renderer.");
      }
    }

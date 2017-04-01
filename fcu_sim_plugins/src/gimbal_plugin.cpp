@@ -147,8 +147,15 @@ void GimbalPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   roll_joint_->SetAxis(0, math::Vector3(1, 0, 0));
 
   // Initialize Time
-  previous_time_ = 0.0;
+  this->Reset();
+
 }
+
+void GimbalPlugin::Reset()
+{
+    previous_time_ = 0.0;
+}
+
 // Return the Sign of the argument
 void GimbalPlugin::OnUpdate(const common::UpdateInfo & _info)
 {
