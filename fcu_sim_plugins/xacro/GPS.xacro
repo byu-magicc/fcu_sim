@@ -6,7 +6,7 @@
   <!-- Configure GPS -->
     <xacro:macro
       name="GPS_BYU"
-      params="namespace parent_link GPS_topic">
+      params="namespace parent_link GPS_topic update_rate">
     <xacro:gps_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
@@ -18,7 +18,7 @@
       north_k_GPS="0.00091"
       east_k_GPS="0.00091"
       alt_k_GPS="0.00091"
-      sample_time="1.0"
+      sample_time="${1.0/update_rate}"
       initial_latitude="40.267320"
       initial_longitude="-111.635629"
       initial_altitude="1491.0">
