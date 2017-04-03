@@ -125,7 +125,7 @@ void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
       GPS_message_.longitude = initial_longitude_+dlon;
 
       // Altitude
-      GPS_message_.altitude = y_GPS_alt;
+      GPS_message_.altitude = initial_altitude_+y_GPS_alt;
 
       // Get Ground Speed
       math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
