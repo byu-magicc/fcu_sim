@@ -4,9 +4,9 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Configure GPS -->
-    <xacro:macro
-      name="GPS_BYU"
-      params="namespace parent_link GPS_topic update_rate">
+  <xacro:macro
+	name="GPS_BYU"
+	params="namespace parent_link GPS_topic update_rate">
     <xacro:gps_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
@@ -27,6 +27,29 @@
     </xacro:gps_plugin_macro>
   </xacro:macro>
 
+
+  <xacro:macro
+	name="perfect_GPS"
+	params="namespace parent_link GPS_topic update_rate">
+    <xacro:gps_plugin_macro
+      namespace="${namespace}"
+      parent_link="${parent_link}"
+      gps_topic="${GPS_topic}"
+      mass_gps_sensor="0.001"
+      north_stdev="0.0"
+      east_stdev="0.0"
+      alt_stdev="0.0"
+      north_k_GPS="0.0"
+      east_k_GPS="0.0"
+      alt_k_GPS="0.0"
+      sample_time="${1.0/update_rate}"
+      initial_latitude="40.267320"
+      initial_longitude="-111.635629"
+      initial_altitude="1491.0">
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:gps_plugin_macro>
+  </xacro:macro>
 
 
   <!-- Macro to add a GPS module. -->
