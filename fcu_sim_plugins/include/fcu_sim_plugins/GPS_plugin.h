@@ -37,9 +37,11 @@
 
 #include "fcu_sim_plugins/common.h"
 
-namespace gazebo {
+namespace gazebo 
+{
 
-class GPSPlugin : public ModelPlugin {
+class GPSPlugin : public ModelPlugin 
+{
  public:
 
   GPSPlugin();
@@ -99,7 +101,7 @@ class GPSPlugin : public ModelPlugin {
   double length_latitude_;
   double length_longitude_;
 
-  void measure(double dx, double dy, double & dlat, double & dlon);
+  void measure(double dpn, double dpe, double & dlat, double & dlon);
 
 };
 }

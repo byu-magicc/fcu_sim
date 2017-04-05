@@ -17,13 +17,15 @@
 #include "fcu_sim_plugins/GPS_plugin.h"
 
 
-namespace gazebo {
+namespace gazebo 
+{
 
 
 GPSPlugin::GPSPlugin() : ModelPlugin() {}
 
 
-GPSPlugin::~GPSPlugin() {
+GPSPlugin::~GPSPlugin() 
+{
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   if (nh_) {
     nh_->shutdown();
@@ -32,7 +34,8 @@ GPSPlugin::~GPSPlugin() {
 }
 
 
-void GPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
+void GPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) 
+{
   // Store the pointer to the model
   model_ = _model;
   world_ = model_->GetWorld();
@@ -92,7 +95,8 @@ void GPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 }
 
 // This gets called by the world update start event.
-void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
+void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) 
+{
 
   // check if time to publish
   common::Time current_time  = world_->GetSimTime();
@@ -110,22 +114,18 @@ void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
       // Find NED position in meters
       math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-      double pn = W_pose_W_C.pos.x; // We should check to make sure that this is right
-      double pe = -W_pose_W_C.pos.y;
-      double pd = -W_pose_W_C.pos.z;
-
-      double y_GPS_n = pn + 0;//north_GPS_error_;
-      double y_GPS_e = pe + 0;//east_GPS_error_;
-      double y_GPS_alt = -pd + 0;//alt_GPS_error_;
+      double pn =  W_pose_W_C.pos.x + north_GPS_error_;
+      double pe = -W_pose_W_C.pos.y + east_GPS_error_;
+      double h  =  W_pose_W_C.pos.z + alt_GPS_error_;
 
       // Convert meters to GPS angle
       double dlat, dlon;
-      measure(y_GPS_n, y_GPS_e, dlat, dlon);
-      GPS_message_.latitude = initial_latitude_+dlat;
-      GPS_message_.longitude = initial_longitude_+dlon;
+      measure(pn, pe, dlat, dlon);
+      GPS_message_.latitude = initial_latitude_ + dlat * 180.0/M_PI;
+      GPS_message_.longitude = initial_longitude_ + dlon * 180.0/M_PI;
 
       // Altitude
-      GPS_message_.altitude = initial_altitude_+y_GPS_alt;
+      GPS_message_.altitude = initial_altitude_ + h;
 
       // Get Ground Speed
       math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
@@ -151,12 +151,15 @@ void GPSPlugin::OnUpdate(const common::UpdateInfo& _info) {
 
 }
 
-void GPSPlugin::measure(double dx, double dy, double& dlat, double& dlon){  // generally used geo measurement function
-  static const double R = 6371000.0; // radius of earth in meters
-  static const double R_prime = cos(initial_latitude_*M_PI/180.0)*R; // assumes you don't travel huge amounts
 
-  dlat = asin(dx/R) * 180.0/M_PI;
-  dlon = asin(dy/R_prime) *180.0/M_PI;
+// this assumes a plane tangent to spherical earth at initial lat/lon
+void GPSPlugin::measure(double dpn, double dpe, double& dlat, double& dlon)
+{
+  static const double Re = 6371000.0; // radius of earth in meters
+  double R = Re + initial_altitude_; // current radius from earth center
+
+  dlat = asin(dpn/R);
+  dlon = asin(dpe/(R*cos(dlat)));
 }
 
 
