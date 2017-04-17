@@ -32,6 +32,7 @@
 #include <ros/ros.h>
 
 #include <fcu_common/Command.h>
+#include <fcu_common/Attitude.h>
 #include <fcu_common/simple_pid.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
@@ -59,6 +60,7 @@ protected:
 private:
   std::string command_topic_;
   std::string wind_speed_topic_;
+  std::string attitude_topic_;
   std::string joint_name_;
   std::string link_name_;
   std::string parent_frame_id_;
@@ -125,6 +127,7 @@ private:
   ros::NodeHandle* nh_;
   ros::Subscriber command_sub_;
   ros::Subscriber wind_speed_sub_;
+  ros::Publisher attitude_pub_;
 
   boost::thread callback_queue_thread_;
   void QueueThread();

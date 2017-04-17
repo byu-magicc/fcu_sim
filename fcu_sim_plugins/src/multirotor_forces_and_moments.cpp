@@ -71,6 +71,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   /* Load Params from Gazebo Server */
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "commandTopic", command_topic_, "command");
+  getSdfParam<std::string>(_sdf, "attitudeTopic", attitude_topic_, "attitude");
 
   /* Load Params from ROS Server */
   mass_ = nh_->param<double>("mass", 3.856);
@@ -131,6 +132,9 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   // Connect Subscribers
   command_sub_ = nh_->subscribe(command_topic_, 1, &MultiRotorForcesAndMoments::CommandCallback, this);
   wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
+
+  // Connect Publishers
+  attitude_pub_ = nh_->advertise<fcu_common::Attitude>(attitude_topic_, 1);
 
   // Initialize State
   this->Reset();
@@ -277,6 +281,22 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   actual_forces_.l = -1.0*angular_mu_*p + applied_forces_.l;
   actual_forces_.m = -1.0*angular_mu_*q + applied_forces_.m;
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
+
+  // publish attitude like ROSflight
+  fcu_common::Attitude attitude_msg;
+  common::Time current_time  = world_->GetSimTime();
+  attitude_msg.header.stamp.sec = current_time.sec;
+  attitude_msg.header.stamp.nsec = current_time.nsec;
+  attitude_msg.attitude.w =  W_pose_W_C.rot.w;
+  attitude_msg.attitude.x =  W_pose_W_C.rot.x;
+  attitude_msg.attitude.y = -W_pose_W_C.rot.y;
+  attitude_msg.attitude.z = -W_pose_W_C.rot.z;
+
+  attitude_msg.angular_velocity.x = p;
+  attitude_msg.angular_velocity.y = q;
+  attitude_msg.angular_velocity.z = r;
+
+  attitude_pub_.publish(attitude_msg);
 }
 
 double MultiRotorForcesAndMoments::sat(double x, double max, double min)
