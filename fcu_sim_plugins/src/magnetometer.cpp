@@ -71,9 +71,10 @@ void MagnetometerPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   bias_vector_.z = uniform_dist_(random_gen_);
 
   // Figure out inertial magnetic field
-  inertial_magnetic_field_.z = sin(inclination_);
-  inertial_magnetic_field_.x = cos(inclination_)*cos(declination_);
-  inertial_magnetic_field_.y = cos(inclination_)*sin(declination_);
+  // Gazebo coordinates is NWU and Earth's magnetic field is defined in NED, hence the negative signs
+  inertial_magnetic_field_.z = sin(-inclination_);
+  inertial_magnetic_field_.x = cos(-inclination_)*cos(-declination_);
+  inertial_magnetic_field_.y = cos(-inclination_)*sin(-declination_);
 
   // Set up ROS publisher
   mag_pub_ = nh_->advertise<sensor_msgs::MagneticField>(mag_topic_, 10);
@@ -114,7 +115,7 @@ void MagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info)
         mag_msg_.header.stamp.sec = world_->GetSimTime().sec;
         mag_msg_.header.stamp.nsec = world_->GetSimTime().nsec;
         mag_msg_.magnetic_field.x = normalized.x;
-        mag_msg_.magnetic_field.y = -normalized.y;
+        mag_msg_.magnetic_field.y = -normalized.y; // convert to NED for publishing
         mag_msg_.magnetic_field.z = -normalized.z;
         mag_pub_.publish(mag_msg_);
     }
