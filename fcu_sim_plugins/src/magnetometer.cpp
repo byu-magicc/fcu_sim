@@ -114,8 +114,8 @@ void MagnetometerPlugin::OnUpdate(const common::UpdateInfo& _info)
         mag_msg_.header.stamp.sec = world_->GetSimTime().sec;
         mag_msg_.header.stamp.nsec = world_->GetSimTime().nsec;
         mag_msg_.magnetic_field.x = normalized.x;
-        mag_msg_.magnetic_field.y = normalized.y;
-        mag_msg_.magnetic_field.z = normalized.z;
+        mag_msg_.magnetic_field.y = -normalized.y;
+        mag_msg_.magnetic_field.z = -normalized.z;
         mag_pub_.publish(mag_msg_);
     }
 }
