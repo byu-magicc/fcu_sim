@@ -83,11 +83,13 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   angular_mu_ = nh_->param<double>( "angular_mu", 0.5);
 
   /* Ground Effect Coefficients */
-  ground_effect_.a = nh_->param<double>("ground_effect_a", -55.3516);
-  ground_effect_.b = nh_->param<double>("ground_effect_b", 181.8265);
-  ground_effect_.c = nh_->param<double>("ground_effect_c", -203.9874);
-  ground_effect_.d = nh_->param<double>("ground_effect_d", 85.3735);
-  ground_effect_.e = nh_->param<double>("ground_effect_e", -7.6619);
+  std::vector<double> ground_effect_list = {-55.3516, 181.8265, -203.9874, 85.3735, -7.6619};
+  nh_->getParam("ground_effect", ground_effect_list);
+  ground_effect_.a = ground_effect_list[0];
+  ground_effect_.b = ground_effect_list[1];
+  ground_effect_.c = ground_effect_list[2];
+  ground_effect_.d = ground_effect_list[3];
+  ground_effect_.e = ground_effect_list[4];
 
   // Build Actuators Container
   actuators_.l.max = nh_->param<double>("max_l", .2); // N-m
