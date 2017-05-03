@@ -110,9 +110,9 @@
     <gazebo reference="${namespace}/gimbal/pitch_link">
       <sensor type="camera" name="gimbal/camera">
         <always_on>true</always_on>
-	<update_rate>${frame_rate}</update_rate>
+	      <update_rate>${frame_rate}</update_rate>
         <camera>
-          <horizontal_fov>2</horizontal_fov>
+          <horizontal_fov>.209</horizontal_fov>
           <image>
             <format>R8G8B8</format>
             <width>640</width>
@@ -126,7 +126,7 @@
 	<plugin filename="libfcu_sim_camera_plugin.so" name="${namespace}/gimbal_camera">
           <robotNamespace>${namespace}</robotNamespace>
           <alwaysOn>true</alwaysOn>
-	  <updateRate>${frame_rate}</updateRate>
+	        <updateRate>${frame_rate}</updateRate>
           <cameraName>gimbal/camera</cameraName>
           <imageTopicName>${camera_topic}</imageTopicName>
           <cameraInfoTopicName>${camera_topic}/camera_info</cameraInfoTopicName>

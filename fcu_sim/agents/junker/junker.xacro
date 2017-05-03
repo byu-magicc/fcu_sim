@@ -102,7 +102,7 @@
     frame_rate="30"
     pose_topic="${namespace}/gimbal/pose"
     command_topic="${namespace}/gimbal/control"
-    use_slipring="false">
+    use_slipring="true">
     <origin xyz="2 0 0" rpy="0 0 0"/>
   </xacro:gimbal_ZENMUSE>
 

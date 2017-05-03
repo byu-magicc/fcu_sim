@@ -64,8 +64,6 @@ void AircraftTruth::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   getSdfParam<std::string>(_sdf, "windSpeedTopic", wind_speed_topic_, "wind");
   getSdfParam<std::string>(_sdf, "truthTopic", truth_topic_, "truth");
 
-  ROS_INFO("TEST: publishing truth for link: \"%s\" with namespace \"%s\" on topic \"%s\".", link_name_.c_str(), namespace_.c_str(), truth_topic_.c_str());
-
 
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AircraftTruth::OnUpdate, this, _1));
