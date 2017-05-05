@@ -119,7 +119,8 @@
   <xacro:GPS_BYU
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    GPS_topic="gps/data">
+    GPS_topic="gps/data"
+    update_rate="1">
   </xacro:GPS_BYU>
 
   <!-- Barometer -->
