@@ -144,7 +144,8 @@
   <xacro:IMU_MPU6050
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    imu_topic="imu/data">
+    imu_topic="imu/data"
+    update_rate="500">
   </xacro:IMU_MPU6050>
 
 </robot>

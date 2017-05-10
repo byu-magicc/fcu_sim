@@ -74,7 +74,8 @@ Author: James Jackson
   <xacro:perfect_IMU
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    imu_topic="imu"/>
+    imu_topic="imu"
+    update_rate="500"/>
 
   <!--Enable Wind -->
   <!-- <xacro:include filename="$(find fcu_sim_plugins)/xacro/wind.xacro"/> -->
