@@ -66,6 +66,8 @@ static constexpr double kDefaultGravityMagnitude = 9.8068;
 // https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics
 // TODO(burrimi): Should I have a minimalistic description of the params here?
 struct ImuParameters {
+  /// Gyroscope and accelerometer update rate (Hz)
+  double update_rate_;
   /// Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)]
   double gyroscope_noise_density;
   /// Gyroscope bias random walk [rad/s/s/sqrt(Hz)]

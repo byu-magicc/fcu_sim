@@ -6,11 +6,12 @@
     <!-- Configure IMU -->
     <xacro:macro
       name="perfect_IMU"
-      params="namespace parent_link imu_topic">
+      params="namespace parent_link imu_topic update_rate">
     <xacro:imu_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
       imu_topic="${imu_topic}"
+      update_rate="${update_rate}"
       gyroscope_noise_density="0.0"
       gyroscopoe_random_walk="0.0"
       gyroscope_bias_correlation_time="1000.0"
@@ -27,11 +28,12 @@
 
     <xacro:macro
       name="IMU_ADIS16448"
-      params="namespace parent_link imu_topic">
+      params="namespace parent_link imu_topic update_rate">
     <xacro:imu_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
       imu_topic="${imu_topic}"
+      update_rate="${update_rate}"
       gyroscope_noise_density="0.0003394"
       gyroscopoe_random_walk="0.000038785"
       gyroscope_bias_correlation_time="1000.0"
@@ -49,11 +51,12 @@
   <!-- Configure IMU -->
     <xacro:macro
       name="IMU_MPU6050"
-      params="namespace parent_link imu_topic">
+      params="namespace parent_link imu_topic update_rate">
     <xacro:imu_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
       imu_topic="${imu_topic}"
+      update_rate="${update_rate}"
       gyroscope_noise_density="0.0008726646"
       gyroscopoe_random_walk="0.000038785"
       gyroscope_bias_correlation_time="1000.0"
@@ -70,7 +73,7 @@
 
     <!-- Macro to add an IMU. -->
   <xacro:macro name="imu_plugin_macro"
-    params="namespace parent_link imu_topic
+    params="namespace parent_link imu_topic update_rate
       gyroscope_noise_density gyroscopoe_random_walk
       gyroscope_bias_correlation_time gyroscope_turn_on_bias_sigma
       accelerometer_noise_density accelerometer_random_walk
@@ -84,7 +87,8 @@
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
         <linkName>${parent_link}</linkName> <!-- (string, required): name of the body which holds the IMU sensor -->
         <imuTopic>${imu_topic}</imuTopic> <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
-        <gyroscopeNoiseDensity>${gyroscope_noise_density}</gyroscopeNoiseDensity> <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
+	<updateRate>${update_rate}</updateRate>
+	<gyroscopeNoiseDensity>${gyroscope_noise_density}</gyroscopeNoiseDensity> <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
         <gyroscopeRandomWalk>${gyroscopoe_random_walk}</gyroscopeRandomWalk> <!-- Gyroscope bias random walk [rad/s/s/sqrt(Hz)] -->
         <gyroscopeBiasCorrelationTime>${gyroscope_bias_correlation_time}</gyroscopeBiasCorrelationTime> <!-- Gyroscope bias correlation time constant [s] -->
         <gyroscopeTurnOnBiasSigma>${gyroscope_turn_on_bias_sigma}</gyroscopeTurnOnBiasSigma> <!-- Gyroscope turn on bias standard deviation [rad/s] -->

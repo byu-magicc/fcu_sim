@@ -61,6 +61,7 @@ void ImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   frame_id_ = link_name_;
 
+  getSdfParam<double>(_sdf, "updateRate", imu_parameters_.update_rate_, 1000.0);
   getSdfParam<std::string>(_sdf, "imuTopic", imu_topic_,
                            "imu/data");
   getSdfParam<double>(_sdf, "gyroscopeNoiseDensity",
@@ -215,63 +216,63 @@ void ImuPlugin::addNoise(Eigen::Vector3d* linear_acceleration,
 }
 
 // This gets called by the world update start event.
-void ImuPlugin::OnUpdate(const common::UpdateInfo& _info) {
-
-  static math::Vector3 velocity_prev_B(0, 0, 0);
-
+void ImuPlugin::OnUpdate(const common::UpdateInfo& _info)
+{
   common::Time current_time  = world_->GetSimTime();
   double dt = (current_time - last_time_).Double();
-  last_time_ = current_time;
-  double t = current_time.Double();
+  if(dt >= 1.0/imu_parameters_.update_rate_)
+  {
+    math::Pose T_W_I = link_->GetWorldPose(); //TODO(burrimi): Check tf.
+    math::Quaternion C_W_I = T_W_I.rot;
 
-  math::Pose T_W_I = link_->GetWorldPose(); //TODO(burrimi): Check tf.
-  math::Quaternion C_W_I = T_W_I.rot;
+    #if GAZEBO_MAJOR_VERSION < 5
+      math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
+      // link_->GetRelativeLinearAccel() does not work sometimes with old gazebo versions.
+      // This issue is solved in gazebo 5.
+      math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
+      math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
+      velocity_prev_W_ = velocity_current_W;
+    #else
+      math::Vector3 acceleration_I = link_->GetRelativeLinearAccel() - C_W_I.RotateVectorReverse(gravity_W_);
+    #endif
+      math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
 
-#if GAZEBO_MAJOR_VERSION < 5
-  math::Vector3 velocity_current_W = link_->GetWorldLinearVel();
-  // link_->GetRelativeLinearAccel() does not work sometimes with old gazebo versions.
-  // This issue is solved in gazebo 5.
-  math::Vector3 acceleration = (velocity_current_W - velocity_prev_W_) / dt;
-  math::Vector3 acceleration_I = C_W_I.RotateVectorReverse(acceleration - gravity_W_);
-  velocity_prev_W_ = velocity_current_W;
-#else
-  math::Vector3 acceleration_I = link_->GetRelativeLinearAccel() - C_W_I.RotateVectorReverse(gravity_W_);
-#endif
-  math::Vector3 angular_vel_I = link_->GetRelativeAngularVel();
+    Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
+                                          acceleration_I.y,
+                                          acceleration_I.z);
+    Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
+                                       angular_vel_I.y,
+                                       angular_vel_I.z);
 
-  Eigen::Vector3d linear_acceleration_I(acceleration_I.x,
-                                        acceleration_I.y,
-                                        acceleration_I.z);
-  Eigen::Vector3d angular_velocity_I(angular_vel_I.x,
-                                     angular_vel_I.y,
-                                     angular_vel_I.z);
+    if(!perfect_imu_){
+      addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
+    }
 
-  if(!perfect_imu_){
-    addNoise(&linear_acceleration_I, &angular_velocity_I, dt);
+    // Fill IMU message.1
+    imu_message_.header.stamp.sec = current_time.sec;
+    imu_message_.header.stamp.nsec = current_time.nsec;
+
+    // TODO: Add orientation estimator.
+    imu_message_.orientation.w = 1;
+    imu_message_.orientation.x = 0;
+    imu_message_.orientation.y = 0;
+    imu_message_.orientation.z = 0;
+    imu_message_.orientation.w = C_W_I.w;
+    imu_message_.orientation.x = C_W_I.x;
+    imu_message_.orientation.y = C_W_I.y;
+    imu_message_.orientation.z = C_W_I.z;
+
+    imu_message_.linear_acceleration.x = linear_acceleration_I[0];
+    imu_message_.linear_acceleration.y = -linear_acceleration_I[1];
+    imu_message_.linear_acceleration.z = -linear_acceleration_I[2];
+    imu_message_.angular_velocity.x = angular_velocity_I[0];
+    imu_message_.angular_velocity.y = -angular_velocity_I[1];
+    imu_message_.angular_velocity.z = -angular_velocity_I[2];
+
+    imu_pub_.publish(imu_message_);
+
+    last_time_ = current_time;
   }
-
-  // Fill IMU message.1
-  imu_message_.header.stamp.sec = current_time.sec;
-  imu_message_.header.stamp.nsec = current_time.nsec;
-
-  // TODO: Add orientation estimator.
-  imu_message_.orientation.w = 1;
-  imu_message_.orientation.x = 0;
-  imu_message_.orientation.y = 0;
-  imu_message_.orientation.z = 0;
-  imu_message_.orientation.w = C_W_I.w;
-  imu_message_.orientation.x = C_W_I.x;
-  imu_message_.orientation.y = C_W_I.y;
-  imu_message_.orientation.z = C_W_I.z;
-
-  imu_message_.linear_acceleration.x = linear_acceleration_I[0];
-  imu_message_.linear_acceleration.y = -linear_acceleration_I[1];
-  imu_message_.linear_acceleration.z = -linear_acceleration_I[2];
-  imu_message_.angular_velocity.x = angular_velocity_I[0];
-  imu_message_.angular_velocity.y = -angular_velocity_I[1];
-  imu_message_.angular_velocity.z = -angular_velocity_I[2];
-
-  imu_pub_.publish(imu_message_);
 }
 
 
