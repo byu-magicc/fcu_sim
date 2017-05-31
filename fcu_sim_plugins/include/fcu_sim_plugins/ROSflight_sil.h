@@ -31,16 +31,16 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
-#include <fcu_common/Command.h>
-#include <fcu_common/OutputRaw.h>
-#include <fcu_common/RCRaw.h>
+#include <rosflight_msgs/Command.h>
+#include <rosflight_msgs/OutputRaw.h>
+#include <rosflight_msgs/RCRaw.h>
 #include <std_msgs/Float32MultiArray.h>
-#include <fcu_common/Attitude.h>
+#include <rosflight_msgs/Attitude.h>
 #include "fcu_sim_plugins/common.h"
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/Imu.h>
 #include <std_srvs/Trigger.h>
-#include <fcu_common/simple_pid.h>
+#include <rosflight_utils/simple_pid.h>
 
 
 namespace gazebo {
@@ -124,10 +124,10 @@ private:
   } actuators_;
 
   // container for PID controller
-  fcu_common::SimplePID roll_controller_;
-  fcu_common::SimplePID pitch_controller_;
-  fcu_common::SimplePID yaw_controller_;
-  fcu_common::SimplePID alt_controller_;
+  rosflight_utils::SimplePID roll_controller_;
+  rosflight_utils::SimplePID pitch_controller_;
+  rosflight_utils::SimplePID yaw_controller_;
+  rosflight_utils::SimplePID alt_controller_;
 
   // container for forces
   struct ForcesAndTorques{
@@ -154,12 +154,12 @@ private:
   ros::Publisher alt_pub_, angle_pub_, command_pub_, passthrough_pub_;
   ros::ServiceServer calibrate_imu_srv_;
 
-  fcu_common::Command command_;
+  rosflight_msgs::Command command_;
 
   boost::thread callback_queue_thread_;
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_common::Command& msg);
-  void RCCallback(const fcu_common::OutputRaw& msg);
+  void CommandCallback(const rosflight_msgs::Command& msg);
+  void RCCallback(const rosflight_msgs::OutputRaw& msg);
   void imuCallback(const sensor_msgs::Imu& msg);
 
   bool calibrateImuBiasSrvCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res);

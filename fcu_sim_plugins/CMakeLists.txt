@@ -16,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_srvs
   tf
-  fcu_common
+  rosflight_msgs
+  rosflight_utils
   sensor_msgs
   std_msgs
   tf2_ros
@@ -44,7 +45,7 @@ catkin_package(
                  fcu_sim std_srvs tf relative_nav
 		 cv_bridge geometry_msgs fcu_sim rosbag roscpp gazebo_plugins gazebo_ros
 		 tf2_ros image_transport polled_camera camera_info_manager std_msgs nav_msgs sensor_msgs
-  DEPENDS eigen gazebo opencv fcu_common SDF roscpp gazebo_ros
+  DEPENDS eigen gazebo opencv rosflight_msgs SDF roscpp gazebo_ros
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
@@ -72,20 +73,20 @@ add_library(ROSflight_sil_plugin
  lib/ROSflight/lib/turbotrig/turbovec.c
  lib/ROSflight_SIL/board.c)
 target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
-add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
 
 add_library(aircraft_forces_and_moments_plugin
   src/aircraft_forces_and_moments.cpp
   include/fcu_sim_plugins/aircraft_forces_and_moments.h)
 target_link_libraries(aircraft_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(aircraft_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(multirotor_forces_and_moments_plugin
   src/multirotor_forces_and_moments.cpp
   include/fcu_sim_plugins/multirotor_forces_and_moments.h)
 target_link_libraries(multirotor_forces_and_moments_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(multirotor_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(multirotor_forces_and_moments_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(magnetometer_plugin
   src/magnetometer.cpp
@@ -97,7 +98,7 @@ add_library(aircraft_truth_plugin
   src/aircraft_truth.cpp
   include/fcu_sim_plugins/aircraft_truth.h)
 target_link_libraries(aircraft_truth_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(aircraft_truth_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(aircraft_truth_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(odometry_plugin
   src/odometry_plugin.cpp
@@ -115,7 +116,7 @@ add_library(barometer_plugin
   src/barometer_plugin.cpp
   include/fcu_sim_plugins/barometer_plugin.h)
 target_link_libraries(barometer_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(barometer_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(barometer_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(wind_plugin
   src/wind_plugin.cpp
@@ -127,13 +128,13 @@ add_library(airspeed_plugin
   src/airspeed_plugin.cpp
   include/fcu_sim_plugins/airspeed_plugin.h)
 target_link_libraries(airspeed_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(airspeed_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(airspeed_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(GPS_plugin
   src/GPS_plugin.cpp
   include/fcu_sim_plugins/GPS_plugin.h)
 target_link_libraries(GPS_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-add_dependencies(GPS_plugin ${catkin_EXPORTED_TARGETS} fcu_common_generate_messages_cpp)
+add_dependencies(GPS_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
 
 add_library(gimbal_plugin
   src/gimbal_plugin.cpp
