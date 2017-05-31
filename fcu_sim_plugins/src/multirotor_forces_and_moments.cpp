@@ -136,7 +136,7 @@ void MultiRotorForcesAndMoments::Load(physics::ModelPtr _model, sdf::ElementPtr 
   wind_speed_sub_ = nh_->subscribe(wind_speed_topic_, 1, &MultiRotorForcesAndMoments::WindSpeedCallback, this);
 
   // Connect Publishers
-  attitude_pub_ = nh_->advertise<fcu_common::Attitude>(attitude_topic_, 1);
+  attitude_pub_ = nh_->advertise<rosflight_msgs::Attitude>(attitude_topic_, 1);
 
   // Initialize State
   this->Reset();
@@ -157,7 +157,7 @@ void MultiRotorForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 
   W_wind_speed_.z = wind.z;
 }
 
-void MultiRotorForcesAndMoments::CommandCallback(const fcu_common::Command msg)
+void MultiRotorForcesAndMoments::CommandCallback(const rosflight_msgs::Command msg)
 {
   command_ = msg;
 }
@@ -225,21 +225,21 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   {
     // We have not received a command yet.  This is not an error, but needs to be handled
   }
-  else if (command_.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+  else if (command_.mode == rosflight_msgs::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
     desired_forces_.l = roll_controller_.computePID(command_.x, p, sampling_time_);
     desired_forces_.m = pitch_controller_.computePID(command_.y, q, sampling_time_);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max; // this comes in normalized between 0 and 1
   }
-  else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
+  else if (command_.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
     desired_forces_.l = roll_controller_.computePID(command_.x, phi, sampling_time_, p);
     desired_forces_.m = pitch_controller_.computePID(command_.y, theta, sampling_time_, q);
     desired_forces_.n = yaw_controller_.computePID(command_.z, r, sampling_time_);
     desired_forces_.Fz = command_.F*actuators_.F.max;
   }
-  else if (command_.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
+  else if (command_.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
     desired_forces_.l = roll_controller_.computePID(command_.x, phi,  sampling_time_, p);
     desired_forces_.m = pitch_controller_.computePID(command_.y, theta, sampling_time_, q);
@@ -285,7 +285,7 @@ void MultiRotorForcesAndMoments::UpdateForcesAndMoments()
   actual_forces_.n = -1.0*angular_mu_*r + applied_forces_.n;
 
   // publish attitude like ROSflight
-  fcu_common::Attitude attitude_msg;
+  rosflight_msgs::Attitude attitude_msg;
   common::Time current_time  = world_->GetSimTime();
   attitude_msg.header.stamp.sec = current_time.sec;
   attitude_msg.header.stamp.nsec = current_time.nsec;

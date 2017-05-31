@@ -130,7 +130,7 @@ void AircraftTruth::PublishTruth()
   msg.quat[1] = v;
   msg.quat[2] = w;
 
-  msg.header.stamp.fromSec(world_->GetSimTime().Double());
+  //msg.header.stamp.fromSec(world_->GetSimTime().Double());
 
   true_state_pub_.publish(msg);
 }

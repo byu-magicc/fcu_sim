@@ -173,10 +173,10 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   imu_sub_ = nh_->subscribe(imu_topic_, 1, &ROSflightSIL::imuCallback, this);
 
   // Connect Publishers
-  estimate_pub_ = nh_->advertise<fcu_common::Attitude>(estimate_topic_, 1);
+  estimate_pub_ = nh_->advertise<rosflight_msgs::Attitude>(estimate_topic_, 1);
   euler_pub_ = nh_->advertise<geometry_msgs::Vector3Stamped>(estimate_topic_ + "/euler", 1);
-  signals_pub_ = nh_->advertise<fcu_common::OutputRaw>(signals_topic_, 1);
-  command_pub_ = nh_->advertise<fcu_common::Command>("output/command", 1);
+  signals_pub_ = nh_->advertise<rosflight_msgs::OutputRaw>(signals_topic_, 1);
+  command_pub_ = nh_->advertise<rosflight_msgs::Command>("output/command", 1);
 
   // Connect Services
   calibrate_imu_srv_ = nh_->advertiseService("calibrate_imu_bias", &ROSflightSIL::calibrateImuBiasSrvCallback, this);
@@ -211,7 +211,7 @@ void ROSflightSIL::Reset()
   rosflight_init();
 }
 
-void ROSflightSIL::RCCallback(const fcu_common::OutputRaw &msg)
+void ROSflightSIL::RCCallback(const rosflight_msgs::OutputRaw &msg)
 {
   for (int i = 0; i < 8; i++)
   {
@@ -227,7 +227,7 @@ void ROSflightSIL::SendForces()
 }
 
 
-void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
+void ROSflightSIL::CommandCallback(const rosflight_msgs::Command &msg)
 {
   // For now, just arm whenever we get our first command message
   _armed_state = ARMED;
@@ -239,7 +239,7 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
   _combined_control.y.active = true;
   _combined_control.z.active = true;
 
-  if (msg.mode == fcu_common::Command::MODE_PASS_THROUGH)
+  if (msg.mode == rosflight_msgs::Command::MODE_PASS_THROUGH)
   {
     _combined_control.x.type = PASSTHROUGH;
     _combined_control.y.type = PASSTHROUGH;
@@ -249,7 +249,7 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
     _combined_control.y.value = msg.y;
     _combined_control.z.value = msg.z;
   }
-  else if (msg.mode == fcu_common::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+  else if (msg.mode == rosflight_msgs::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
   {
     _combined_control.x.type = RATE;
     _combined_control.y.type = RATE;
@@ -260,7 +260,7 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
     _combined_control.z.value = msg.z;
 
   }
-  else if (msg.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
+  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
   {
     _combined_control.x.type = ANGLE;
     _combined_control.y.type = ANGLE;
@@ -270,7 +270,7 @@ void ROSflightSIL::CommandCallback(const fcu_common::Command &msg)
     _combined_control.y.value = msg.y;
     _combined_control.z.value = msg.z;
   }
-  else if (msg.mode == fcu_common::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
+  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
   {
     _combined_control.x.type = ANGLE;
     _combined_control.y.type = ANGLE;
@@ -304,7 +304,7 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   rosflight_run();
 
   // publish estimate
-  fcu_common::Attitude attitude_msg;
+  rosflight_msgs::Attitude attitude_msg;
   geometry_msgs::Vector3Stamped euler_msg;
   attitude_msg.header.stamp = msg.header.stamp;
   attitude_msg.attitude.w = _current_state.q.w;
@@ -326,7 +326,7 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 
 
   // Run Controller
-  fcu_common::Command rate_msg, pt_msg;
+  rosflight_msgs::Command rate_msg, pt_msg;
 
   pt_msg.x = _command.x;
   pt_msg.y = _command.y;
@@ -335,7 +335,7 @@ void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
   command_pub_.publish(rate_msg);
 
 
-  fcu_common::OutputRaw ESC_signals;
+  rosflight_msgs::OutputRaw ESC_signals;
   ESC_signals.header.stamp.fromSec(world_->GetSimTime().Double());
   for (int i = 0; i < 8 ; i++)
   {
