@@ -26,7 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <fcu_common/GPS.h>
+#include <rosflight_msgs/GPS.h>
 
 #include <chrono>
 #include <cmath>
@@ -79,7 +79,7 @@ class GPSPlugin : public ModelPlugin
   struct Wind{ double N;  double E;  double D; } wind_;
   ros::Subscriber wind_speed_sub_;
 
-  fcu_common::GPS GPS_message_;
+  rosflight_msgs::GPS GPS_message_;
 
   double north_stdev_;
   double east_stdev_;

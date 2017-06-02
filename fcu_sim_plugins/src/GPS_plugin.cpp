@@ -78,7 +78,7 @@ void GPSPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   // Listen to the update event. This event is broadcast every simulation iteration.
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&GPSPlugin::OnUpdate, this, _1));
 
-  GPS_pub_ = nh_->advertise<fcu_common::GPS>(GPS_topic_, 1);
+  GPS_pub_ = nh_->advertise<rosflight_msgs::GPS>(GPS_topic_, 1);
   pub_rate_ = 1.0/sample_time_;
 
   // Fill static members of airspeed message.

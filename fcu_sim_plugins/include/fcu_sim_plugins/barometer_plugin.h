@@ -26,7 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <fcu_common/Barometer.h>
+#include <rosflight_msgs/Barometer.h>
 
 #include <chrono>
 #include <cmath>

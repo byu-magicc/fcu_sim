@@ -61,7 +61,7 @@ void AltimeterPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Configure ROS Integration
   node_handle_ = new ros::NodeHandle(namespace_);
-  alt_pub_ = node_handle_->advertise<fcu_common::Barometer>(message_topic_, 10);
+  alt_pub_ = node_handle_->advertise<rosflight_msgs::Barometer>(message_topic_, 10);
 
   // Configure Noise
   random_generator_= std::default_random_engine(std::chrono::system_clock::now().time_since_epoch().count());
@@ -78,7 +78,7 @@ void AltimeterPlugin::OnUpdate(const common::UpdateInfo& _info)
     // pull z measurement out of Gazebo
     math::Pose current_state_LFU = link_->GetWorldPose();
 
-    fcu_common::Barometer message;
+    rosflight_msgs::Barometer message;
     message.altitude = current_state_LFU.pos.z;
     // add noise, if requested
     if(noise_on_){
