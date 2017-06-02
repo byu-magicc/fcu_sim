@@ -76,7 +76,7 @@ void AirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   // Listen to the update event. This event is broadcast every simulation iteration.
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AirspeedPlugin::OnUpdate, this, _1));
 
-  airspeed_pub_ = nh_->advertise<fcu_common::Airspeed>(airspeed_topic_, 10);
+  airspeed_pub_ = nh_->advertise<rosflight_msgs::Airspeed>(airspeed_topic_, 10);
 
   // Fill static members of airspeed message.
   airspeed_message_.header.frame_id = frame_id_;

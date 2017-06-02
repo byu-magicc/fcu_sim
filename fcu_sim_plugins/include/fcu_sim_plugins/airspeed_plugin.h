@@ -26,7 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
-#include <fcu_common/Airspeed.h>
+#include <rosflight_msgs/Airspeed.h>
 #include <geometry_msgs/Vector3.h>
 
 #include <chrono>
@@ -78,7 +78,7 @@ class AirspeedPlugin : public ModelPlugin {
   ros::Subscriber wind_speed_sub_;
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
 
-  fcu_common::Airspeed airspeed_message_;
+  rosflight_msgs::Airspeed airspeed_message_;
 
   double pressure_bias_;
   double pressure_noise_sigma_;

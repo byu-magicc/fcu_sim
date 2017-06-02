@@ -196,7 +196,7 @@ void AircraftForcesAndMoments::WindSpeedCallback(const geometry_msgs::Vector3 &w
   wind_.D = wind.z;
 }
 
-void AircraftForcesAndMoments::CommandCallback(const fcu_common::CommandConstPtr &msg)
+void AircraftForcesAndMoments::CommandCallback(const rosflight_msgs::CommandConstPtr &msg)
 {
   // This is a little bit weird.  We need to nail down why these are negative
   delta_.t = msg->F;

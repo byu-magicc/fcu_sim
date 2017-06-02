@@ -30,7 +30,7 @@
 #include <ros/callback_queue.h>
 #include <ros/ros.h>
 
-#include <fcu_common/Command.h>
+#include <rosflight_msgs/Command.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Vector3.h>
 
@@ -160,7 +160,7 @@ class AircraftForcesAndMoments : public ModelPlugin {
   boost::thread callback_queue_thread_;
   void QueueThread();
   void WindSpeedCallback(const geometry_msgs::Vector3& wind);
-  void CommandCallback(const fcu_common::CommandConstPtr& msg);
+  void CommandCallback(const rosflight_msgs::CommandConstPtr& msg);
 
   std::unique_ptr<FirstOrderFilter<double>>  rotor_velocity_filter_;
   math::Vector3 wind_speed_W_;
