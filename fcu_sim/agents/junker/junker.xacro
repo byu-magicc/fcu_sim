@@ -111,7 +111,7 @@
   <xacro:airspeed_MPXV5004G
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    airspeed_topic="airspeed/data">
+    airspeed_topic="airspeed">
   </xacro:airspeed_MPXV5004G>
 
   <!-- GPS -->
@@ -119,7 +119,8 @@
   <xacro:GPS_BYU
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    GPS_topic="gps/data">
+    GPS_topic="gps/data"
+    update_rate="1">
   </xacro:GPS_BYU>
 
   <!-- Barometer -->
@@ -127,7 +128,7 @@
   <xacro:Barometer_MS5611
     namespace="${namespace}"
     parent_link="${namespace}/base_link"
-    baro_topic="baro/data">
+    baro_topic="baro">
   </xacro:Barometer_MS5611>
 
   <!-- Sonar -->

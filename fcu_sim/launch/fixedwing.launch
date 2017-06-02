@@ -4,7 +4,6 @@
 <!-- as well as a relative_nav::FilterState message on /global_state  -->
 <!-- a geometry_msgs::StampedTransform on /mocap to imitate motion capture -->
 
-
 <launch>
   <arg name="mav_name"            default="junker"/>
 
@@ -38,8 +37,7 @@
   <group ns="$(arg mav_name)">
     <!-- Load Global Parameters for this MAV -->
     <rosparam command="load" file="$(find fcu_sim)/agents/$(arg mav_name)/$(arg mav_name).yaml"/>
-    
-    <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml" ns="autopilot"/>
+
     <node name="autopilot" pkg="ros_plane" type="ros_plane_controller" >
       <remap from="state" to="truth"/>
     </node>

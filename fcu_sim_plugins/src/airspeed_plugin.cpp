@@ -63,7 +63,7 @@ void AirspeedPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   frame_id_ = link_name_;
 
-  getSdfParam<std::string>(_sdf, "airspeedTopic", airspeed_topic_, "airspeed/data");
+  getSdfParam<std::string>(_sdf, "airspeedTopic", airspeed_topic_, "airspeed");
   getSdfParam<double>(_sdf, "pressureBias", pressure_bias_, 0);
   getSdfParam<double>(_sdf, "pressureNoiseSigma", pressure_noise_sigma_,10);
   getSdfParam<double>(_sdf, "airDensity", rho_, 1.225);
