@@ -22,26 +22,16 @@
 
 #include <stdio.h>
 
-
-// includde the ROSflight headers
-extern "C"
-{
-#include "ROSflight_SIL.h"
-#include "board.h"
+#include "SIL_board.h"
 #include "rosflight.h"
-#include "estimator.h"
-#include "mixer.h"
-#include "mode.h"
-#include "controller.h"
-#include "sensors.h"
-}
 
 
 namespace gazebo
 {
 
 ROSflightSIL::ROSflightSIL() :
-  ModelPlugin(), nh_(nullptr), prev_sim_time_(0)  {
+  ModelPlugin(), nh_(nullptr), prev_sim_time_(0),
+  firmware_(&board_)  {
 }
 
 
@@ -163,6 +153,10 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     motor_signals_(i)=1000;
   }
 
+  // Initialize the Firmware
+  board_.init_board();
+  firmware_.rosflight_init();
+
   // Connect the update function to the simulation
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&ROSflightSIL::OnUpdate, this, _1));
 
@@ -183,9 +177,9 @@ void ROSflightSIL::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Initialize ROSflight code
   start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
-  gzmsg << "initializing rosflight\n";
-  rosflight_init();
-  gzmsg << "initialized rosflight\n";
+//  gzmsg << "initializing rosflight\n";
+//  rosflight_init();
+//  gzmsg << "initialized rosflight\n";
 }
 
 
@@ -207,16 +201,16 @@ void ROSflightSIL::WindSpeedCallback(const geometry_msgs::Vector3 &wind)
 
 void ROSflightSIL::Reset()
 {
-  start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
-  rosflight_init();
+//  start_time_us_ = (uint64_t)(world_->GetSimTime().Double() * 1e3);
+//  rosflight_init();
 }
 
 void ROSflightSIL::RCCallback(const rosflight_msgs::OutputRaw &msg)
 {
-  for (int i = 0; i < 8; i++)
-  {
-    _rc_signals[i] = msg.values[i];
-  }
+//  for (int i = 0; i < 8; i++)
+//  {
+//    _rc_signals[i] = msg.values[i];
+//  }
 }
 
 void ROSflightSIL::SendForces()
@@ -230,123 +224,123 @@ void ROSflightSIL::SendForces()
 void ROSflightSIL::CommandCallback(const rosflight_msgs::Command &msg)
 {
   // For now, just arm whenever we get our first command message
-  _armed_state = ARMED;
+//  _armed_state = ARMED;
 
-  // Also, notice that we are manually specifying _combined_control
-  /// TODO: populate _offboard_control, and use mux_inputs to combine RC and offboard
-  _combined_control.F.active = true;
-  _combined_control.x.active = true;
-  _combined_control.y.active = true;
-  _combined_control.z.active = true;
+//  // Also, notice that we are manually specifying _combined_control
+//  /// TODO: populate _offboard_control, and use mux_inputs to combine RC and offboard
+//  _combined_control.F.active = true;
+//  _combined_control.x.active = true;
+//  _combined_control.y.active = true;
+//  _combined_control.z.active = true;
 
-  if (msg.mode == rosflight_msgs::Command::MODE_PASS_THROUGH)
-  {
-    _combined_control.x.type = PASSTHROUGH;
-    _combined_control.y.type = PASSTHROUGH;
-    _combined_control.z.type = PASSTHROUGH;
-    _combined_control.F.type = PASSTHROUGH;
-    _combined_control.x.value = msg.x;
-    _combined_control.y.value = msg.y;
-    _combined_control.z.value = msg.z;
-  }
-  else if (msg.mode == rosflight_msgs::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
-  {
-    _combined_control.x.type = RATE;
-    _combined_control.y.type = RATE;
-    _combined_control.z.type = RATE;
-    _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x;
-    _combined_control.y.value = msg.y;
-    _combined_control.z.value = msg.z;
+//  if (msg.mode == rosflight_msgs::Command::MODE_PASS_THROUGH)
+//  {
+//    _combined_control.x.type = PASSTHROUGH;
+//    _combined_control.y.type = PASSTHROUGH;
+//    _combined_control.z.type = PASSTHROUGH;
+//    _combined_control.F.type = PASSTHROUGH;
+//    _combined_control.x.value = msg.x;
+//    _combined_control.y.value = msg.y;
+//    _combined_control.z.value = msg.z;
+//  }
+//  else if (msg.mode == rosflight_msgs::Command::MODE_ROLLRATE_PITCHRATE_YAWRATE_THROTTLE)
+//  {
+//    _combined_control.x.type = RATE;
+//    _combined_control.y.type = RATE;
+//    _combined_control.z.type = RATE;
+//    _combined_control.F.type = THROTTLE;
+//    _combined_control.x.value = msg.x;
+//    _combined_control.y.value = msg.y;
+//    _combined_control.z.value = msg.z;
 
-  }
-  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
-  {
-    _combined_control.x.type = ANGLE;
-    _combined_control.y.type = ANGLE;
-    _combined_control.z.type = RATE;
-    _combined_control.F.type = THROTTLE;
-    _combined_control.x.value = msg.x;
-    _combined_control.y.value = msg.y;
-    _combined_control.z.value = msg.z;
-  }
-  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
-  {
-    _combined_control.x.type = ANGLE;
-    _combined_control.y.type = ANGLE;
-    _combined_control.z.type = RATE;
-    _combined_control.F.type = ALTITUDE;
-  }
-  _combined_control.F.value = msg.F;
+//  }
+//  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_THROTTLE)
+//  {
+//    _combined_control.x.type = ANGLE;
+//    _combined_control.y.type = ANGLE;
+//    _combined_control.z.type = RATE;
+//    _combined_control.F.type = THROTTLE;
+//    _combined_control.x.value = msg.x;
+//    _combined_control.y.value = msg.y;
+//    _combined_control.z.value = msg.z;
+//  }
+//  else if (msg.mode == rosflight_msgs::Command::MODE_ROLL_PITCH_YAWRATE_ALTITUDE)
+//  {
+//    _combined_control.x.type = ANGLE;
+//    _combined_control.y.type = ANGLE;
+//    _combined_control.z.type = RATE;
+//    _combined_control.F.type = ALTITUDE;
+//  }
+//  _combined_control.F.value = msg.F;
 }
 
 void ROSflightSIL::imuCallback(const sensor_msgs::Imu &msg)
 {
   // Update the micros Timer in ROSflight
-  SIL_now_us = (uint64_t)(msg.header.stamp.toNSec()*1e-3) - start_time_us_;
+//  SIL_now_us = (uint64_t)(msg.header.stamp.toNSec()*1e-3) - start_time_us_;
 
   // Load IMU measurements into the read_raw variables to simulate I2C communication
   // Make sure to put measurements in the NWU (the way the IMU is actually mounted)
-  accel_read_raw[0] = msg.linear_acceleration.x;
-  accel_read_raw[1] = msg.linear_acceleration.y;
-  accel_read_raw[2] = msg.linear_acceleration.z;
+//  accel_read_raw[0] = msg.linear_acceleration.x;
+//  accel_read_raw[1] = msg.linear_acceleration.y;
+//  accel_read_raw[2] = msg.linear_acceleration.z;
 
-  gyro_read_raw[0] = msg.angular_velocity.x;
-  gyro_read_raw[1] = msg.angular_velocity.y;
-  gyro_read_raw[2] = msg.angular_velocity.z;
+//  gyro_read_raw[0] = msg.angular_velocity.x;
+//  gyro_read_raw[1] = msg.angular_velocity.y;
+//  gyro_read_raw[2] = msg.angular_velocity.z;
 
-  temp_read_raw = 25.0;
+//  temp_read_raw = 25.0;
 
   // Simulate a read on the IMU
-  SIL_call_IMU_ISR();
+//  SIL_call_IMU_ISR();
 
-  // Run the main rosflight loop
-  rosflight_run();
+//  // Run the main rosflight loop
+//  rosflight_run();
 
-  // publish estimate
-  rosflight_msgs::Attitude attitude_msg;
-  geometry_msgs::Vector3Stamped euler_msg;
-  attitude_msg.header.stamp = msg.header.stamp;
-  attitude_msg.attitude.w = _current_state.q.w;
-  attitude_msg.attitude.x = _current_state.q.x;
-  attitude_msg.attitude.y = _current_state.q.y;
-  attitude_msg.attitude.z = _current_state.q.z;
+//  // publish estimate
+//  rosflight_msgs::Attitude attitude_msg;
+//  geometry_msgs::Vector3Stamped euler_msg;
+//  attitude_msg.header.stamp = msg.header.stamp;
+//  attitude_msg.attitude.w = _current_state.q.w;
+//  attitude_msg.attitude.x = _current_state.q.x;
+//  attitude_msg.attitude.y = _current_state.q.y;
+//  attitude_msg.attitude.z = _current_state.q.z;
 
-  attitude_msg.angular_velocity.x = _current_state.omega.x;
-  attitude_msg.angular_velocity.y = _current_state.omega.y;
-  attitude_msg.angular_velocity.z = _current_state.omega.z;
+//  attitude_msg.angular_velocity.x = _current_state.omega.x;
+//  attitude_msg.angular_velocity.y = _current_state.omega.y;
+//  attitude_msg.angular_velocity.z = _current_state.omega.z;
 
-  euler_msg.header.stamp = msg.header.stamp;
-  euler_msg.vector.x = _current_state.roll;
-  euler_msg.vector.y = _current_state.pitch;
-  euler_msg.vector.z = _current_state.yaw;
+//  euler_msg.header.stamp = msg.header.stamp;
+//  euler_msg.vector.x = _current_state.roll;
+//  euler_msg.vector.y = _current_state.pitch;
+//  euler_msg.vector.z = _current_state.yaw;
 
-  estimate_pub_.publish(attitude_msg);
-  euler_pub_.publish(euler_msg);
-
-
-  // Run Controller
-  rosflight_msgs::Command rate_msg, pt_msg;
-
-  pt_msg.x = _command.x;
-  pt_msg.y = _command.y;
-  pt_msg.z = _command.z;
-  pt_msg.F = _command.F;
-  command_pub_.publish(rate_msg);
+//  estimate_pub_.publish(attitude_msg);
+//  euler_pub_.publish(euler_msg);
 
 
-  rosflight_msgs::OutputRaw ESC_signals;
-  ESC_signals.header.stamp.fromSec(world_->GetSimTime().Double());
-  for (int i = 0; i < 8 ; i++)
-  {
-    // Put signal into message for debug
-    ESC_signals.values[i] = _outputs[i];
+//  // Run Controller
+//  rosflight_msgs::Command rate_msg, pt_msg;
 
-    // Put outputs into vector to calculate forces and torques
-    if( i < num_rotors_)
-      motor_signals_(i) = _outputs[i];
-  }
-  signals_pub_.publish(ESC_signals);
+//  pt_msg.x = _command.x;
+//  pt_msg.y = _command.y;
+//  pt_msg.z = _command.z;
+//  pt_msg.F = _command.F;
+//  command_pub_.publish(rate_msg);
+
+
+//  rosflight_msgs::OutputRaw ESC_signals;
+//  ESC_signals.header.stamp.fromSec(world_->GetSimTime().Double());
+//  for (int i = 0; i < 8 ; i++)
+//  {
+//    // Put signal into message for debug
+//    ESC_signals.values[i] = _outputs[i];
+
+//    // Put outputs into vector to calculate forces and torques
+//    if( i < num_rotors_)
+//      motor_signals_(i) = _outputs[i];
+//  }
+//  signals_pub_.publish(ESC_signals);
 }
 
 
@@ -416,7 +410,7 @@ void ROSflightSIL::UpdateForcesAndMoments()
 
 bool ROSflightSIL::calibrateImuBiasSrvCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
 {
-  return start_imu_calibration();
+//  return start_imu_calibration();
 }
 
 double ROSflightSIL::sat(double x, double max, double min)

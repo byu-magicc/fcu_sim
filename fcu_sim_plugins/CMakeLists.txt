@@ -46,32 +46,39 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
 include_directories(${GAZEBO_INCLUDE_DIRS})
 include_directories(${OpenCV_INCLUDE_DIRS})
-#include_directories(lib/ROSflight/include)
-#include_directories(lib/ROSflight/lib/turbotrig)
-#include_directories(lib/SIL_board)
+include_directories(lib/ROSflight/include)
+include_directories(lib/ROSflight/lib/turbotrig)
+include_directories(lib/ROSflight/lib/mavlink)
+include_directories(lib/ROSflight/lib)
+include_directories(lib/SIL_board)
 
-#add_library(ROSflight_sil_plugin
-# src/ROSflight_sil.cpp
+add_library(ROSflight_sil_plugin
+ src/ROSflight_sil.cpp
 
-# lib/ROSflight/src/rosflight.cpp
-# lib/ROSflight/src/printf.c
-# lib/ROSflight/src/estimator.cpp
-# lib/ROSflight/src/mixer.cpp
-# lib/ROSflight/src/controller.cpp
-# lib/ROSflight/src/param.cpp
-# lib/ROSflight/src/mode.cpp
-# lib/ROSflight/src/rc.cpp
-# lib/ROSflight/src/mux.cpp
-# lib/ROSflight/src/sensors.cpp
+ lib/ROSflight/src/rosflight.cpp
+ lib/ROSflight/src/printf.c
+ lib/ROSflight/src/estimator.cpp
+ lib/ROSflight/src/mixer.cpp
+ lib/ROSflight/src/controller.cpp
+ lib/ROSflight/src/param.cpp
+ lib/ROSflight/src/mode.cpp
+ lib/ROSflight/src/rc.cpp
+ lib/ROSflight/src/mux.cpp
+ lib/ROSflight/src/sensors.cpp
 
-# lib/ROSflight/lib/turbotrig/turbotrig.c
-# lib/ROSflight/lib/turbotrig/turbovec.c
+ lib/ROSflight/lib/turbotrig/turbotrig.c
+ lib/ROSflight/lib/turbotrig/turbovec.c
 
-# lib/SIL_board/SIL_board.cpp
-# )
-#target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
-#add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
-#set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
+ lib/ROSflight/lib/mavlink/mavlink.cpp
+ lib/ROSflight/lib/mavlink/mavlink_param.cpp
+ lib/ROSflight/lib/mavlink/mavlink_stream.cpp
+ lib/ROSflight/lib/mavlink/mavlink_util.cpp
+
+ lib/SIL_board/SIL_board.cpp
+ )
+target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
+add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
+set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
 
 add_library(aircraft_forces_and_moments_plugin
   src/aircraft_forces_and_moments.cpp
@@ -188,3 +195,4 @@ install(
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
+

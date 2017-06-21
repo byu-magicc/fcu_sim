@@ -42,10 +42,11 @@
 #include <std_srvs/Trigger.h>
 #include <rosflight_utils/simple_pid.h>
 
+#include "rosflight.h"
+#include "SIL_board.h"
+
 
 namespace gazebo {
-static const std::string kDefaultWindSpeedSubTopic = "gazebo/wind_speed";
-
 
 class ROSflightSIL : public ModelPlugin {
 public:
@@ -64,6 +65,8 @@ protected:
   void OnUpdate(const common::UpdateInfo & /*_info*/);
 
 private:
+  rosflight::SIL_Board board_;
+  rosflight::ROSflight firmware_;
   std::string command_topic_;
   std::string rc_topic_;
   std::string wind_speed_topic_;
