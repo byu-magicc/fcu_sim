@@ -32,12 +32,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(gazebo REQUIRED)
 link_directories(${GAZEBO_LIBRARY_DIRS})
-include_directories(${GAZEBO_INCLUDE_DIRS})
-include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(lib/ROSflight/include)
-include_directories(lib/ROSflight/lib/turbotrig)
-include_directories(lib/ROSflight/lib)
-include_directories(lib/ROSflight_SIL)
 
 catkin_package(
   INCLUDE_DIRS include ${Eigen_INCLUDE_DIRS}
@@ -50,31 +44,34 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
+include_directories(${GAZEBO_INCLUDE_DIRS})
+include_directories(${OpenCV_INCLUDE_DIRS})
+#include_directories(lib/ROSflight/include)
+#include_directories(lib/ROSflight/lib/turbotrig)
+#include_directories(lib/SIL_board)
 
-add_library(ROSflight_sil_plugin
- src/ROSflight_sil.cpp
+#add_library(ROSflight_sil_plugin
+# src/ROSflight_sil.cpp
 
- lib/ROSflight/src/rosflight.c
- lib/ROSflight/src/printf.c
- lib/ROSflight/src/estimator.c
- lib/ROSflight/src/mixer.c
- lib/ROSflight/src/controller.c
- lib/ROSflight/src/param.c
- lib/ROSflight/src/mode.c
- lib/ROSflight/src/mavlink.c
- lib/ROSflight/src/mavlink_stream.c
- lib/ROSflight/src/mavlink_receive.c
- lib/ROSflight/src/mavlink_util.c
- lib/ROSflight/src/mavlink_param.c
- lib/ROSflight/src/rc.c
- lib/ROSflight/src/mux.c
- lib/ROSflight/src/sensors.c
- lib/ROSflight/lib/turbotrig/turbotrig.c
- lib/ROSflight/lib/turbotrig/turbovec.c
- lib/ROSflight_SIL/board.c)
-target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
-add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
-set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
+# lib/ROSflight/src/rosflight.cpp
+# lib/ROSflight/src/printf.c
+# lib/ROSflight/src/estimator.cpp
+# lib/ROSflight/src/mixer.cpp
+# lib/ROSflight/src/controller.cpp
+# lib/ROSflight/src/param.cpp
+# lib/ROSflight/src/mode.cpp
+# lib/ROSflight/src/rc.cpp
+# lib/ROSflight/src/mux.cpp
+# lib/ROSflight/src/sensors.cpp
+
+# lib/ROSflight/lib/turbotrig/turbotrig.c
+# lib/ROSflight/lib/turbotrig/turbovec.c
+
+# lib/SIL_board/SIL_board.cpp
+# )
+#target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
+#add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
+#set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
 
 add_library(aircraft_forces_and_moments_plugin
   src/aircraft_forces_and_moments.cpp
@@ -181,7 +178,7 @@ install(
     gimbal_plugin
     GPS_plugin
     airspeed_plugin
-    ROSflight_sil_plugin
+#    ROSflight_sil_plugin
     multirotor_forces_and_moments_plugin
     aircraft_forces_and_moments_plugin
     magnetometer_plugin

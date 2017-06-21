@@ -1,3 +1,3 @@
 [submodule "fcu_sim_plugins/lib/ROSflight"]
 	path = fcu_sim_plugins/lib/ROSflight
-	url = https://github.com/byu-magicc/ROSflight.git
+	url = https://github.com/rosflight/firmware
