@@ -43,14 +43,14 @@
     <!-- PID Position Controller -->
     <rosparam command="load" file="$(find ros_copter)/params/mikey.yaml" ns="controller"/>
     <node name="controller" pkg="ros_copter" type="controller">
-      <remap from="estimate" to="ground_truth/odometry"/>
+      <remap from="estimate" to="ground_truth/odometry/NED"/>
     </node>
 
     <!-- Waypoint Manager -->
     <node name="waypoint_manager" pkg="ros_copter" type="waypoint_manager.py" output="screen">
       <rosparam command="load" file="$(find ros_copter)/params/waypoints.yaml"/>
       <remap from="waypoint" to="high_level_command"/>
-      <remap from="state" to="ground_truth/odometry"/>
+      <remap from="state" to="ground_truth/odometry/NED"/>
     </node>
 
     <!-- Joysticks -->

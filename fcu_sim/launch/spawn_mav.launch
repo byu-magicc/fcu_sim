@@ -25,7 +25,6 @@
     gazebo_namespace:=$(arg gazebo_namespace)/gazebo
     robot_namespace:=$(arg robot_namespace)"
   />
-  <param name="tf_prefix" type="string" value="$(arg tf_prefix)" />
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_$(arg mav_name)" pkg="gazebo_ros" type="spawn_model"

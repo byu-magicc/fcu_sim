@@ -3,100 +3,62 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <!-- Configure IMU -->
+      <!-- Perfect IMU -->
     <xacro:macro
       name="perfect_IMU"
       params="namespace parent_link imu_topic update_rate">
     <xacro:imu_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
-      imu_topic="${imu_topic}"
       update_rate="${update_rate}"
-      gyroscope_noise_density="0.0"
-      gyroscopoe_random_walk="0.0"
-      gyroscope_bias_correlation_time="1000.0"
-      gyroscope_turn_on_bias_sigma="0.000"
-      accelerometer_noise_density="0.000"
-      accelerometer_random_walk="0.000"
-      accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.0"
-      perfect_imu="true">
-      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-      <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:imu_plugin_macro>
+      imu_topic="${imu_topic}"
+      gyro_stdev="0.0"
+      gyro_bias_range="0.00"
+      gyro_bias_walk_stdev="0.000"
+      acc_stdev="0.0"
+      acc_bias_range="0.0"
+      acc_bias_walk_stdev="0.000" />
   </xacro:macro>
 
+  <!-- MPU6050 (Naze) on a multirotor -->
     <xacro:macro
-      name="IMU_ADIS16448"
+      name="IMU_MPU6050_multirotor"
       params="namespace parent_link imu_topic update_rate">
     <xacro:imu_plugin_macro
       namespace="${namespace}"
       parent_link="${parent_link}"
-      imu_topic="${imu_topic}"
       update_rate="${update_rate}"
-      gyroscope_noise_density="0.0003394"
-      gyroscopoe_random_walk="0.000038785"
-      gyroscope_bias_correlation_time="1000.0"
-      gyroscope_turn_on_bias_sigma="0.0.008"
-      accelerometer_noise_density="0.004"
-      accelerometer_random_walk="0.006"
-      accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.1960"
-      perfect_imu="false">
-      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-      <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:imu_plugin_macro>
-  </xacro:macro>
-
-  <!-- Configure IMU -->
-    <xacro:macro
-      name="IMU_MPU6050"
-      params="namespace parent_link imu_topic update_rate">
-    <xacro:imu_plugin_macro
-      namespace="${namespace}"
-      parent_link="${parent_link}"
       imu_topic="${imu_topic}"
-      update_rate="${update_rate}"
-      gyroscope_noise_density="0.0008726646"
-      gyroscopoe_random_walk="0.000038785"
-      gyroscope_bias_correlation_time="1000.0"
-      gyroscope_turn_on_bias_sigma="0.0087"
-      accelerometer_noise_density="0.008"
-      accelerometer_random_walk="0.006"
-      accelerometer_bias_correlation_time="300.0"
-      accelerometer_turn_on_bias_sigma="0.1960"
-      perfect_imu="false">
-      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-      <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:imu_plugin_macro>
+      gyro_stdev="0.13"
+      gyro_bias_range="0.08"
+      gyro_bias_walk_stdev="0.00001"
+      acc_stdev="1.15"
+      acc_bias_range="0.25"
+      acc_bias_walk_stdev="0.00001" />
   </xacro:macro>
 
     <!-- Macro to add an IMU. -->
   <xacro:macro name="imu_plugin_macro"
-    params="namespace parent_link imu_topic update_rate
-      gyroscope_noise_density gyroscopoe_random_walk
-      gyroscope_bias_correlation_time gyroscope_turn_on_bias_sigma
-      accelerometer_noise_density accelerometer_random_walk
-      accelerometer_bias_correlation_time accelerometer_turn_on_bias_sigma
-      perfect_imu
-      *inertia *origin">
+    params="namespace parent_link update_rate imu_topic
+            gyro_stdev gyro_bias_range gyro_bias_walk_stdev acc_stdev acc_bias_range
+            acc_bias_walk_stdev">
     <gazebo>
       <plugin filename="libimu_plugin.so" name="${namespace}_imu_plugin">
-      <!-- A good description of the IMU parameters can be found in the kalibr documentation:
-           https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model-and-Intrinsics -->
-        <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
-        <linkName>${parent_link}</linkName> <!-- (string, required): name of the body which holds the IMU sensor -->
-        <imuTopic>${imu_topic}</imuTopic> <!-- (string): name of the sensor output topic and prefix of service names (defaults to imu) -->
-	<updateRate>${update_rate}</updateRate>
-	<gyroscopeNoiseDensity>${gyroscope_noise_density}</gyroscopeNoiseDensity> <!-- Gyroscope noise density (two-sided spectrum) [rad/s/sqrt(Hz)] -->
-        <gyroscopeRandomWalk>${gyroscopoe_random_walk}</gyroscopeRandomWalk> <!-- Gyroscope bias random walk [rad/s/s/sqrt(Hz)] -->
-        <gyroscopeBiasCorrelationTime>${gyroscope_bias_correlation_time}</gyroscopeBiasCorrelationTime> <!-- Gyroscope bias correlation time constant [s] -->
-        <gyroscopeTurnOnBiasSigma>${gyroscope_turn_on_bias_sigma}</gyroscopeTurnOnBiasSigma> <!-- Gyroscope turn on bias standard deviation [rad/s] -->
-        <accelerometerNoiseDensity>${accelerometer_noise_density}</accelerometerNoiseDensity> <!-- Accelerometer noise density (two-sided spectrum) [m/s^2/sqrt(Hz)] -->
-        <accelerometerRandomWalk>${accelerometer_random_walk}</accelerometerRandomWalk> <!-- Accelerometer bias random walk. [m/s^2/s/sqrt(Hz)] -->
-        <accelerometerBiasCorrelationTime>${accelerometer_bias_correlation_time}</accelerometerBiasCorrelationTime> <!-- Accelerometer bias correlation time constant [s] -->
-        <accelerometerTurnOnBiasSigma>${accelerometer_turn_on_bias_sigma}</accelerometerTurnOnBiasSigma> <!-- Accelerometer turn on bias standard deviation [m/s^2] -->
-        <perfectIMU>${perfect_imu}</perfectIMU>
+        <namespace>${namespace}</namespace> 
+        <link_name>${parent_link}</link_name> 
+        <update_rate>${update_rate}</update_rate>
+
+        <imu_topic>${imu_topic}/data</imu_topic> 
+        <acc_bias_topic>${imu_topic}/acc_bias</acc_bias_topic> 
+        <gyro_bias_topic>${imu_topic}/gyro_bias</gyro_bias_topic> 
+
+        <gyro_stdev>${gyro_stdev}</gyro_stdev> 
+        <gyro_bias_range>${gyro_bias_range}</gyro_bias_range> 
+        <gyro_bias_walk_stdev>${gyro_bias_walk_stdev}</gyro_bias_walk_stdev> 
+
+        <acc_stdev>${acc_stdev}</acc_stdev> 
+        <acc_bias_range>${acc_bias_range}</acc_bias_range> 
+        <acc_bias_walk_stdev>${acc_bias_walk_stdev}</acc_bias_walk_stdev> 
       </plugin>
     </gazebo>
   </xacro:macro>

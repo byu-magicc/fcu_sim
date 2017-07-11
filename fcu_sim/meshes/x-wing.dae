@@ -8,6 +8,8 @@
         <up_axis>Y_UP</up_axis>
         <created>Mon Jul 11 23:55:47 2016</created>
         <modified>Mon Jul 11 23:55:47 2016</modified>
+        <unit name="millimeter" meter="0.001"/>
+        <up_axis>Z_UP</up_axis>
     </asset>
     <library_images>
         <image id="texture0" name="texture0">

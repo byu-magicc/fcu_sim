@@ -1,9 +1,5 @@
 /*
- * Copyright 2015 Fadri Furrer, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Michael Burri, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Mina Kamel, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Janosch Nikolic, ASL, ETH Zurich, Switzerland
- * Copyright 2015 Markus Achtelik, ASL, ETH Zurich, Switzerland
+ * Copyright 2017 James Jackson Brigham Young University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,26 +35,23 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 
   odometry_queue_.clear();
 
-  if (_sdf->HasElement("robotNamespace"))
-    namespace_ = _sdf->GetElement("robotNamespace")->Get<std::string>();
+  if (_sdf->HasElement("namespace"))
+    namespace_ = _sdf->GetElement("namespace")->Get<std::string>();
   else
-    gzerr << "[gazebo_odometry_plugin] Please specify a robotNamespace.\n";
+    gzerr << "[gazebo_odometry_plugin] Please specify a namespace.\n";
   node_handle_ = new ros::NodeHandle(namespace_);
 
-  if (_sdf->HasElement("linkName"))
-    link_name_ = _sdf->GetElement("linkName")->Get<std::string>();
+  if (_sdf->HasElement("parent_link"))
+    link_name_ = _sdf->GetElement("parent_link")->Get<std::string>();
   else
-    gzerr << "[gazebo_odometry_plugin] Please specify a linkName.\n";
+    gzerr << "[gazebo_odometry_plugin] Please specify a parent_link.\n";
   link_ = model_->GetLink(link_name_);
   if (link_ == NULL)
     gzthrow("[gazebo_odometry_plugin] Couldn't find specified link \"" << link_name_ << "\".");
 
-  getSdfParam<std::string>(_sdf, "poseTopic", pose_pub_topic_, "pose");
-  getSdfParam<std::string>(_sdf, "poseWithCovarianceTopic", pose_with_covariance_pub_topic_, "pose_with_covariance");
-  getSdfParam<std::string>(_sdf, "positionTopic", position_pub_topic_, "position");
-  getSdfParam<std::string>(_sdf, "transformTopic", transform_pub_topic_, "transform");
-  getSdfParam<std::string>(_sdf, "odometryTopic", odometry_pub_topic_, "odometry");
-  getSdfParam<std::string>(_sdf, "parentFrameId", parent_frame_id_, "world");
+  getSdfParam<std::string>(_sdf, "transform_topic", transform_pub_topic_, "transform");
+  getSdfParam<std::string>(_sdf, "odometry_topic", odometry_pub_topic_, "odometry");
+  getSdfParam<std::string>(_sdf, "frame_id", parent_frame_id_, "world");
 
   parent_link_ = world_->GetEntity(parent_frame_id_);
   if (parent_link_ == NULL && parent_frame_id_ != "world") {
@@ -66,9 +59,10 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   }
 
   updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&OdometryPlugin::OnUpdate, this, _1));
-  pose_pub_ = node_handle_->advertise<geometry_msgs::PoseStamped>(pose_pub_topic_, 10);
-  transform_pub_ = node_handle_->advertise<geometry_msgs::TransformStamped>(transform_pub_topic_, 10);
-  odometry_pub_ = node_handle_->advertise<nav_msgs::Odometry>(odometry_pub_topic_, 10);
+  transform_NED_pub_ = node_handle_->advertise<geometry_msgs::TransformStamped>(transform_pub_topic_ + "/NED", 10);
+  transform_NWU_pub_ = node_handle_->advertise<geometry_msgs::TransformStamped>(transform_pub_topic_ + "/NWU", 10);
+  odometry_NED_pub_ = node_handle_->advertise<nav_msgs::Odometry>(odometry_pub_topic_ + "/NED", 10);
+  odometry_NWU_pub_ = node_handle_->advertise<nav_msgs::Odometry>(odometry_pub_topic_+ "/NWU", 10);
   euler_pub_ = node_handle_->advertise<geometry_msgs::Vector3Stamped>("euler", 1);
 }
 
@@ -76,93 +70,89 @@ void OdometryPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
 void OdometryPlugin::OnUpdate(const common::UpdateInfo& _info) {
   // C denotes child frame, P parent frame, and W world frame.
   // Further C_pose_W_P denotes pose of P wrt. W expressed in C.
-  math::Pose W_pose_W_C = link_->GetWorldCoGPose();
-  math::Vector3 C_linear_velocity_W_C = link_->GetRelativeLinearVel();
-  math::Vector3 C_angular_velocity_W_C = link_->GetRelativeAngularVel();
+  math::Pose inertial_pose = link_->GetWorldCoGPose();
+  math::Vector3 body_fixed_linear_velocity = link_->GetRelativeLinearVel();
+  math::Vector3 body_fixed_angular_velocity = link_->GetRelativeAngularVel();
 
-  math::Vector3 gazebo_linear_velocity = C_linear_velocity_W_C;
-  math::Vector3 gazebo_angular_velocity = C_angular_velocity_W_C;
-  math::Pose gazebo_pose = W_pose_W_C;
+  nav_msgs::Odometry odometry_NED, odometry_NWU;
+  geometry_msgs::TransformStamped transform_NED, transform_NWU;
+  odometry_NWU.header.stamp.sec = (world_->GetSimTime()).sec;
+  odometry_NWU.header.stamp.nsec = (world_->GetSimTime()).nsec;
+  odometry_NWU.header.frame_id = "world_NWU";
+  odometry_NWU.child_frame_id = namespace_;
 
-  if (parent_frame_id_ != "world") {
-    math::Pose W_pose_W_P = parent_link_->GetWorldPose();
-    math::Vector3 P_linear_velocity_W_P = parent_link_->GetRelativeLinearVel();
-    math::Vector3 P_angular_velocity_W_P = parent_link_->GetRelativeAngularVel();
-    math::Pose C_pose_P_C_ = W_pose_W_C - W_pose_W_P;
-    math::Vector3 C_linear_velocity_P_C;
-    C_linear_velocity_P_C = - C_pose_P_C_.rot.GetInverse()
-        * P_angular_velocity_W_P.Cross(C_pose_P_C_.pos)
-        + C_linear_velocity_W_C
-        - C_pose_P_C_.rot.GetInverse() * P_linear_velocity_W_P;
-    gazebo_angular_velocity = C_angular_velocity_W_C
-        - C_pose_P_C_.rot.GetInverse() * P_angular_velocity_W_P;
-    gazebo_linear_velocity = C_linear_velocity_P_C;
-    gazebo_pose = C_pose_P_C_;
-  }
+  // Set the NWU odometry and transform messages
+  odometry_NWU.pose.pose.position.x = inertial_pose.pos.x;
+  odometry_NWU.pose.pose.position.y = inertial_pose.pos.y;
+  odometry_NWU.pose.pose.position.z = inertial_pose.pos.z;
+  odometry_NWU.pose.pose.orientation.w = inertial_pose.rot.w;
+  odometry_NWU.pose.pose.orientation.x = inertial_pose.rot.x;
+  odometry_NWU.pose.pose.orientation.y = inertial_pose.rot.y;
+  odometry_NWU.pose.pose.orientation.z = inertial_pose.rot.z;
+  odometry_NWU.twist.twist.linear.x = body_fixed_linear_velocity.x;
+  odometry_NWU.twist.twist.linear.y = body_fixed_linear_velocity.y;
+  odometry_NWU.twist.twist.linear.z = body_fixed_linear_velocity.z;
+  odometry_NWU.twist.twist.angular.x = body_fixed_angular_velocity.x;
+  odometry_NWU.twist.twist.angular.y = body_fixed_angular_velocity.y;
+  odometry_NWU.twist.twist.angular.z = body_fixed_angular_velocity.z;
+  odometry_NWU_pub_.publish(odometry_NWU);
 
-  nav_msgs::Odometry odometry;
-  odometry.header.frame_id = "NED";
-  odometry.header.seq = odometry_sequence_++;
-  odometry.header.stamp.sec = (world_->GetSimTime()).sec;
-  odometry.header.stamp.nsec = (world_->GetSimTime()).nsec;
-  odometry.child_frame_id = namespace_;
-  copyPosition(gazebo_pose.pos, &odometry.pose.pose.position);
+  transform_NWU.header = odometry_NWU.header;
+  transform_NWU.transform.translation.x = inertial_pose.pos.x;
+  transform_NWU.transform.translation.y = inertial_pose.pos.y;
+  transform_NWU.transform.translation.z = inertial_pose.pos.z;
+  transform_NWU.transform.rotation.w = inertial_pose.rot.w;
+  transform_NWU.transform.rotation.x = inertial_pose.rot.x;
+  transform_NWU.transform.rotation.y = inertial_pose.rot.y;
+  transform_NWU.transform.rotation.z = inertial_pose.rot.z;
+  transform_NWU_pub_.publish(transform_NWU);
 
-  // Convert from NWU (gazebo coordinates) to NED (MAV coordinates)
-  odometry.pose.pose.position.y *= -1.0;
-  odometry.pose.pose.position.z *= -1.0;
-  odometry.pose.pose.orientation.w = gazebo_pose.rot.w;
-  odometry.pose.pose.orientation.x = gazebo_pose.rot.x;
-  odometry.pose.pose.orientation.y = -1.0*gazebo_pose.rot.y;
-  odometry.pose.pose.orientation.z = -1.0*gazebo_pose.rot.z;
-  odometry.twist.twist.linear.x = gazebo_linear_velocity.x;
-  odometry.twist.twist.linear.y = -1.0*gazebo_linear_velocity.y;
-  odometry.twist.twist.linear.z = -1.0*gazebo_linear_velocity.z;
-  odometry.twist.twist.angular.x = gazebo_angular_velocity.x;
-  odometry.twist.twist.angular.y = -1.0*gazebo_angular_velocity.y;
-  odometry.twist.twist.angular.z = -1.0*gazebo_angular_velocity.z;
+  // Convert from NWU to NED
+  odometry_NED.header.stamp.sec = (world_->GetSimTime()).sec;
+  odometry_NED.header.stamp.nsec = (world_->GetSimTime()).nsec;
+  odometry_NED.header.frame_id = "world_NED";
+  odometry_NED.child_frame_id = namespace_;
+  odometry_NED.pose.pose.position.x = inertial_pose.pos.x;
+  odometry_NED.pose.pose.position.y = -inertial_pose.pos.y;
+  odometry_NED.pose.pose.position.z = -inertial_pose.pos.z;
+  odometry_NED.pose.pose.orientation.w = inertial_pose.rot.w;
+  odometry_NED.pose.pose.orientation.x = inertial_pose.rot.x;
+  odometry_NED.pose.pose.orientation.y = -inertial_pose.rot.y;
+  odometry_NED.pose.pose.orientation.z = -inertial_pose.rot.z;
+  odometry_NED.twist.twist.linear.x = body_fixed_linear_velocity.x;
+  odometry_NED.twist.twist.linear.y = -body_fixed_linear_velocity.y;
+  odometry_NED.twist.twist.linear.z = -body_fixed_linear_velocity.z;
+  odometry_NED.twist.twist.angular.x = body_fixed_angular_velocity.x;
+  odometry_NED.twist.twist.angular.y = -body_fixed_angular_velocity.y;
+  odometry_NED.twist.twist.angular.z = -body_fixed_angular_velocity.z;
+  odometry_NED_pub_.publish(odometry_NED);
+
+  transform_NED.header = odometry_NED.header;
+  transform_NED.transform.translation.x = inertial_pose.pos.x;
+  transform_NED.transform.translation.y = -inertial_pose.pos.y;
+  transform_NED.transform.translation.z = -inertial_pose.pos.z;
+  transform_NED.transform.rotation.w = inertial_pose.rot.w;
+  transform_NED.transform.rotation.x = inertial_pose.rot.x;
+  transform_NED.transform.rotation.y = -inertial_pose.rot.y;
+  transform_NED.transform.rotation.z = -inertial_pose.rot.z;
+  transform_NED_pub_.publish(transform_NED);
 
   // Publish all the topics, for which the topic name is specified.
   if (euler_pub_.getNumSubscribers() > 0) {
     geometry_msgs::Vector3Stamped euler;
     tf::Quaternion q;
-    tf::quaternionMsgToTF(odometry.pose.pose.orientation, q);
+    tf::quaternionMsgToTF(odometry_NED.pose.pose.orientation, q);
     tf::Matrix3x3 R(q);
     double roll, pitch, yaw;
     R.getEulerYPR(yaw, pitch, roll);
-    euler.header = odometry.header;
+    euler.header = odometry_NED.header;
     euler.vector.x = roll;
     euler.vector.y = pitch;
     euler.vector.z = yaw;
     euler_pub_.publish(euler);
   }
-  if (pose_pub_.getNumSubscribers() > 0) {
-    geometry_msgs::PoseStampedPtr pose(new geometry_msgs::PoseStamped);
-    pose->header = odometry.header;
-    pose->pose = odometry.pose.pose;
-    pose_pub_.publish(pose);
-  }
-
-  if (transform_pub_.getNumSubscribers() > 0) {
-    geometry_msgs::TransformStampedPtr transform(new geometry_msgs::TransformStamped);
-    transform->header = odometry.header;
-    geometry_msgs::Vector3 translation;
-    translation.x = odometry.pose.pose.position.x;
-    translation.y = odometry.pose.pose.position.y;
-    translation.z = odometry.pose.pose.position.z;
-    transform->transform.translation = translation;
-    transform->transform.rotation = odometry.pose.pose.orientation;
-    transform_pub_.publish(transform);
-  }
-  if (odometry_pub_.getNumSubscribers() > 0) {
-    odometry_pub_.publish(odometry);
-  }
-  tf::Quaternion tf_q;
-  tf::quaternionMsgToTF(odometry.pose.pose.orientation, tf_q);
-  tf::Vector3 tf_v(odometry.pose.pose.position.x, odometry.pose.pose.position.y, odometry.pose.pose.position.z);
-  tf_ = tf::Transform(tf_q, tf_v);
-  transform_broadcaster_.sendTransform(tf::StampedTransform(tf_, odometry.header.stamp, parent_frame_id_, namespace_));
 }
 
 GZ_REGISTER_MODEL_PLUGIN(OdometryPlugin);
 }
+

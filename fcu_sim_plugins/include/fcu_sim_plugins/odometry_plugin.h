@@ -80,47 +80,20 @@ class OdometryPlugin : public ModelPlugin {
   OdometryQueue odometry_queue_;
 
   std::string namespace_;
-  std::string pose_pub_topic_;
-  std::string pose_with_covariance_pub_topic_;
-  std::string position_pub_topic_;
   std::string transform_pub_topic_;
   std::string odometry_pub_topic_;
   std::string parent_frame_id_;
   std::string link_name_;
 
-//  NormalDistribution position_n_[3];
-//  NormalDistribution attitude_n_[3];
-//  NormalDistribution linear_velocity_n_[3];
-//  NormalDistribution angular_velocity_n_[3];
-//  UniformDistribution position_u_[3];
-//  UniformDistribution attitude_u_[3];
-//  UniformDistribution linear_velocity_u_[3];
-//  UniformDistribution angular_velocity_u_[3];
-
-//  geometry_msgs::PoseWithCovariance::_covariance_type pose_covariance_matrix_;
-//  geometry_msgs::TwistWithCovariance::_covariance_type twist_covariance_matrix_;
-
-//  int measurement_delay_;
-//  int measurement_divisor_;
   int gazebo_sequence_;
   int odometry_sequence_;
-//  double unknown_delay_;
-//  double covariance_image_scale_;
-//  cv::Mat covariance_image_;
-
-//  std::random_device random_device_;
-//  std::mt19937 random_generator_;
 
   ros::NodeHandle* node_handle_;
-  ros::Publisher pose_pub_;
-//  ros::Publisher pose_with_covariance_pub_;
-//  ros::Publisher position_pub_;
-  ros::Publisher transform_pub_;
-  ros::Publisher odometry_pub_;
+  ros::Publisher transform_NWU_pub_;
+  ros::Publisher transform_NED_pub_;
+  ros::Publisher odometry_NWU_pub_;
+  ros::Publisher odometry_NED_pub_;
   ros::Publisher euler_pub_;
-
-  tf::Transform tf_;
-  tf::TransformBroadcaster transform_broadcaster_;
 
   physics::WorldPtr world_;
   physics::ModelPtr model_;
