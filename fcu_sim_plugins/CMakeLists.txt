@@ -51,30 +51,30 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(${Eigen_INCLUDE_DIRS})
 
-add_library(ROSflight_sil_plugin
- src/ROSflight_sil.cpp
-
- lib/ROSflight/src/rosflight.c
- lib/ROSflight/src/printf.c
- lib/ROSflight/src/estimator.c
- lib/ROSflight/src/mixer.c
- lib/ROSflight/src/controller.c
- lib/ROSflight/src/param.c
- lib/ROSflight/src/mode.c
- lib/ROSflight/src/mavlink.c
- lib/ROSflight/src/mavlink_stream.c
- lib/ROSflight/src/mavlink_receive.c
- lib/ROSflight/src/mavlink_util.c
- lib/ROSflight/src/mavlink_param.c
- lib/ROSflight/src/rc.c
- lib/ROSflight/src/mux.c
- lib/ROSflight/src/sensors.c
- lib/ROSflight/lib/turbotrig/turbotrig.c
- lib/ROSflight/lib/turbotrig/turbovec.c
- lib/ROSflight_SIL/board.c)
-target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
-add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
-set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
+#add_library(ROSflight_sil_plugin
+ #src/ROSflight_sil.cpp
+#
+ #lib/ROSflight/src/rosflight.c
+ #lib/ROSflight/src/printf.c
+ #lib/ROSflight/src/estimator.c
+ #lib/ROSflight/src/mixer.c
+ #lib/ROSflight/src/controller.c
+ #lib/ROSflight/src/param.c
+ #lib/ROSflight/src/mode.c
+ #lib/ROSflight/src/mavlink.c
+ #lib/ROSflight/src/mavlink_stream.c
+ #lib/ROSflight/src/mavlink_receive.c
+ #lib/ROSflight/src/mavlink_util.c
+ #lib/ROSflight/src/mavlink_param.c
+ #lib/ROSflight/src/rc.c
+ #lib/ROSflight/src/mux.c
+ #lib/ROSflight/src/sensors.c
+ #lib/ROSflight/lib/turbotrig/turbotrig.c
+ #lib/ROSflight/lib/turbotrig/turbovec.c
+ #lib/ROSflight_SIL/board.c)
+#target_link_libraries(ROSflight_sil_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} yaml-cpp)
+#add_dependencies(ROSflight_sil_plugin ${catkin_EXPORTED_TARGETS} rosflight_msgs_generate_messages_cpp)
+#set_property( TARGET ROSflight_sil_plugin APPEND_STRING PROPERTY COMPILE_FLAGS -Wno-format-extra-args )
 
 add_library(aircraft_forces_and_moments_plugin
   src/aircraft_forces_and_moments.cpp
@@ -181,7 +181,7 @@ install(
     gimbal_plugin
     GPS_plugin
     airspeed_plugin
-    ROSflight_sil_plugin
+    #ROSflight_sil_plugin
     multirotor_forces_and_moments_plugin
     aircraft_forces_and_moments_plugin
     magnetometer_plugin
