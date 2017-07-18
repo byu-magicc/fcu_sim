@@ -8,7 +8,7 @@
       params="namespace
               parent_link
               camera_topic
-	      frame_rate
+	            frame_rate
               pose_topic
               command_topic
               use_slipring
@@ -142,7 +142,7 @@
 
     <!-- Load Gimbal Controller Plugin -->
     <gazebo>
-      <plugin filename="libfcu_sim_gimbal_plugin.so" name="fcu_sim_gimbal_plugin">
+      <plugin filename="libgimbal_plugin.so" name="fcu_sim_gimbal_plugin">
         <namespace>${namespace}</namespace>
         <yawJoint>${namespace}/gimbal_yaw_joint</yawJoint>
         <pitchJoint>${namespace}/gimbal_pitch_joint</pitchJoint>

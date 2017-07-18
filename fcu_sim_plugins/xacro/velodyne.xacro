@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:property name="pi" value="3.14159265359" />
 
   <xacro:macro
     name="velodyne_custom"
     params="namespace
             parent_link
             visualize
+            update_rate
             *origin">
     <xacro:laser_scanner
       namespace="${namespace}"

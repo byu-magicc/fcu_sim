@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:property name="pi" value="3.14159265359" />
 
   <!-- Wind Parameters -->
-  <xacro:macro 
-    name="wind_param" 
+  <xacro:macro
+    name="wind_param"
     params="namespace link_name wind_pub_topic">
     <xacro:wind_plugin_macro
       namespace="${namespace}"
@@ -23,12 +22,12 @@
   </xacro:macro>
 
   <xacro:macro name="wind_plugin_macro"
-  params="namespace link_name wind_pub_topic frame_id xyz_offset 
+  params="namespace link_name wind_pub_topic frame_id xyz_offset
           wind_force_mean wind_force_variance
           wind_gust_start wind_gust_duration wind_gust_force_mean
           wind_gust_force_variance wind_gust_direction">
     <gazebo>
-      <plugin filename="libfcu_sim_wind_plugin.so" name="gazebo_wind_plugin">
+      <plugin filename="libwind_plugin.so" name="gazebo_wind_plugin">
         <robotNamespace>${namespace}</robotNamespace> <!-- (string, required): ros namespace in which the messages are published -->
         <xyzOffset>${xyz_offset}</xyzOffset> <!-- (Vector3, required): -->
         <windPubTopic>${wind_pub_topic}</windPubTopic>

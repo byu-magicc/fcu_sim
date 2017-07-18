@@ -1,14 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:property name="pi" value="3.14159265359" />
 
     <!-- Odometry Sensor -->
-    <xacro:macro 
-      name="ground_truth" 
+    <xacro:macro
+      name="ground_truth"
       params="namespace parent_link">
       <xacro:odometry_plugin_macro
         namespace="${namespace}/ground_truth"
-        odometry_sensor_suffix=""
         parent_link="${namespace}/base_link"
         pose_topic="pose"
         pose_with_covariance_topic="pose_with_covariance"
@@ -16,7 +14,6 @@
         transform_topic="transform"
         odometry_topic="odometry"
         parent_frame_id="world"
-        mass_odometry_sensor="0.00001"
         measurement_divisor="1"
         measurement_delay="0"
         unknown_delay="0.0"
@@ -30,41 +27,24 @@
         noise_uniform_angular_velocity="0 0 0"
         enable_odometry_map="false"
         odometry_map=""
-        image_scale="">
-        <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
-        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-      </xacro:odometry_plugin_macro>
+        image_scale=""/>
     </xacro:macro>
 
 
   <!-- Macro to add a generic odometry sensor. -->
   <xacro:macro name="odometry_plugin_macro"
     params="
-      namespace odometry_sensor_suffix parent_link pose_topic pose_with_covariance_topic
+      namespace parent_link pose_topic pose_with_covariance_topic
       position_topic transform_topic odometry_topic parent_frame_id
-      mass_odometry_sensor measurement_divisor measurement_delay unknown_delay
+      measurement_divisor measurement_delay unknown_delay
       noise_normal_position noise_normal_quaternion noise_normal_linear_velocity
       noise_normal_angular_velocity noise_uniform_position
       noise_uniform_quaternion noise_uniform_linear_velocity
       noise_uniform_angular_velocity enable_odometry_map odometry_map
-      image_scale *inertia *origin">
-    <!-- odometry link -->
-    <link name="${namespace}/odometry_sensor${odometry_sensor_suffix}_link">
-      <inertial>
-        <xacro:insert_block name="inertia" />
-        <mass value="${mass_odometry_sensor}" />  <!-- [kg] -->
-      </inertial>
-    </link>
-    <!-- odometry joint -->
-    <joint name="${namespace}/odometry_sensor${odometry_sensor_suffix}_joint" type="revolute">
-      <parent link="${parent_link}" />
-      <xacro:insert_block name="origin" />
-      <child link="${namespace}/odometry_sensor${odometry_sensor_suffix}_link" />
-      <limit upper="0" lower="0" effort="0" velocity="0" />
-    </joint>
+      image_scale">
     <gazebo>
-      <plugin filename="libfcu_sim_odometry_plugin.so" name="odometry_sensor${odometry_sensor_suffix}">
-        <linkName>${namespace}/odometry_sensor${odometry_sensor_suffix}_link</linkName>
+      <plugin filename="libodometry_plugin.so" name="${namespace}_odometry_sensor">
+        <linkName>${parent_link}</linkName>
         <robotNamespace>${namespace}</robotNamespace>
         <poseTopic>${pose_topic}</poseTopic>
         <poseWithCovarianceTopic>${pose_with_covariance_topic}</poseWithCovarianceTopic>

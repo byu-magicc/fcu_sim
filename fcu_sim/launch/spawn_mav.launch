@@ -13,12 +13,17 @@
   <arg name="log_file" default="$(arg mav_name)"/>
   <arg name="enable_wind" default="true"/>
   <arg name="color" default="Black"/>
+  <arg name="robot_namespace" default="/"/>
+  <arg name="gazebo_namespace" default=""/>
+
 
   <!-- send the robot XML to param server -->
   <param name="robot_description" command="
-    $(find xacro)/xacro '$(arg model)'
+    $(find xacro)/xacro.py '$(arg model)'
     mav_name:=$(arg mav_name)
-    color:=$(arg color)"
+    color:=$(arg color)
+    gazebo_namespace:=$(arg gazebo_namespace)/gazebo
+    robot_namespace:=$(arg robot_namespace)"
   />
   <param name="tf_prefix" type="string" value="$(arg tf_prefix)" />
 
@@ -30,6 +35,8 @@
          -y $(arg y)
          -z $(arg z)
          -Y $(arg yaw)
+         -gazebo_namespace $(arg gazebo_namespace)/gazebo
+         -robot_namespace $(arg robot_namespace)
          -model $(arg mav_name)"
    respawn="false" output="screen">
   </node>

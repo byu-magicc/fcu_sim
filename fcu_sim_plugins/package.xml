@@ -5,12 +5,13 @@
 
   <maintainer email="superjax08@gmail.com">James Jackson</maintainer>
 
+  <author>James Jackson</author>
+  <author>Gary Ellingson</author>
   <author>Fadri Furrer</author>
   <author>Michael Burri</author>
   <author>Mina Kamel</author>
   <author>Janosch Nikolic</author>
-  <author>Markus Achtelik</author>
-  <author>James Jackson</author>
+  <author>Markus Achtelik</author> 
 
   <license>ASL 2.0</license>
 
@@ -20,6 +21,9 @@
   <build_depend>cmake_modules</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>gazebo</build_depend>
+  <build_depend>gazebo_ros</build_depend>
+  <build_depend>gazebo_plugins</build_depend>
+  <build_depend>gazebo_ros</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>fcu_sim</build_depend>
   <build_depend>rosbag</build_depend>
@@ -28,7 +32,8 @@
   <build_depend>std_srvs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>relative_nav</build_depend>
-  <build_depend>fcu_common</build_depend>
+  <build_depend>rosflight_msgs</build_depend>
+  <build_depend>rosflight_utils</build_depend>
   <build_depend>tf2_ros</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>image_transport</build_depend>
@@ -42,6 +47,8 @@
   <!-- Dependencies needed after this package is compiled. -->
   <run_depend>cv_bridge</run_depend>
   <run_depend>gazebo_ros</run_depend>
+  <run_depend>gazebo_plugins</run_depend>
+  <run_depend>gazebo_ros</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>fcu_sim</run_depend>
   <run_depend>rosbag</run_depend>
@@ -49,7 +56,8 @@
   <run_depend>std_srvs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>relative_nav</run_depend>
-  <run_depend>fcu_common</run_depend>
+  <run_depend>rosflight_msgs</run_depend>
+  <run_depend>rosflight_utils</run_depend>
   <run_depend>tf2_ros</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>image_transport</run_depend>
