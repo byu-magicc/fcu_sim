@@ -22,12 +22,12 @@ using namespace std;
 
 namespace gazebo {
 
-ImuPlugin::ImuPlugin() : 
-  ModelPlugin(), 
-  prev_velocity_(0, 0, 0) 
+ImuPlugin::ImuPlugin() :
+  ModelPlugin(),
+  prev_velocity_(0, 0, 0)
 {}
 
-ImuPlugin::~ImuPlugin() 
+ImuPlugin::~ImuPlugin()
 {
   event::Events::DisconnectWorldUpdateBegin(updateConnection_);
   nh_.shutdown();
@@ -74,7 +74,7 @@ void ImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   last_time_ = world_->GetSimTime();
   gravity_ = world_->GetPhysicsEngine()->GetGravity();
   normal_distribution_ = std::normal_distribution<double>(0.0, 1.0);
-  uniform_distribution_ = std::uniform_real_distribution<double>(0.0, 1.0);
+  uniform_distribution_ = std::uniform_real_distribution<double>(-1.0, 1.0);
 
   // Connect update callback
   this->updateConnection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&ImuPlugin::OnUpdate, this, _1));
@@ -100,6 +100,9 @@ void ImuPlugin::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) {
   acc_bias_.x = acc_bias_range_*uniform_distribution_(random_generator_);
   acc_bias_.y = acc_bias_range_*uniform_distribution_(random_generator_);
   acc_bias_.z = acc_bias_range_*uniform_distribution_(random_generator_);
+
+  // Get mass
+  mass_ = link_->GetInertial()->GetMass();
 }
 
 void ImuPlugin::Reset()
@@ -118,10 +121,10 @@ void ImuPlugin::OnUpdate(const common::UpdateInfo& _info)
     math::Quaternion q_I_NWU = link_->GetWorldPose().rot;
     math::Vector3 omega_B_NWU = link_->GetRelativeAngularVel();
     math::Vector3 uvw_B_NWU = link_->GetRelativeLinearVel();
-    
-    // y_acc = vdot - R*g + w X v
-    math::Vector3 y_acc = link_->GetRelativeLinearAccel() - q_I_NWU.RotateVectorReverse(gravity_) + omega_B_NWU.Cross(uvw_B_NWU);
-    math::Vector3 y_gyro = link_->GetRelativeAngularVel();  
+
+    // y_acc = F/m - R*g
+    math::Vector3 y_acc = link_->GetRelativeForce()/mass_ - q_I_NWU.RotateVectorReverse(gravity_);
+    math::Vector3 y_gyro = link_->GetRelativeAngularVel();
 
     // Apply normal noise
     y_acc.x += acc_stdev_*normal_distribution_(random_generator_);
@@ -143,9 +146,9 @@ void ImuPlugin::OnUpdate(const common::UpdateInfo& _info)
     y_acc.x += acc_bias_.x;
     y_acc.y += acc_bias_.y;
     y_acc.z += acc_bias_.z;
-    y_gyro.x += gyro_bias_.x; 
-    y_gyro.y += gyro_bias_.y; 
-    y_gyro.z += gyro_bias_.z; 
+    y_gyro.x += gyro_bias_.x;
+    y_gyro.y += gyro_bias_.y;
+    y_gyro.z += gyro_bias_.z;
 
     // Set Time stamp
     imu_message_.header.stamp.sec = current_time.sec;
@@ -177,14 +180,16 @@ void ImuPlugin::OnUpdate(const common::UpdateInfo& _info)
     acc_bias_msg.header = imu_message_.header;
     gyro_bias_msg.header = imu_message_.header;
 
+    // Convert Bias to NED
     acc_bias_msg.vector.x = acc_bias_.x;
-    acc_bias_msg.vector.y = acc_bias_.y;
-    acc_bias_msg.vector.z = acc_bias_.z;
+    acc_bias_msg.vector.y = -acc_bias_.y;
+    acc_bias_msg.vector.z = -acc_bias_.z;
     acc_bias_pub_.publish(acc_bias_msg);
 
+    // Convert Bias to NED
     gyro_bias_msg.vector.x = gyro_bias_.x;
-    gyro_bias_msg.vector.y = gyro_bias_.y;
-    gyro_bias_msg.vector.z = gyro_bias_.z;
+    gyro_bias_msg.vector.y = -gyro_bias_.y;
+    gyro_bias_msg.vector.z = -gyro_bias_.z;
     gyro_bias_pub_.publish(gyro_bias_msg);
   }
 }
@@ -192,8 +197,3 @@ void ImuPlugin::OnUpdate(const common::UpdateInfo& _info)
 
 GZ_REGISTER_MODEL_PLUGIN(ImuPlugin);
 }
-
-
-
-
-

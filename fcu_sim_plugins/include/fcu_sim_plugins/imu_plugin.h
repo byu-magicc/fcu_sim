@@ -71,6 +71,7 @@ class ImuPlugin : public ModelPlugin {
   double acc_bias_range_;
   double gyro_bias_walk_stdev_;
   double acc_bias_walk_stdev_;
+  double mass_;
 
   std::default_random_engine random_generator_;
   std::normal_distribution<double> normal_distribution_;
